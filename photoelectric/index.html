@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>光電效應實驗</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: #000; color: #eee; margin: 0; padding: 10px;
+            display: flex; flex-direction: column; align-items: center;
+            overscroll-behavior: none;
+        }
+        .nav { width: 100%; margin-bottom: 10px; }
+        .nav a { color: #00d4ff; text-decoration: none; font-size: 14px; }
+
+        /* 控制面板 */
+        .controls-container {
+            width: 100%; max-width: 600px;
+            background: #1a1a1a; padding: 15px 20px; border-radius: 12px;
+            margin-bottom: 15px; box-sizing: border-box; border: 1px solid #333;
+        }
+        .slider-group { margin-bottom: 15px; }
+        .slider-label { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px; color: #ccc; }
+        .slider-label b { color: #00d4ff; font-family: monospace; font-size: 1.1em; }
+        
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%;
+            background: #00d4ff; cursor: pointer; margin-top: -8px; box-shadow: 0 0 8px rgba(0,212,255,0.6);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; cursor: pointer; background: #444; border-radius: 2px;
+        }
+
+        /* 畫布與數據區 */
+        #canvas-container { 
+            width: 100%; max-width: 600px; 
+            display: flex; justify-content: center; margin-bottom: 15px;
+            position: relative;
+        }
+        canvas { border-radius: 4px; border: 1px solid #333; background: #080808; }
+
+        /* 結果顯示儀表板 */
+        .dashboard {
+            width: 100%; max-width: 600px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+        }
+        .meter {
+            background: #1a1a1a; padding: 15px; border-radius: 12px;
+            text-align: center; border: 1px solid #333;
+        }
+        .meter-title { font-size: 12px; color: #888; margin-bottom: 5px; }
+        .meter-value { font-size: 24px; font-weight: bold; color: #fff; }
+        .meter-unit { font-size: 14px; color: #666; }
+        
+        .highlight-g { color: #00ff00; } /* 綠色：有能量 */
+        .highlight-r { color: #ff4444; } /* 紅色：能量不足 */
+
+    </style>
+</head>
+<body>
+    <div class="nav"><a href="../index.html">← 返回首頁</a></div>
+
+    <div class="controls-container">
+        <div class="slider-group">
+            <div class="slider-label">
+                入射光頻率 (f)
+                <b id="val_f">10.0</b> <span style="font-size:0.8em; color:#888;">x10¹⁴ Hz</span>
+            </div>
+            <input type="range" id="sl_f" min="2.0" max="20.0" value="10.0" step="0.1">
+        </div>
+
+        <div class="slider-group">
+            <div class="slider-label">
+                金屬功函數 (W)
+                <b id="val_W">2.50</b> <span style="font-size:0.8em; color:#888;">eV</span>
+            </div>
+            <input type="range" id="sl_W" min="1.0" max="6.0" value="2.50" step="0.05">
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div class="dashboard">
+        <div class="meter">
+            <div class="meter-title">光子能量 (E=hf)</div>
+            <div id="disp_E" class="meter-value">4.14</div>
+            <span class="meter-unit">eV</span>
+        </div>
+        <div class="meter" style="border-color: #00d4ff;">
+            <div class="meter-title">電子最大動能 (Kmax)</div>
+            <div id="disp_K" class="meter-value highlight-g">1.64</div>
+            <span class="meter-unit">eV</span>
+        </div>
+    </div>
+
+    <script>
+        let sl_f, sl_W;
+        let electrons = [];
+        let photons = [];
+        let metalY;
+        let canvasW, canvasH;
+        
+        // 物理常數 (簡化運算用)
+        // h (Planck constant) in eV*s approx 4.1357 x 10^-15
+        // 我們頻率單位是 10^14 Hz
+        // 所以 h_effective = 4.1357 * 10^-15 * 10^14 = 0.41357
+        const H_CONST = 0.41357; 
+
+        function setup() {
+            canvasW = min(windowWidth - 20, 600);
+            canvasH = 300;
+            let cnv = createCanvas(canvasW, canvasH);
+            cnv.parent('canvas-container');
+            
+            sl_f = select('#sl_f');
+            sl_W = select('#sl_W');
+            
+            metalY = height - 40; // 金屬板位置
+            
+            // 預設發射一些光子
+            setInterval(emitPhoton, 100); 
+        }
+
+        function draw() {
+            background(10);
+            
+            // 讀取數值
+            let f_val = float(sl_f.value());
+            let W_val = float(sl_W.value());
+            
+            // 計算物理量
+            let E_photon = f_val * H_CONST;
+            let K_max = E_photon - W_val;
+
+            // UI 更新
+            select('#val_f').html(f_val.toFixed(1));
+            select('#val_W').html(W_val.toFixed(2));
+            select('#disp_E').html(E_photon.toFixed(2));
+            
+            let kDisplay = select('#disp_K');
+            if (K_max > 0) {
+                kDisplay.html(K_max.toFixed(2));
+                kDisplay.class("meter-value highlight-g");
+            } else {
+                kDisplay.html("0.00");
+                kDisplay.class("meter-value highlight-r");
+            }
+
+            // 1. 繪製手電筒 (左上角)
+            drawFlashlight(f_val);
+
+            // 2. 處理光子動畫
+            let photonColor = freqToColor(f_val);
+            for (let i = photons.length - 1; i >= 0; i--) {
+                let p = photons[i];
+                p.update();
+                p.display(photonColor);
+                
+                // 撞擊金屬偵測
+                if (p.pos.y >= metalY && p.pos.x > 50 && p.pos.x < width - 50) {
+                    // 如果能量足夠，產生電子
+                    if (K_max > 0) {
+                        spawnElectron(p.pos.x, K_max);
+                    }
+                    photons.splice(i, 1); // 光子消失
+                } else if (p.pos.y > height || p.pos.x > width) {
+                    photons.splice(i, 1);
+                }
+            }
+
+            // 3. 處理電子動畫
+            for (let i = electrons.length - 1; i >= 0; i--) {
+                let e = electrons[i];
+                e.update();
+                e.display();
+                if (e.pos.y < 0 || e.pos.x > width || e.pos.x < 0) {
+                    electrons.splice(i, 1);
+                }
+            }
+
+            // 4. 繪製金屬板
+            drawMetal(W_val, K_max > 0);
+        }
+
+        // --- 輔助函數與類別 ---
+
+        function emitPhoton() {
+            // 從手電筒位置發射
+            let startX = 60;
+            let startY = 60;
+            // 目標：金屬板中間隨機區域
+            let targetX = random(100, width - 50);
+            let targetY = metalY;
+            
+            photons.push(new Photon(startX, startY, targetX, targetY));
+        }
+
+        function spawnElectron(x, k_max) {
+            // 動能轉速度 (示意)：v 正比於 sqrt(K)
+            // 為了視覺效果，給予一個隨機方向但主要向上
+            let speed = sqrt(k_max) * 2.5; 
+            let angle = random(-PI/3, -2*PI/3); // 向上散射
+            electrons.push(new Electron(x, metalY - 5, speed, angle));
+        }
+
+        class Photon {
+            constructor(x, y, tx, ty) {
+                this.pos = createVector(x, y);
+                let dir = createVector(tx - x, ty - y);
+                dir.normalize();
+                this.vel = dir.mult(8); // 光速(示意)
+                this.w = 0; // 用於波動動畫
+            }
+            update() {
+                this.pos.add(this.vel);
+                this.w += 0.5;
+            }
+            display(c) {
+                push();
+                stroke(c);
+                strokeWeight(2);
+                noFill();
+                // 畫成小波包
+                translate(this.pos.x, this.pos.y);
+                rotate(this.vel.heading());
+                beginShape();
+                for(let i=-10; i<10; i+=2) {
+                    vertex(i, sin(i*0.5 + this.w)*3);
+                }
+                endShape();
+                pop();
+            }
+        }
+
+        class Electron {
+            constructor(x, y, speed, angle) {
+                this.pos = createVector(x, y);
+                this.vel = p5.Vector.fromAngle(angle).mult(speed);
+            }
+            update() {
+                this.pos.add(this.vel);
+            }
+            display() {
+                push();
+                translate(this.pos.x, this.pos.y);
+                noStroke();
+                // 電子光暈
+                fill(0, 255, 255, 100);
+                ellipse(0, 0, 10, 10);
+                // 電子本體
+                fill(255);
+                ellipse(0, 0, 4, 4);
+                // 負號
+                fill(0); textSize(8); textAlign(CENTER, CENTER);
+                // text("-", 0, -1);
+                pop();
+            }
+        }
+
+        function drawFlashlight(freq) {
+            push();
+            translate(40, 40);
+            rotate(PI/6); // 傾斜
+            
+            // 光源顏色
+            let c = freqToColor(freq);
+            
+            // 筒身
+            fill(50); stroke(100); strokeWeight(1);
+            rect(0, -15, 60, 30, 5);
+            // 燈頭
+            fill(80);
+            rect(60, -20, 10, 40, 2);
+            // 發光處
+            fill(c); noStroke();
+            ellipse(70, 0, 15, 30);
+            
+            // 光束光暈
+            fill(red(c), green(c), blue(c), 30);
+            triangle(70, -10, 70, 10, 400, 150);
+            
+            pop();
+        }
+
+        function drawMetal(W, isActive) {
+            // 金屬塊
+            fill(30); stroke(100); strokeWeight(1);
+            rect(50, metalY, width-100, 30);
+            
+            // 金屬質感線條
+            stroke(60);
+            for(let i=60; i<width-60; i+=20) {
+                line(i, metalY, i+10, metalY+30);
+            }
+
+            // 標示
+            noStroke(); fill(150); textSize(14);
+            text(`Metal (W = ${W.toFixed(2)} eV)`, width/2 - 50, metalY + 20);
+            
+            if (!isActive) {
+                fill(255, 50, 50); textSize(12);
+                text("🚫 能量不足", width/2 - 30, metalY - 10);
+            }
+        }
+
+        // 簡單的頻率轉顏色映射 (模擬光譜)
+        function freqToColor(f) {
+            // f 範圍 2.0 (紅外) ~ 20.0 (紫外)
+            // 對應 hue 0 (紅) ~ 280 (紫)
+            // 可見光約 4.0 ~ 7.9
+            
+            if (f < 3.0) return color(100, 0, 0); // IR 暗紅
+            if (f > 15.0) return color(100, 0, 200); // UV 紫
+            
+            // 映射可見光譜
+            let h = map(f, 3.0, 15.0, 0, 280);
+            colorMode(HSB, 360, 100, 100);
+            let c = color(h, 100, 100);
+            colorMode(RGB);
+            return c;
+        }
+
+        function windowResized() {
+            canvasW = min(windowWidth - 20, 600);
+            resizeCanvas(canvasW, 300);
+            metalY = height - 40;
+        }
+    </script>
+</body>
+</html>
