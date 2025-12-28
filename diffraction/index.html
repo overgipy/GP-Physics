@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>水波繞射模擬</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #222; color: white; margin: 0; padding: 20px; }
+        .controls { background: #333; padding: 15px; border-radius: 10px; display: inline-block; margin-bottom: 20px; }
+        canvas { border: 2px solid #555; }
+        input { width: 150px; }
+        .back-btn { display: block; margin-bottom: 10px; color: #3498db; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-btn">← 回到實驗室入口</a>
+    <h2>🌊 水波繞射互動模擬</h2>
+    <div class="controls">
+        波長 (λ): <input type="range" id="waveL" min="10" max="60" value="30">
+        狹縫寬度: <input type="range" id="slitW" min="5" max="80" value="20">
+    </div>
+    <div id="canvas-holder"></div>
+
+    <script>
+        let waveL, slitW;
+        function setup() {
+            let cnv = createCanvas(600, 400);
+            cnv.parent('canvas-holder');
+            waveL = select('#waveL');
+            slitW = select('#slitW');
+            pixelDensity(1); 
+        }
+
+        function draw() {
+            loadPixels();
+            let l = float(waveL.value());
+            let s = float(slitW.value());
+            let t = frameCount * 0.15;
+
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    let index = (x + y * width) * 4;
+                    let brightness = 0;
+
+                    if (x < 150) {
+                        // 平面波區
+                        brightness = sin(x/l * TWO_PI - t);
+                    } else {
+                        // 繞射區 (惠更斯原理簡化模型)
+                        let dx = x - 150;
+                        let dy = y - height/2;
+                        let r = sqrt(dx*dx + dy*dy);
+                        let angle = atan2(dy, dx);
+                        
+                        // 繞射強度因子
+                        let beta = (PI * s * sin(angle)) / l;
+                        let diffraction = (beta === 0) ? 1 : sin(beta)/beta;
+                        
+                        brightness = diffraction * sin(r/l * TWO_PI - t);
+                    }
+
+                    let col = map(brightness, -1, 1, 0, 255);
+                    pixels[index] = 0;        // R
+                    pixels[index+1] = col;    // G
+                    pixels[index+2] = col;    // B
+                    pixels[index+3] = 255;    // A
+                }
+            }
+            updatePixels();
+
+            // 畫出擋牆
+            fill(100);
+            noStroke();
+            rect(150, 0, 10, height/2 - s/2);
+            rect(150, height/2 + s/2, 10, height/2 - s/2);
+        }
+    </script>
+</body>
+</html>
