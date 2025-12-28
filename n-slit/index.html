@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>多孔狹縫干涉實驗</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        /* 延續上一版的高質感暗色系風格 */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: #000; color: #eee; margin: 0; padding: 10px;
+            display: flex; flex-direction: column; align-items: center;
+            overscroll-behavior: none;
+        }
+        .nav { width: 100%; margin-bottom: 10px; }
+        .nav a { color: #00d4ff; text-decoration: none; font-size: 14px; }
+
+        .controls-container {
+            width: 100%; max-width: 600px;
+            background: #1a1a1a; padding: 15px 20px; border-radius: 12px;
+            margin-bottom: 10px; box-sizing: border-box; border: 1px solid #333;
+        }
+        .slider-group { margin-bottom: 12px; }
+        .slider-label { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 15px; color: #ccc; }
+        .slider-label b { color: #00d4ff; font-family: monospace; font-size: 1.1em; }
+        
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%;
+            background: #00d4ff; cursor: pointer; margin-top: -8px; box-shadow: 0 0 8px rgba(0,212,255,0.6);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; cursor: pointer; background: #444; border-radius: 2px;
+        }
+
+        #canvas-container { 
+            width: 100%; max-width: 600px; 
+            display: flex; justify-content: center; margin-bottom: 10px;
+        }
+        canvas { border-radius: 4px; border: 1px solid #333; }
+
+        .analysis-container {
+            width: 100%; max-width: 600px;
+            background: #1a1a1a; padding: 15px; border-radius: 12px;
+            border-left: 4px solid #ffcc00; box-sizing: border-box; /* 使用黃色區別干涉 */
+        }
+        .status-text { font-size: 15px; line-height: 1.4; color: #ddd; }
+        .highlight { color: #00d4ff; font-weight: bold; }
+        .warn { color: #ff5555; }
+    </style>
+</head>
+<body>
+    <div class="nav"><a href="../index.html">← 返回首頁</a></div>
+
+    <div class="controls-container">
+        <div class="slider-group">
+            <div class="slider-label">狹縫數 (N)<b id="val_N">2</b></div>
+            <input type="range" id="sl_N" min="2" max="6" value="2" step="1">
+        </div>
+        <div class="slider-group">
+            <div class="slider-label">縫距 (d)<b id="val_d">40</b></div>
+            <input type="range" id="sl_d" min="20" max="80" value="40" step="1">
+        </div>
+        <div class="slider-group">
+            <div class="slider-label">波長 (λ)<b id="val_L">25</b></div>
+            <input type="range" id="sl_L" min="15" max="50" value="25" step="1">
+        </div>
+        <div class="slider-group">
+            <div class="slider-label" style="font-size:13px; color:#888;">縫寬 (w) - 包絡線控制<b id="val_w">10</b></div>
+            <input type="range" id="sl_w" min="2" max="20" value="10" step="1">
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div class="analysis-container">
+        <div id="comment" class="status-text">正在模擬干涉圖樣...</div>
+    </div>
+
+    <script>
+        let sl_N, sl_d, sl_L, sl_w;
+        let canvasW, canvasH;
+
+        function setup() {
+            canvasW = min(windowWidth - 20, 600);
+            canvasH = canvasW * 0.75; // 稍微高一點以容納更多條紋
+            let cnv = createCanvas(canvasW, canvasH + 90);
+            cnv.parent('canvas-container');
+            pixelDensity(1); // 效能關鍵
+
+            sl_N = select('#sl_N');
+            sl_d = select('#sl_d');
+            sl_L = select('#sl_L');
+            sl_w = select('#sl_w');
+        }
+
+        function draw() {
+            background(0);
+
+            // 讀取數值
+            let N = int(sl_N.value());
+            let d = float(sl_d.value());
+            let lambda = float(sl_L.value());
+            let w = float(sl_w.value());
+            let time = frameCount * 0.2;
+            let k = TWO_PI / lambda;
+
+            // UI 數值更新
+            select('#val_N').html(N);
+            select('#val_d').html(d);
+            select('#val_L').html(lambda);
+            select('#val_w').html(w);
+
+            // 教學評語更新
+            let msg = "";
+            if (N === 2) {
+                msg = "雙狹縫干涉 (Young's Experiment)：觀察亮帶與暗帶的等距分佈。";
+            } else {
+                msg = `<span class="highlight">${N} 狹縫干涉</span>：隨著 N 增加，主極大值變得更銳利且更亮，其間出現 N-2 個次極大值。`;
+            }
+            if (d < lambda) {
+                msg += " <br><span class='warn'>⚠️ 縫距過小 (d < λ)</span>：干涉條紋過寬，可能難以分辨。";
+            }
+            select('#comment').html(msg);
+
+            // --- 1. 像素級波動模擬 (Visual) ---
+            loadPixels();
+            
+            let wallX = canvasW * 0.2; // 擋板位置
+            let waveH = canvasH;
+            
+            // 預先計算每個狹縫的 Y 座標中心
+            let slitCenters = [];
+            let totalHeight = (N - 1) * d;
+            let startY = (waveH / 2) - (totalHeight / 2);
+            for(let i=0; i<N; i++) {
+                slitCenters.push(startY + i * d);
+            }
+
+            for (let y = 0; y < waveH; y++) {
+                for (let x = 0; x < canvasW; x++) {
+                    let idx = (x + y * width) * 4;
+                    let amp = 0;
+
+                    if (x < wallX) {
+                        // 左側入射波
+                        amp = Math.sin(x * k - time);
+                    } else {
+                        // 右側干涉疊加
+                        let dx = x - wallX;
+                        // 為了效能，我們把每個狹縫視為單一點波源 (忽略單縫繞射的微觀波形，只看干涉)
+                        // 若要更真實，每個縫內部還需再積分，但手機會跑不動
+                        let sum = 0;
+                        for(let i=0; i<N; i++) {
+                            let dy = y - slitCenters[i];
+                            let r = Math.sqrt(dx*dx + dy*dy);
+                            let decay = 12.0 / (Math.sqrt(r) + 0.1); 
+                            sum += Math.sin(r * k - time) * decay;
+                        }
+                        // 正規化：除以 N 讓最大亮度維持一致，方便觀察
+                        amp = sum / N; 
+                    }
+
+                    // 色彩映射 (高對比青色)
+                    let intensity = amp;
+                    let r=0, g=0, b=0;
+                    if (intensity > 0) {
+                        let val = Math.pow(intensity, 0.7) * 255;
+                        r = val * 0.1; g = val * 0.9; b = val;
+                    } else {
+                        let val = Math.pow(Math.abs(intensity), 0.7) * 120;
+                        r = 0; g = val * 0.3; b = val * 0.6;
+                    }
+                    pixels[idx] = r; pixels[idx+1] = g; pixels[idx+2] = b; pixels[idx+3] = 255;
+                }
+            }
+            updatePixels();
+
+            // --- 2. 繪製擋板結構 ---
+            fill(40); stroke(100); strokeWeight(1);
+            // 畫出整塊擋板，然後挖空 (視覺上用覆蓋的方式畫)
+            rect(wallX-5, 0, 10, waveH);
+            // 畫出 "開口" (用波的底色覆蓋回去，或者直接不畫擋板的地方) -> 簡單作法：畫很多小段擋板
+            // 重畫擋板：上方、下方、以及縫與縫之間
+            fill(40); 
+            // 上邊界到第一個縫
+            rect(wallX-5, 0, 10, slitCenters[0] - w/2);
+            // 下邊界到最後一個縫
+            rect(wallX-5, slitCenters[N-1] + w/2, 10, waveH - (slitCenters[N-1] + w/2));
+            // 縫與縫之間
+            for(let i=0; i<N-1; i++) {
+                let y1 = slitCenters[i] + w/2;
+                let y2 = slitCenters[i+1] - w/2;
+                rect(wallX-5, y1, 10, y2-y1);
+            }
+
+            // --- 3. 繪製下方強度分析圖 ---
+            // 清空底部
+            fill(10); noStroke();
+            rect(0, waveH, canvasW, 90);
+
+            // 座標變換
+            push();
+            translate(0, waveH);
+            
+            // 繪製參考線 (中線)
+            stroke(50); line(0, 45, canvasW, 45);
+
+            // A. 繪製單縫繞射包絡線 (紅色虛線) - 這是干涉的「限制範圍」
+            stroke(255, 50, 50, 100); strokeWeight(2); noFill();
+            drawingContext.setLineDash([5, 5]); // 虛線
+            beginShape();
+            for (let x = 0; x < canvasW; x+=2) {
+                let theta = map(x, 0, canvasW, -PI/3, PI/3);
+                let beta = (PI * w * sin(theta)) / lambda;
+                let diffraction = (beta == 0) ? 1 : Math.pow(sin(beta)/beta, 2);
+                vertex(x, 85 - diffraction * 80);
+            }
+            endShape();
+            drawingContext.setLineDash([]); // 恢復實線
+
+            // B. 繪製 N狹縫干涉強度 (青色實線)
+            stroke(0, 255, 255); strokeWeight(2); noFill();
+            beginShape();
+            for (let x = 0; x < canvasW; x+=2) {
+                let theta = map(x, 0, canvasW, -PI/3, PI/3);
+                
+                // 1. 干涉項 (Interference Term)
+                let alpha = (PI * d * sin(theta)) / lambda;
+                let interference = (alpha == 0) ? N*N : Math.pow(sin(N*alpha)/sin(alpha), 2);
+                // 正規化干涉項 (除以 N^2)
+                interference /= (N*N);
+
+                // 2. 繞射項 (Diffraction Term - Envelope)
+                let beta = (PI * w * sin(theta)) / lambda;
+                let diffraction = (beta == 0) ? 1 : Math.pow(sin(beta)/beta, 2);
+
+                // 總強度
+                let I = interference * diffraction;
+                vertex(x, 85 - I * 80);
+            }
+            endShape();
+
+            // 文字標示
+            noStroke(); fill(180); textSize(12);
+            text("強度分佈 I(θ)", 10, 20);
+            fill(255, 50, 50); text("-- 單縫包絡", canvasW - 80, 20);
+            fill(0, 255, 255); text("— 總干涉", canvasW - 80, 35);
+
+            pop();
+        }
+
+        function windowResized() {
+            canvasW = min(windowWidth - 20, 600);
+            canvasH = canvasW * 0.75;
+            resizeCanvas(canvasW, canvasH + 90);
+        }
+    </script>
+</body>
+</html>
