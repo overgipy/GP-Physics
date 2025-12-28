@@ -2,124 +2,160 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>水波繞射：強度與關係分析</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>水波繞射：行動教學版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; margin: 0; display: flex; flex-direction: column; align-items: center; }
-        .nav { width: 100%; padding: 10px; background: #333; }
-        .nav a { color: #3498db; text-decoration: none; }
-        .dashboard { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; padding: 20px; width: 100%; max-width: 1000px; }
-        .controls { background: #252525; padding: 20px; border-radius: 15px; flex: 1; min-width: 300px; border: 1px solid #444; }
-        .analysis { background: #1e1e1e; padding: 20px; border-radius: 15px; flex: 1; min-width: 300px; border: 1px solid #00d4ff; }
-        .slider-group { margin-bottom: 15px; }
-        span { display: block; margin-bottom: 5px; font-size: 14px; color: #bbb; }
-        b { color: #00d4ff; font-size: 18px; }
-        .status-msg { margin-top: 10px; padding: 10px; border-radius: 5px; background: #333; color: #ffcc00; font-size: 14px; }
-        canvas { border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5); margin-bottom: 30px; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: #121212; color: white; margin: 0; padding: 10px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .nav { width: 100%; margin-bottom: 15px; }
+        .nav a { color: #3498db; text-decoration: none; font-size: 14px; }
+
+        /* 上方控制區 */
+        .controls-container {
+            width: 100%; max-width: 600px;
+            background: #252525; padding: 20px; border-radius: 15px;
+            margin-bottom: 15px; box-sizing: border-box;
+        }
+        .slider-group { margin-bottom: 25px; }
+        .slider-label { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 18px; }
+        .slider-label b { color: #00d4ff; }
+        input[type=range] {
+            width: 100%; height: 25px; /* 加高滑桿方便觸碰 */
+            cursor: pointer;
+        }
+
+        /* 中間畫布區 */
+        #canvas-container { width: 100%; display: flex; justify-content: center; }
+        canvas { border-radius: 8px; max-width: 100%; height: auto !important; }
+
+        /* 下方分析區 */
+        .analysis-container {
+            width: 100%; max-width: 600px;
+            background: #1e1e1e; padding: 20px; border-radius: 15px;
+            margin-top: 15px; border-left: 5px solid #00d4ff; box-sizing: border-box;
+        }
+        .ratio-text { font-size: 20px; margin-bottom: 10px; }
+        .comment-text { color: #ffcc00; line-height: 1.5; font-size: 16px; }
     </style>
 </head>
 <body>
-    <div class="nav"><a href="../index.html">← 返回實驗室首頁</a></div>
-    <h2>🌊 水波繞射：縫寬與波長關係實驗</h2>
-    
-    <div class="dashboard">
-        <div class="controls">
-            <div class="slider-group">
-                <span>波長 (λ): <b id="wL_val">30</b> px</span>
-                <input type="range" id="waveL" min="15" max="60" value="30" style="width:100%">
-            </div>
-            <div class="slider-group">
-                <span>狹縫寬度 (a): <b id="sW_val">40</b> px</span>
-                <input type="range" id="slitW" min="5" max="150" value="40" style="width:100%">
-            </div>
+    <div class="nav"><a href="../index.html">← 返回首頁</a></div>
+
+    <div class="controls-container">
+        <div class="slider-group">
+            <div class="slider-label">波長 λ: <b id="wL_val">30</b></div>
+            <input type="range" id="waveL" min="15" max="60" value="30">
         </div>
-        
-        <div class="analysis">
-            <span>物理關係分析 (a / λ):</span>
-            <b id="ratio_val">1.33</b>
-            <div id="comment" class="status-msg">正在計算...</div>
+        <div class="slider-group">
+            <div class="slider-label">縫寬 w: <b id="sW_val">40</b></div>
+            <input type="range" id="slitW" min="5" max="150" value="40">
         </div>
     </div>
 
     <div id="canvas-container"></div>
 
+    <div class="analysis-container">
+        <div class="ratio-text">關係比值 (w / λ) = <b id="ratio_val">1.33</b></div>
+        <div id="comment" class="comment-text">正在分析繞射現象...</div>
+    </div>
+
     <script>
         let wL_s, sW_s;
-        const res = 5; // 效能解析度
+        let canvasW, canvasH;
 
         function setup() {
-            let cnv = createCanvas(800, 450);
+            // 根據螢幕寬度自動調整畫布大小
+            canvasW = min(windowWidth - 20, 600);
+            canvasH = canvasW * 0.6; 
+            let cnv = createCanvas(canvasW, canvasH + 100); // 下方留100px畫強度曲線
             cnv.parent('canvas-container');
             wL_s = select('#waveL');
             sW_s = select('#slitW');
-            textAlign(CENTER);
         }
 
         function draw() {
             background(10);
             let lambda = float(wL_s.value());
-            let a = float(sW_s.value());
+            let w = float(sW_s.value());
             let time = frameCount * 0.15;
-            let ratio = a / lambda;
+            let ratio = w / lambda;
 
-            // UI 更新
+            // 更新介面文字
             select('#wL_val').html(lambda);
-            select('#sW_val').html(a);
+            select('#sW_val').html(w);
             select('#ratio_val').html(ratio.toFixed(2));
 
+            // 更新評語
             if (ratio < 1.1) {
-                select('#comment').html("🔔 繞射顯著：縫寬接近波長，波幾乎呈圓形擴散至陰影區。");
+                select('#comment').html("⭐ 繞射非常顯著：縫寬接近波長，波前在縫後完整展開。");
             } else if (ratio < 3) {
-                select('#comment').html("🆗 繞射中等：可以看到明顯的中央亮帶。");
+                select('#comment').html("🔹 繞射中等：波前有彎曲，但仍能看出主要的行進方向。");
             } else {
-                select('#comment').html("⚠️ 繞射不明顯：縫寬遠大於波長，波形趨近於直線前進。");
+                select('#comment').html("⚠️ 繞射不明顯：縫寬遠大於波長，幾乎維持直線傳播（幾何光學極限）。");
             }
 
-            // 1. 繪製水波模擬 (左側 0~600)
-            for (let x = 0; x < 600; x += res) {
-                for (let y = 0; y < height; y += res) {
+            // 繪製水波 (佔用畫布上方部分)
+            let waveAreaH = canvasH;
+            let res = 6; 
+            for (let x = 0; x < canvasW; x += res) {
+                for (let y = 0; y < waveAreaH; y += res) {
                     let amp = 0;
-                    if (x < 150) {
+                    if (x < canvasW * 0.25) {
                         amp = sin((x / lambda) * TWO_PI - time);
                     } else {
-                        let dx = x - 150;
-                        let num = 6; 
+                        let dx = x - canvasW * 0.25;
+                        let num = 5; 
                         for (let i = 0; i < num; i++) {
-                            let sy = (height/2 - a/2) + (a / (num-1 || 1)) * i;
-                            let r = dist(x, y, 150, sy);
+                            let sy = (waveAreaH/2 - w/2) + (w / (num-1 || 1)) * i;
+                            let r = dist(x, y, canvasW * 0.25, sy);
                             amp += sin((r / lambda) * TWO_PI - time) / sqrt(r*0.1 + 1);
                         }
                         amp /= num;
                     }
                     let c = map(amp, -1, 1, 0, 255);
                     fill(0, c * 0.6 + 30, c, 180);
+                    noStroke();
                     rect(x, y, res, res);
                 }
             }
 
-            // 2. 繪製右側強度分佈圖 (600~800)
-            fill(20);
-            rect(600, 0, 200, height);
+            // 繪製擋牆
+            fill(150);
+            rect(canvasW * 0.25, 0, 10, waveAreaH/2 - w/2);
+            rect(canvasW * 0.25, waveAreaH/2 + w/2, 10, waveAreaH/2 - w/2);
+
+            // 繪製下方強度分佈曲線 (在水波圖正下方)
+            push();
+            translate(0, waveAreaH);
+            fill(30);
+            rect(0, 0, canvasW, 100);
             stroke(0, 212, 255);
+            strokeWeight(2);
             noFill();
             beginShape();
-            for (let y = 0; y < height; y += 5) {
-                let angle = atan2(y - height/2, 450); // 假設觀測距離為 450
-                let beta = (PI * a * sin(angle)) / lambda;
+            for (let x = 0; x < canvasW; x += 2) {
+                let angle = map(x, 0, canvasW, -PI/3, PI/3);
+                let beta = (PI * w * sin(angle)) / lambda;
                 let intens = (beta === 0) ? 1 : Math.pow(Math.sin(beta)/beta, 2);
-                vertex(620 + intens * 150, y);
+                vertex(x, 90 - intens * 70);
             }
             endShape();
             noStroke();
             fill(255);
-            text("觀測屏強度 (I)", 700, 20);
+            textSize(12);
+            text("衍射強度曲線分布 (I)", 10, 20);
+            pop();
+        }
 
-            // 3. 繪製擋牆
-            fill(120);
-            rect(150, 0, 15, height/2 - a/2);
-            rect(150, height/2 + a/2, 15, height/2 - a/2);
-            fill(255, 200, 0);
-            text("障礙物", 157, 40);
+        // 螢幕旋轉或調整大小時重新適應
+        function windowResized() {
+            canvasW = min(windowWidth - 20, 600);
+            canvasH = canvasW * 0.6;
+            resizeCanvas(canvasW, canvasH + 100);
         }
     </script>
 </body>
