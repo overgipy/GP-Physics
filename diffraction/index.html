@@ -2,44 +2,60 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>水波繞射：行動教學版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>水波繞射：高畫質版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background: #121212; color: white; margin: 0; padding: 10px;
+            background: #000; color: #eee; margin: 0; padding: 10px;
             display: flex; flex-direction: column; align-items: center;
+            overscroll-behavior: none; /* 防止手機向下拉動重整 */
         }
-        .nav { width: 100%; margin-bottom: 15px; }
-        .nav a { color: #3498db; text-decoration: none; font-size: 14px; }
+        .nav { width: 100%; margin-bottom: 10px; }
+        .nav a { color: #00d4ff; text-decoration: none; font-size: 14px; }
 
-        /* 上方控制區 */
+        /* 控制區樣式 */
         .controls-container {
             width: 100%; max-width: 600px;
-            background: #252525; padding: 20px; border-radius: 15px;
-            margin-bottom: 15px; box-sizing: border-box;
+            background: #1a1a1a; padding: 15px 20px; border-radius: 12px;
+            margin-bottom: 10px; box-sizing: border-box;
+            border: 1px solid #333;
         }
-        .slider-group { margin-bottom: 25px; }
-        .slider-label { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 18px; }
-        .slider-label b { color: #00d4ff; }
+        .slider-group { margin-bottom: 15px; }
+        .slider-group:last-child { margin-bottom: 0; }
+        .slider-label { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 16px; color: #ccc; }
+        .slider-label b { color: #00d4ff; font-family: monospace; font-size: 1.1em; }
+        
+        /* 優化滑桿觸控體驗 */
         input[type=range] {
-            width: 100%; height: 25px; /* 加高滑桿方便觸碰 */
-            cursor: pointer;
+            -webkit-appearance: none; width: 100%; background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%;
+            background: #00d4ff; cursor: pointer; margin-top: -10px; box-shadow: 0 0 10px rgba(0,212,255,0.5);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; cursor: pointer; background: #444; border-radius: 2px;
         }
 
-        /* 中間畫布區 */
-        #canvas-container { width: 100%; display: flex; justify-content: center; }
-        canvas { border-radius: 8px; max-width: 100%; height: auto !important; }
+        /* 畫布區 */
+        #canvas-container { 
+            width: 100%; max-width: 600px; 
+            display: flex; justify-content: center;
+            margin-bottom: 10px;
+        }
+        canvas { border-radius: 4px; border: 1px solid #333; }
 
-        /* 下方分析區 */
+        /* 分析區 */
         .analysis-container {
             width: 100%; max-width: 600px;
-            background: #1e1e1e; padding: 20px; border-radius: 15px;
-            margin-top: 15px; border-left: 5px solid #00d4ff; box-sizing: border-box;
+            background: #1a1a1a; padding: 15px; border-radius: 12px;
+            border-left: 4px solid #00d4ff; box-sizing: border-box;
         }
-        .ratio-text { font-size: 20px; margin-bottom: 10px; }
-        .comment-text { color: #ffcc00; line-height: 1.5; font-size: 16px; }
+        .ratio-text { font-size: 16px; margin-bottom: 5px; color: #fff; }
+        .comment-text { color: #aaa; font-size: 14px; line-height: 1.4; }
+        .highlight { color: #ffcc00; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -47,115 +63,188 @@
 
     <div class="controls-container">
         <div class="slider-group">
-            <div class="slider-label">波長 λ: <b id="wL_val">30</b></div>
-            <input type="range" id="waveL" min="15" max="60" value="30">
+            <div class="slider-label">波長 (λ)<b id="wL_val">30</b></div>
+            <input type="range" id="waveL" min="15" max="60" value="30" step="1">
         </div>
         <div class="slider-group">
-            <div class="slider-label">縫寬 w: <b id="sW_val">40</b></div>
-            <input type="range" id="slitW" min="5" max="150" value="40">
+            <div class="slider-label">縫寬 (w)<b id="sW_val">40</b></div>
+            <input type="range" id="slitW" min="5" max="150" value="40" step="1">
         </div>
     </div>
 
     <div id="canvas-container"></div>
 
     <div class="analysis-container">
-        <div class="ratio-text">關係比值 (w / λ) = <b id="ratio_val">1.33</b></div>
-        <div id="comment" class="comment-text">正在分析繞射現象...</div>
+        <div class="ratio-text">參數比值: w / λ = <b id="ratio_val">1.33</b></div>
+        <div id="comment" class="comment-text">正在計算...</div>
     </div>
 
     <script>
         let wL_s, sW_s;
         let canvasW, canvasH;
+        // 降低渲染比例以提升手機效能 (0.5 = 降低一半解析度但保持平滑，1.0 = 原生解析度)
+        // 如果手機還是卡，可以改為 0.5
+        const renderScale = 1.0; 
 
         function setup() {
-            // 根據螢幕寬度自動調整畫布大小
+            // 限制最大寬度，避免電腦版太大運算過慢
             canvasW = min(windowWidth - 20, 600);
-            canvasH = canvasW * 0.6; 
-            let cnv = createCanvas(canvasW, canvasH + 100); // 下方留100px畫強度曲線
+            canvasH = canvasW * 0.7; // 稍微加高比例
+            
+            let cnv = createCanvas(canvasW, canvasH + 80); // 畫布包含下方強度圖
             cnv.parent('canvas-container');
+            
+            // 重要：強制使用 1倍像素密度，避免 Retina 螢幕運算量爆增
+            pixelDensity(1); 
+            
             wL_s = select('#waveL');
             sW_s = select('#slitW');
         }
 
         function draw() {
-            background(10);
+            background(0); // 純黑背景
+            
             let lambda = float(wL_s.value());
             let w = float(sW_s.value());
-            let time = frameCount * 0.15;
+            let time = frameCount * 0.2; // 波速
             let ratio = w / lambda;
 
-            // 更新介面文字
+            // --- UI 更新 ---
             select('#wL_val').html(lambda);
             select('#sW_val').html(w);
             select('#ratio_val').html(ratio.toFixed(2));
 
-            // 更新評語
-            if (ratio < 1.1) {
-                select('#comment').html("⭐ 繞射非常顯著：縫寬接近波長，波前在縫後完整展開。");
-            } else if (ratio < 3) {
-                select('#comment').html("🔹 繞射中等：波前有彎曲，但仍能看出主要的行進方向。");
+            let commentDiv = select('#comment');
+            if (ratio < 1.0) {
+                commentDiv.html("<span class='highlight'>繞射極強</span>：縫寬小於波長，波形呈半圓形擴散，幾乎無陰影區。");
+            } else if (ratio < 3.0) {
+                commentDiv.html("<span class='highlight'>繞射明顯</span>：可以看到波向兩側彎曲，中央亮帶寬度顯著。");
             } else {
-                select('#comment').html("⚠️ 繞射不明顯：縫寬遠大於波長，幾乎維持直線傳播（幾何光學極限）。");
+                commentDiv.html("繞射不明顯：縫寬大，波形趨近直線前進 (幾何光學極限)。");
             }
 
-            // 繪製水波 (佔用畫布上方部分)
-            let waveAreaH = canvasH;
-            let res = 6; 
-            for (let x = 0; x < canvasW; x += res) {
-                for (let y = 0; y < waveAreaH; y += res) {
+            // --- 核心：像素級水波渲染 ---
+            loadPixels();
+            
+            // 為了效能，預先計算一些常數
+            let wallX = canvasW * 0.25;
+            let waveH = canvasH; // 水波區域高度
+            let halfH = waveH / 2;
+            let halfW = w / 2;
+            let k = TWO_PI / lambda; // 波數
+            
+            // 定義縫內的點波源 (減少數量以提升效能，但使用權重補償)
+            let numSources = 5; 
+            let sourceY = [];
+            for(let i=0; i<numSources; i++) {
+                // 在縫寬 w 內均勻分布點波源
+                sourceY.push((halfH - halfW) + (w / (numSources+1)) * (i+1));
+            }
+
+            for (let y = 0; y < waveH; y++) {
+                for (let x = 0; x < canvasW; x++) {
+                    let idx = (x + y * width) * 4;
                     let amp = 0;
-                    if (x < canvasW * 0.25) {
-                        amp = sin((x / lambda) * TWO_PI - time);
+
+                    if (x < wallX) {
+                        // 左側：平面波
+                        amp = Math.sin(x * k - time);
                     } else {
-                        let dx = x - canvasW * 0.25;
-                        let num = 5; 
-                        for (let i = 0; i < num; i++) {
-                            let sy = (waveAreaH/2 - w/2) + (w / (num-1 || 1)) * i;
-                            let r = dist(x, y, canvasW * 0.25, sy);
-                            amp += sin((r / lambda) * TWO_PI - time) / sqrt(r*0.1 + 1);
+                        // 右側：惠更斯疊加
+                        let dx = x - wallX;
+                        let sum = 0;
+                        for(let i=0; i<numSources; i++) {
+                            let dy = y - sourceY[i];
+                            // 使用近似距離公式優化 sqrt (選用) 或直接用 sqrt
+                            let r = Math.sqrt(dx*dx + dy*dy);
+                            // 距離衰減因子 (讓波紋看起來更有立體感)
+                            let decay = 10.0 / (Math.sqrt(r) + 0.1); 
+                            sum += Math.sin(r * k - time) * decay;
                         }
-                        amp /= num;
+                        amp = sum / (numSources * 0.6); // 正規化振幅
                     }
-                    let c = map(amp, -1, 1, 0, 255);
-                    fill(0, c * 0.6 + 30, c, 180);
-                    noStroke();
-                    rect(x, y, res, res);
+
+                    // --- 視覺增強：色彩映射 ---
+                    // 將振幅 (-1 ~ 1) 轉換為高對比顏色
+                    // 這裡使用 power function 來增加對比度 (讓波峰更尖銳)
+                    let intensity = amp; 
+                    let r = 0, g = 0, b = 0;
+
+                    if (intensity > 0) {
+                        // 波峰 (亮青色)
+                        let val = Math.pow(intensity, 0.8) * 255;
+                        r = val * 0.1; // 淡淡的藍
+                        g = val * 0.8; // 青
+                        b = val;       // 藍
+                    } else {
+                        // 波谷 (深藍黑)
+                        let val = Math.pow(Math.abs(intensity), 0.8) * 150;
+                        r = 0;
+                        g = val * 0.2;
+                        b = val * 0.5;
+                    }
+
+                    pixels[idx] = r;
+                    pixels[idx+1] = g;
+                    pixels[idx+2] = b;
+                    pixels[idx+3] = 255;
                 }
             }
+            updatePixels();
 
-            // 繪製擋牆
-            fill(150);
-            rect(canvasW * 0.25, 0, 10, waveAreaH/2 - w/2);
-            rect(canvasW * 0.25, waveAreaH/2 + w/2, 10, waveAreaH/2 - w/2);
-
-            // 繪製下方強度分佈曲線 (在水波圖正下方)
-            push();
-            translate(0, waveAreaH);
+            // --- 繪製遮擋牆 (直接畫在畫布上覆蓋像素) ---
             fill(30);
-            rect(0, 0, canvasW, 100);
+            stroke(100);
+            strokeWeight(1);
+            rect(wallX - 5, 0, 10, halfH - halfW); // 上牆
+            rect(wallX - 5, halfH + halfW, 10, halfH - halfW); // 下牆
+            
+            // --- 繪製縫寬標示 ---
+            stroke(255, 200, 0);
+            line(wallX, halfH - halfW, wallX, halfH + halfW);
+
+            // --- 下方強度曲線 ---
+            // 清除下方區域
+            fill(10);
+            noStroke();
+            rect(0, waveH, canvasW, 80);
+            
             stroke(0, 212, 255);
             strokeWeight(2);
             noFill();
+            
+            // 繪製強度 I
             beginShape();
-            for (let x = 0; x < canvasW; x += 2) {
-                let angle = map(x, 0, canvasW, -PI/3, PI/3);
-                let beta = (PI * w * sin(angle)) / lambda;
-                let intens = (beta === 0) ? 1 : Math.pow(Math.sin(beta)/beta, 2);
-                vertex(x, 90 - intens * 70);
+            for (let x = 0; x < canvasW; x+=2) {
+                // 將 x 映射到角度 -60度 ~ +60度
+                let angle = map(x, 0, canvasW, -PI/2.5, PI/2.5);
+                
+                // 單狹縫繞射公式: I = I0 * (sin(beta)/beta)^2
+                // beta = (pi * w * sin(theta)) / lambda
+                let beta = (PI * w * Math.sin(angle)) / lambda;
+                let I = 1;
+                if (Math.abs(beta) > 0.01) {
+                    I = Math.pow(Math.sin(beta) / beta, 2);
+                }
+                
+                // 畫出曲線 (基線在底部)
+                let graphY = (canvasH + 75) - (I * 70);
+                vertex(x, graphY);
             }
             endShape();
+            
+            // 曲線文字
+            fill(200);
             noStroke();
-            fill(255);
             textSize(12);
-            text("衍射強度曲線分布 (I)", 10, 20);
-            pop();
+            textAlign(LEFT);
+            text("相對強度 (I)", 10, canvasH + 20);
         }
 
-        // 螢幕旋轉或調整大小時重新適應
         function windowResized() {
             canvasW = min(windowWidth - 20, 600);
-            canvasH = canvasW * 0.6;
-            resizeCanvas(canvasW, canvasH + 100);
+            canvasH = canvasW * 0.7;
+            resizeCanvas(canvasW, canvasH + 80);
         }
     </script>
 </body>
