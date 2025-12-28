@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>折射與全反射實驗</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: #000; color: #eee; margin: 0; padding: 10px;
+            display: flex; flex-direction: column; align-items: center;
+            overscroll-behavior: none;
+        }
+        
+        .nav { width: 100%; margin-bottom: 10px; }
+        .nav a { color: #00d4ff; text-decoration: none; font-size: 14px; }
+
+        .controls-container {
+            width: 100%; max-width: 600px;
+            background: #1a1a1a; padding: 15px 20px; border-radius: 12px;
+            margin-bottom: 15px; box-sizing: border-box; border: 1px solid #333;
+        }
+        .slider-group { margin-bottom: 15px; }
+        .slider-group:last-child { margin-bottom: 0; }
+        .slider-label { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; color: #ccc; }
+        .slider-label b { color: #00d4ff; font-family: monospace; font-size: 1.1em; }
+        
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%;
+            background: #00d4ff; cursor: pointer; margin-top: -7px; box-shadow: 0 0 8px rgba(0,212,255,0.6);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; cursor: pointer; background: #444; border-radius: 2px;
+        }
+
+        #canvas-container { 
+            width: 100%; max-width: 600px; 
+            display: flex; justify-content: center; margin-bottom: 15px;
+            position: relative;
+        }
+        canvas { border-radius: 4px; border: 1px solid #333; cursor: crosshair; }
+
+        .dashboard {
+            width: 100%; max-width: 600px;
+            background: #111; padding: 15px; border-radius: 12px; border: 1px solid #333;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+        }
+        .data-box { text-align: center; }
+        .data-label { font-size: 12px; color: #888; margin-bottom: 5px; }
+        .data-value { font-size: 20px; font-weight: bold; color: #fff; }
+        
+        .warn-box {
+            grid-column: span 2;
+            background: #330000; border: 1px solid #ff4444; color: #ffaaaa;
+            padding: 8px; border-radius: 6px; text-align: center; font-size: 14px;
+            display: none; 
+        }
+        .info-text { font-size: 12px; color: #666; margin-top: 10px; text-align: center;}
+    </style>
+</head>
+<body>
+    <div class="nav"><a href="../index.html">← 返回首頁</a></div>
+
+    <div class="controls-container">
+        <div class="slider-group">
+            <div class="slider-label">入射角 (θ₁) <b id="val_theta1">45°</b></div>
+            <input type="range" id="sl_angle" min="0" max="85" value="45">
+        </div>
+        <div class="slider-group">
+            <div class="slider-label">上層折射率 n₁ <b id="val_n1">1.50</b></div>
+            <input type="range" id="sl_n1" min="1.00" max="2.50" value="1.50" step="0.01">
+        </div>
+        <div class="slider-group">
+            <div class="slider-label">下層折射率 n₂ <b id="val_n2">1.00</b></div>
+            <input type="range" id="sl_n2" min="1.00" max="2.50" value="1.00" step="0.01">
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div class="dashboard">
+        <div class="warn-box" id="tir_msg">⚠️ 發生全反射 (Total Internal Reflection)</div>
+        
+        <div class="data-box">
+            <div class="data-label">折射角 (θ₂)</div>
+            <div class="data-value" id="val_theta2">--</div>
+        </div>
+        <div class="data-box">
+            <div class="data-label">臨界角 (θc)</div>
+            <div class="data-value" id="val_critical">41.8°</div>
+        </div>
+    </div>
+    <div class="info-text">💡 提示：可以直接用手指拖動雷射筆改變角度</div>
+
+    <script>
+        let sl_angle, sl_n1, sl_n2;
+        let canvasW, canvasH;
+        let isDragging = false;
+
+        function setup() {
+            canvasW = min(windowWidth - 20, 600);
+            canvasH = 350;
+            let cnv = createCanvas(canvasW, canvasH);
+            cnv.parent('canvas-container');
+            
+            sl_angle = select('#sl_angle');
+            sl_n1 = select('#sl_n1');
+            sl_n2 = select('#sl_n2');
+            
+            cnv.mousePressed(startDrag);
+            cnv.mouseReleased(endDrag);
+            cnv.touchStarted(startDrag);
+            cnv.touchEnded(endDrag);
+            
+            textAlign(CENTER, CENTER);
+        }
+
+        function draw() {
+            background(10);
+            
+            let theta1_deg = float(sl_angle.value());
+            let n1 = float(sl_n1.value());
+            let n2 = float(sl_n2.value());
+            
+            if (isDragging) {
+                let dx = mouseX - width/2;
+                let dy = mouseY - height/2;
+                if (mouseY < height/2) {
+                    let angleRad = atan2(dx, -dy); 
+                    theta1_deg = degrees(angleRad);
+                    if (theta1_deg < -85) theta1_deg = -85;
+                    if (theta1_deg > 85) theta1_deg = 85;
+                    sl_angle.value(abs(theta1_deg));
+                }
+            }
+
+            // 轉為弧度運算
+            let theta1 = radians(theta1_deg); // 這是帶有正負號的弧度
+            let absTheta1 = abs(theta1);      // 絕對值用於斯乃耳定律計算
+            
+            let sin_t2 = (n1 / n2) * sin(absTheta1);
+            let theta2 = 0;
+            let isTIR = false; 
+
+            if (abs(sin_t2) > 1.0) {
+                isTIR = true; 
+            } else {
+                theta2 = asin(sin_t2);
+            }
+
+            let critical_angle_deg = "無";
+            if (n1 > n2) {
+                critical_angle_deg = degrees(asin(n2/n1)).toFixed(1) + "°";
+            }
+
+            // UI Update
+            select('#val_theta1').html(abs(theta1_deg).toFixed(1) + "°");
+            select('#val_n1').html(n1.toFixed(2));
+            select('#val_n2').html(n2.toFixed(2));
+            select('#val_critical').html(critical_angle_deg);
+
+            let t2_display = select('#val_theta2');
+            let tir_box = select('#tir_msg');
+            
+            if (isTIR) {
+                t2_display.html("--");
+                tir_box.style('display', 'block');
+            } else {
+                t2_display.html(degrees(abs(theta2)).toFixed(1) + "°");
+                tir_box.style('display', 'none');
+            }
+
+            // --- 繪圖 ---
+            translate(width/2, height/2); 
+
+            // 1. 介質背景
+            noStroke();
+            fill(30, 30, 30 + n1*30); 
+            rect(-width/2, -height/2, width, height/2);
+            fill(30, 30, 30 + n2*30);
+            rect(-width/2, 0, width, height/2);
+
+            // 2. 法線與介面
+            stroke(100); strokeWeight(1);
+            line(-width/2, 0, width/2, 0); 
+            drawingContext.setLineDash([5, 5]); 
+            line(0, -height/2, 0, height/2); 
+            drawingContext.setLineDash([]); 
+
+            noStroke(); fill(150); textSize(12);
+            text(`n₁ = ${n1}`, -width/2 + 30, -20);
+            text(`n₂ = ${n2}`, -width/2 + 30, 30);
+
+            // 3. 角度標示 (弧線與文字)
+            // θ1: 入射角
+            if (absTheta1 > 0.1) {
+                noFill(); stroke(255, 200, 0, 150); strokeWeight(2);
+                // arc(x, y, w, h, start, stop)
+                // 從 -90度 (法線頂端) 開始，畫到入射線角度
+                // theta1 是相對於法線的角度，但 arc 是從 X 軸正向算起
+                // 法線方向是 -PI/2
+                // 入射光來源角度是 -PI/2 - theta1
+                
+                // 為了畫在法線與光線之間：
+                let startAng = -HALF_PI; 
+                let endAng = -HALF_PI - theta1;
+                
+                // 確保 start < end 以利繪製，或交換
+                if (theta1 > 0) { // 光在左邊
+                    arc(0, 0, 80, 80, endAng, startAng);
+                } else { // 光在右邊
+                    arc(0, 0, 80, 80, startAng, endAng);
+                }
+                
+                // 標示文字 θ1
+                fill(255, 200, 0); noStroke(); textSize(14);
+                let textAng = -HALF_PI - theta1 / 2;
+                let tx = cos(textAng) * 55;
+                let ty = sin(textAng) * 55;
+                text("θ₁", tx, ty);
+            }
+
+            // θ2: 折射角 (只有在非全反射時顯示)
+            if (!isTIR && abs(theta2) > 0.1) {
+                // theta2 是絕對值，我們需要根據入射光方向決定折射光方向
+                // 如果入射光在左(theta1 > 0)，折射光就在右，反之亦然
+                // 這裡的 theta2 計算出來是正值(asin結果)，需要加上正負號
+                let sign = (theta1 >= 0) ? 1 : -1; 
+                let realTheta2 = sign * theta2; // 相對於法線(下方)的夾角
+                
+                noFill(); stroke(0, 255, 255, 150); strokeWeight(2);
+                
+                // 法線下方是 HALF_PI
+                // 折射光角度是 HALF_PI - realTheta2 (因為光線是往對側)
+                // 修正：折射光線應該在入射光的對側
+                // 如果入射光從左上(-x)來，theta1>0，折射光去右下(+x)，與法線(+y)夾角 theta2
+                
+                let normalDown = HALF_PI;
+                // 光線角度: normalDown + sign * theta2 ? 
+                // 讓我們看幾何：入(左上) -> 折(右下)。入射角與法線夾角。折射角與法線夾角。
+                // 繪製從法線到折射光
+                
+                // 右下：法線是 90度。光線是 90 - theta2
+                // 左下：法線是 90度。光線是 90 + theta2
+                
+                let targetAng = normalDown + (theta1 > 0 ? -theta2 : theta2);
+                
+                if (theta1 > 0) { // 光往右下折
+                    arc(0, 0, 80, 80, targetAng, normalDown);
+                } else { // 光往左下折
+                    arc(0, 0, 80, 80, normalDown, targetAng);
+                }
+                
+                // 標示文字 θ2
+                fill(0, 255, 255); noStroke();
+                let textAng2 = normalDown + (theta1 > 0 ? -theta2/2 : theta2/2);
+                let tx2 = cos(textAng2) * 55;
+                let ty2 = sin(textAng2) * 55;
+                text("θ₂", tx2, ty2);
+            }
+
+            // --- 光線繪製 ---
+            let laserColor = color(255, 50, 50); 
+            
+            // 起點
+            let originX = -sin(theta1) * 200;
+            let originY = -cos(theta1) * 200;
+            
+            // 入射光
+            drawRay(originX, originY, 0, 0, laserColor, 3);
+            
+            // 雷射筆 (平行光線)
+            push();
+            translate(originX, originY);
+            let beamAngle = atan2(0 - originY, 0 - originX);
+            rotate(beamAngle); 
+            noStroke();
+            fill(120); rect(-50, -10, 50, 20, 4); 
+            fill(50); rect(-35, -12, 10, 3);
+            fill(255, 50, 50); rect(-2, -5, 2, 10);
+            pop();
+
+            // 反射光
+            let rX = sin(theta1) * 200;
+            let rY = -cos(theta1) * 200;
+            let reflectAlpha = isTIR ? 255 : 100;
+            drawRay(0, 0, rX, rY, color(255, 50, 50, reflectAlpha), 2);
+
+            // 折射光
+            if (!isTIR) {
+                // 如果 theta1 > 0 (左上)，折射光在 (右下) -> x正, y正
+                // sin(theta2) 是正值。
+                // x = sin(theta2)*200, y = cos(theta2)*200
+                // 但要考慮入射光方向。
+                // 如果 theta1 是正的(滑鼠在左)，光從左上來，要折射到右下。
+                // 我們上面的 theta1 變數是有號的。
+                // 根據幾何，折射光 x 分量符號應該與入射光來源 x 分量符號相反 (-originX 是正的)
+                // 簡單作法：利用 theta2 大小，配合 theta1 的符號
+                
+                let sign = (theta1 >= 0) ? 1 : -1;
+                let tX = sign * sin(theta2) * 200;
+                let tY = cos(theta2) * 200; // 永遠往下
+                
+                drawRay(0, 0, tX, tY, color(255, 100, 100), 3);
+            }
+            
+            fill(255); noStroke();
+            ellipse(0, 0, 4, 4);
+        }
+
+        function drawRay(x1, y1, x2, y2, c, w) {
+            stroke(c); strokeWeight(w); line(x1, y1, x2, y2);
+            strokeWeight(w + 6); stroke(red(c), green(c), blue(c), 40); line(x1, y1, x2, y2);
+        }
+        
+        function startDrag() { return false; } // 禁止反白
+        function endDrag() { isDragging = false; }
+        
+        function windowResized() {
+            canvasW = min(windowWidth - 20, 600);
+            resizeCanvas(canvasW, 350);
+        }
+    </script>
+</body>
+</html>
