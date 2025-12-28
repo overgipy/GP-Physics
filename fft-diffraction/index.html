@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D 孔徑繞射 (FFT)</title>
+    <style>
+        /* 繼承一貫的實驗室風格 */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: #000; color: #eee; margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .nav { width: 100%; margin-bottom: 20px; text-align: left; }
+        .nav a { color: #00d4ff; text-decoration: none; font-size: 14px; }
+        
+        h2 { color: #00d4ff; margin-bottom: 5px; }
+        p { color: #888; font-size: 12px; margin-bottom: 20px; }
+
+        .container {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;
+            width: 100%; max-width: 800px;
+        }
+
+        /* 控制區 */
+        .controls {
+            background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333;
+            flex: 1; min-width: 250px;
+        }
+        .slider-group { margin-bottom: 20px; }
+        .label { display: flex; justify-content: space-between; margin-bottom: 8px; color: #ccc; font-size: 14px; }
+        .val { color: #00d4ff; font-family: monospace; }
+        input[type=range] { width: 100%; accent-color: #00d4ff; cursor: pointer; }
+
+        /* 畫布區 */
+        .visuals {
+            display: flex; gap: 10px; align-items: center; justify-content: center;
+            background: #111; padding: 20px; border-radius: 12px; border: 1px solid #333;
+        }
+        .canvas-box { text-align: center; }
+        .canvas-title { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; display: block; }
+        
+        canvas { 
+            border: 1px solid #444; background: #000; 
+            width: 150px; height: 150px; /* 顯示大小 */
+            image-rendering: pixelated; /* 保持像素感 */
+            border-radius: 4px;
+        }
+        
+        .arrow { font-size: 24px; color: #444; }
+
+        .loading { color: #ffcc00; font-size: 12px; margin-top: 5px; min-height: 18px; text-align: center;}
+    </style>
+</head>
+<body>
+
+    <div class="nav"><a href="../index.html">← 返回實驗室入口</a></div>
+    <h2>🔷 幾何孔徑繞射模擬</h2>
+    <p>使用 2D FFT 演算法計算夫朗和斐繞射圖樣</p>
+
+    <div class="container">
+        <div class="controls">
+            <div class="slider-group">
+                <div class="label">形狀邊數 (n) <span id="val_n" class="val">3</span></div>
+                <input type="range" id="inp_n" min="3" max="12" value="3">
+            </div>
+            <div class="slider-group">
+                <div class="label">旋轉角度 (°) <span id="val_rot" class="val">0</span></div>
+                <input type="range" id="inp_rot" min="0" max="360" value="0">
+            </div>
+            <div class="slider-group">
+                <div class="label">孔徑大小 <span id="val_size" class="val">10</span></div>
+                <input type="range" id="inp_size" min="5" max="30" value="10">
+            </div>
+            <div id="status" class="loading"></div>
+        </div>
+
+        <div class="visuals">
+            <div class="canvas-box">
+                <span class="canvas-title">孔徑形狀 (Aperture)</span>
+                <canvas id="canvasInput" width="128" height="128"></canvas>
+            </div>
+            <div class="arrow">➜</div>
+            <div class="canvas-box">
+                <span class="canvas-title">繞射圖樣 (Diffraction)</span>
+                <canvas id="canvasOutput" width="128" height="128"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. 核心數學工具 (保留原邏輯) ---
+        class Complex {
+            constructor(re, im) { this.re = re; this.im = im; }
+            add(other) { return new Complex(this.re + other.re, this.im + other.im); }
+            sub(other) { return new Complex(this.re - other.re, this.im - other.im); }
+            mul(other) {
+                return new Complex(
+                    this.re * other.re - this.im * other.im,
+                    this.re * other.im + this.im * other.re
+                );
+            }
+        }
+
+        const fft = (amplitudes) => {
+            const N = amplitudes.length;
+            if (N <= 1) return amplitudes;
+            const even = fft(amplitudes.filter((_, i) => i % 2 === 0));
+            const odd = fft(amplitudes.filter((_, i) => i % 2 !== 0));
+            const results = new Array(N);
+            for (let k = 0; k < N / 2; k++) {
+                const angle = -2 * Math.PI * k / N;
+                const t = new Complex(Math.cos(angle), Math.sin(angle)).mul(odd[k]);
+                results[k] = even[k].add(t);
+                results[k + N / 2] = even[k].sub(t);
+            }
+            return results;
+        };
+
+        const fft2D = (input2D) => {
+            const rows = input2D.length;
+            const cols = input2D[0].length;
+            let rowResult = [];
+            for (let i = 0; i < rows; i++) rowResult.push(fft(input2D[i]));
+            let transposed = Array(cols).fill(0).map(() => Array(rows).fill(0));
+            for (let i = 0; i < rows; i++) for (let j = 0; j < cols; j++) transposed[j][i] = rowResult[i][j];
+            let colResult = [];
+            for (let i = 0; i < cols; i++) colResult.push(fft(transposed[i]));
+            let final = Array(rows).fill(0).map(() => Array(cols).fill(0));
+            for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) final[j][i] = colResult[i][j];
+            return final;
+        };
+
+        const fftShift = (data) => {
+            const rows = data.length;
+            const cols = data[0].length;
+            const midR = Math.floor(rows / 2);
+            const midC = Math.floor(cols / 2);
+            const shifted = Array(rows).fill(0).map(() => Array(cols));
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    shifted[(r + midR) % rows][(c + midC) % cols] = data[r][c];
+                }
+            }
+            return shifted;
+        };
+
+        // --- 2. 介面互動邏輯 ---
+        const SIM_SIZE = 128; // 運算解析度 (128x128 速度快)
+        const cvsIn = document.getElementById('canvasInput');
+        const cvsOut = document.getElementById('canvasOutput');
+        const ctxIn = cvsIn.getContext('2d');
+        const ctxOut = cvsOut.getContext('2d');
+
+        const inpN = document.getElementById('inp_n');
+        const inpRot = document.getElementById('inp_rot');
+        const inpSize = document.getElementById('inp_size');
+        const valN = document.getElementById('val_n');
+        const valRot = document.getElementById('val_rot');
+        const valSize = document.getElementById('val_size');
+        const statusEl = document.getElementById('status');
+
+        let isComputing = false;
+        let pendingUpdate = false;
+
+        // 初始化
+        updateSimulation();
+
+        // 事件監聽
+        [inpN, inpRot, inpSize].forEach(el => {
+            el.addEventListener('input', () => {
+                // UI 數值即時更新
+                valN.innerText = inpN.value;
+                valRot.innerText = inpRot.value;
+                valSize.innerText = inpSize.value;
+                
+                // 防抖動處理 (Debounce logic)
+                if (!isComputing) {
+                    requestAnimationFrame(updateSimulation);
+                } else {
+                    pendingUpdate = true;
+                }
+            });
+        });
+
+        function updateSimulation() {
+            isComputing = true;
+            statusEl.innerText = "運算中...";
+            
+            // 1. 繪製孔徑 (Draw Aperture)
+            const n = parseInt(inpN.value);
+            const rotation = parseInt(inpRot.value);
+            const size = parseInt(inpSize.value);
+
+            ctxIn.fillStyle = '#000000';
+            ctxIn.fillRect(0, 0, SIM_SIZE, SIM_SIZE);
+            ctxIn.fillStyle = '#FFFFFF';
+            
+            ctxIn.beginPath();
+            const centerX = SIM_SIZE / 2;
+            const centerY = SIM_SIZE / 2;
+            const r = size * (SIM_SIZE / 100) * 2; // 調整大小比例
+            
+            for (let i = 0; i <= n; i++) {
+                const theta = (i * 2 * Math.PI / n) - (Math.PI / 2) + (rotation * Math.PI / 180);
+                const x = centerX + r * Math.cos(theta);
+                const y = centerY + r * Math.sin(theta);
+                if (i === 0) ctxIn.moveTo(x, y); else ctxIn.lineTo(x, y);
+            }
+            ctxIn.closePath();
+            ctxIn.fill();
+
+            // 2. 執行 FFT (為了不卡住 UI，使用 setTimeout 放到下一個 Tick)
+            setTimeout(() => {
+                computeFFT();
+            }, 10);
+        }
+
+        function computeFFT() {
+            // 讀取孔徑圖像
+            const imgData = ctxIn.getImageData(0, 0, SIM_SIZE, SIM_SIZE);
+            const data = imgData.data;
+            let input2D = [];
+            
+            // 轉換為複數矩陣
+            for (let y = 0; y < SIM_SIZE; y++) {
+                let row = [];
+                for (let x = 0; x < SIM_SIZE; x++) {
+                    // 取紅色通道作為亮度
+                    row.push(new Complex(data[(y * SIM_SIZE + x) * 4], 0));
+                }
+                input2D.push(row);
+            }
+
+            // FFT 運算
+            const spectrum = fft2D(input2D);
+            const shifted = fftShift(spectrum);
+
+            // 計算強度並尋找最大值 (用於正規化)
+            let maxVal = 0;
+            let intensities = [];
+            for (let y = 0; y < SIM_SIZE; y++) {
+                let rowInt = [];
+                for (let x = 0; x < SIM_SIZE; x++) {
+                    const c = shifted[y][x];
+                    // 對數縮放 Log scale (模擬人眼對亮度的感知)
+                    const val = Math.log(1 + Math.sqrt(c.re * c.re + c.im * c.im));
+                    if (val > maxVal) maxVal = val;
+                    rowInt.push(val);
+                }
+                intensities.push(rowInt);
+            }
+
+            // 繪製結果
+            const outImgData = ctxOut.createImageData(SIM_SIZE, SIM_SIZE);
+            for (let y = 0; y < SIM_SIZE; y++) {
+                for (let x = 0; x < SIM_SIZE; x++) {
+                    const idx = (y * SIM_SIZE + x) * 4;
+                    const normalized = intensities[y][x] / (maxVal || 1);
+                    
+                    // Inferno Colormap (仿照原程式的配色)
+                    // R: 快速上升
+                    outImgData.data[idx] = Math.min(255, normalized * 255 * 2.5); 
+                    // G: 中段上升 (平方關係)
+                    outImgData.data[idx + 1] = Math.min(255, Math.pow(normalized, 2) * 255 * 2);
+                    // B: 慢速上升 (根號關係，增加暗部細節)
+                    outImgData.data[idx + 2] = Math.min(255, Math.pow(normalized, 0.5) * 255);
+                    outImgData.data[idx + 3] = 255; // Alpha
+                }
+            }
+            ctxOut.putImageData(outImgData, 0, 0);
+
+            // 狀態解除
+            isComputing = false;
+            statusEl.innerText = "";
+            
+            // 如果在運算期間有新的輸入，重新觸發
+            if (pendingUpdate) {
+                pendingUpdate = false;
+                updateSimulation();
+            }
+        }
+    </script>
+</body>
+</html>
