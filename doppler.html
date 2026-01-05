@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>李捷物理 - 進階都卜勒效應模擬</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 { color: #333; margin-bottom: 10px; }
+        .canvas-container {
+            position: relative;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        canvas {
+            display: block;
+            background-color: #1a1a2e;
+        }
+        /* 標示左右觀察者的文字 */
+        .observer-label {
+            position: absolute;
+            top: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: bold;
+            font-size: 1.2em;
+            pointer-events: none;
+        }
+        .label-left { left: 20px; }
+        .label-right { right: 20px; }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 20px;
+        }
+        .data-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: center;
+            border-top: 4px solid #ccc;
+        }
+        .card-source { border-top-color: #ff4757; }
+        .card-left { border-top-color: #2ed573; }
+        .card-right { border-top-color: #ffa502; }
+
+        .data-card h3 { margin: 0 0 10px 0; font-size: 1.1em; color: #555; }
+        .data-item { margin: 5px 0; font-size: 0.95em; color: #333; }
+        .data-value { font-weight: bold; font-family: 'Courier New', monospace; font-size: 1.1em; }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 760px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 200px;
+        }
+        label { margin-bottom: 8px; font-weight: bold; color: #555; }
+        input[type="range"] { width: 100%; cursor: pointer; }
+        .value-display { font-size: 0.9em; color: #777; margin-top: 5px; }
+        
+        button#resetBtn {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            height: fit-content;
+            align-self: center;
+        }
+        .alert { color: red; font-weight: bold; font-size: 0.8em; min-height: 1.2em;}
+    </style>
+</head>
+<body>
+
+    <h1>📡 進階都卜勒效應模擬</h1>
+
+    <div class="canvas-container">
+        <span class="observer-label label-left">⬅️ 左側觀察者 (背離)</span>
+        <span class="observer-label label-right">右側觀察者 (接近) ➡️</span>
+        <canvas id="simulationCanvas" width="800" height="350"></canvas>
+    </div>
+
+    <div class="dashboard">
+        <div class="data-card card-left">
+            <h3>左側接收 (背離)</h3>
+            <div class="data-item">視波長 λ'：<span class="data-value" id="leftLambda">--</span> m</div>
+            <div class="data-item">視頻率 f'：<span class="data-value" id="leftFreq">--</span> Hz</div>
+        </div>
+        
+        <div class="data-card card-source">
+            <h3>波源參數 (Source)</h3>
+            <div class="data-item">原始波長 λ₀：<span class="data-value" id="sourceLambda">--</span> m</div>
+            <div class="data-item">原始頻率 f₀：<span class="data-value" id="sourceFreq">10.0</span> Hz</div>
+        </div>
+
+        <div class="data-card card-right">
+            <h3>右側接收 (接近)</h3>
+            <div class="data-item">視波長 λ'：<span class="data-value" id="rightLambda">--</span> m</div>
+            <div class="data-item">視頻率 f'：<span class="data-value" id="rightFreq">--</span> Hz</div>
+            <div class="alert" id="shockwaveAlert"></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label for="sourceSpeed">波源速度 (Vs)</label>
+            <input type="range" id="sourceSpeed" min="0" max="100" step="1" value="20">
+            <span class="value-display"><span id="sourceSpeedVal">20</span> m/s</span>
+        </div>
+        <div class="control-group">
+            <label for="waveSpeed">波傳遞速度 (V)</label>
+            <input type="range" id="waveSpeed" min="30" max="100" step="1" value="60">
+            <span class="value-display"><span id="waveSpeedVal">60</span> m/s</span>
+        </div>
+        <button id="resetBtn">重置模擬</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simulationCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // UI 元素
+        const sourceSpeedInput = document.getElementById('sourceSpeed');
+        const waveSpeedInput = document.getElementById('waveSpeed');
+        const sourceSpeedValDisplay = document.getElementById('sourceSpeedVal');
+        const waveSpeedValDisplay = document.getElementById('waveSpeedVal');
+        
+        // 數據顯示元素
+        const els = {
+            srcLambda: document.getElementById('sourceLambda'),
+            leftLambda: document.getElementById('leftLambda'),
+            leftFreq: document.getElementById('leftFreq'),
+            rightLambda: document.getElementById('rightLambda'),
+            rightFreq: document.getElementById('rightFreq'),
+            shockAlert: document.getElementById('shockwaveAlert')
+        };
+
+        let waves = [];
+        let source = { x: 50, y: canvas.height / 2 };
+        let time = 0;
+        
+        // 物理參數 (為了顯示方便，我們設定 1 px = 1 m，並固定發波週期)
+        const frameRate = 60; // 假設瀏覽器跑 60fps
+        const wavePeriodFrames = 20; // 每 20 frames 發出一個波
+        // 計算出的原始頻率 (僅為顯示基準，假設 1秒 = 60 frames)
+        // f0 = 60 / 20 = 3 Hz. 
+        // 為了讓數值好看，我們「定義」顯示的 f0 為 10 Hz，並據此縮放顯示數值
+        const displayBaseFreq = 10; 
+
+        // 模擬參數
+        let Vs = parseFloat(sourceSpeedInput.value); // m/s (px/frame * scale factor)
+        let V = parseFloat(waveSpeedInput.value);    // m/s
+        
+        // 為了讓動畫流暢，我們將 UI 的數值 (m/s) 縮小一定比例對應到 canvas 的 px/frame
+        // 假設 UI 顯示 60 m/s，實際動畫跑 3 px/frame
+        const speedScale = 0.05; 
+
+        function updateValues() {
+            Vs = parseFloat(sourceSpeedInput.value);
+            V = parseFloat(waveSpeedInput.value);
+            
+            sourceSpeedValDisplay.textContent = Vs;
+            waveSpeedValDisplay.textContent = V;
+
+            calculateData();
+        }
+
+        function calculateData() {
+            // 物理公式計算區
+            // 1. 原始波長 = 波速 / 頻率
+            let lambda0 = V / displayBaseFreq;
+            
+            // 2. 右側 (接近)：λ' = (V - Vs) / f0
+            let lambdaRight = (V - Vs) / displayBaseFreq;
+            let freqRight = (lambdaRight > 0) ? (V / lambdaRight) : Infinity;
+
+            // 3. 左側 (背離)：λ' = (V + Vs) / f0
+            let lambdaLeft = (V + Vs) / displayBaseFreq;
+            let freqLeft = V / lambdaLeft;
+
+            // 更新 UI
+            els.srcLambda.textContent = lambda0.toFixed(2);
+            
+            els.leftLambda.textContent = lambdaLeft.toFixed(2);
+            els.leftFreq.textContent = freqLeft.toFixed(2);
+
+            els.rightLambda.textContent = lambdaRight <= 0 ? "0.00" : lambdaRight.toFixed(2);
+            els.rightFreq.textContent = (!isFinite(freqRight) || freqRight < 0) ? "∞ (衝擊波)" : freqRight.toFixed(2);
+
+            if (Vs >= V) {
+                els.shockAlert.textContent = "⚠️ 音爆產生 (Vs ≥ V)";
+                els.rightLambda.style.color = "red";
+            } else {
+                els.shockAlert.textContent = "";
+                els.rightLambda.style.color = "#333";
+            }
+        }
+
+        sourceSpeedInput.addEventListener('input', updateValues);
+        waveSpeedInput.addEventListener('input', updateValues);
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            source.x = 50;
+            waves = [];
+        });
+
+        function draw() {
+            // 清除畫布
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 更新波源位置 (乘上縮放比例轉成像素)
+            source.x += Vs * speedScale;
+            if (source.x > canvas.width + 50) {
+                source.x = -50;
+                waves = [];
+            }
+
+            // 發射新波
+            time++;
+            if (time % wavePeriodFrames === 0) {
+                waves.push({
+                    x: source.x,
+                    y: source.y,
+                    radius: 0,
+                    opacity: 1
+                });
+            }
+
+            // 繪製波
+            ctx.lineWidth = 2;
+            for (let i = waves.length - 1; i >= 0; i--) {
+                let w = waves[i];
+                w.radius += V * speedScale; // 波向外擴散
+                w.opacity -= 0.002; // 隨距離變淡
+
+                if (w.opacity <= 0) {
+                    waves.splice(i, 1);
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(w.x, w.y, w.radius, 0, Math.PI * 2);
+                    // 根據都卜勒效應微調顏色？(紅移/藍移) 
+                    // 這裡暫時保持藍色系，避免視覺太雜
+                    ctx.strokeStyle = `rgba(100, 200, 255, ${w.opacity})`;
+                    ctx.stroke();
+                }
+            }
+
+            // 繪製波源
+            ctx.beginPath();
+            ctx.arc(source.x, source.y, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff4757';
+            ctx.fill();
+
+            requestAnimationFrame(draw);
+        }
+
+        // 初始化
+        updateValues();
+        draw();
+    </script>
+</body>
+</html>
