@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>類氫原子模型 - 李捷物理實驗室</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --text-color: #e9ecef;
+            --accent-color: #4cc9f0;
+            --electron-color: #f72585;
+            --orbit-color: rgba(255, 255, 255, 0.15);
+            --panel-bg: rgba(255, 255, 255, 0.08);
+        }
+        body {
+            font-family: "Microsoft JhengHei", "Segoe UI", monospace;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        header {
+            padding: 15px;
+            text-align: center;
+            background: rgba(0,0,0,0.3);
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        h1 { margin: 0; font-weight: 300; letter-spacing: 1px; font-size: 1.8rem; }
+        .back-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            font-size: 0.9rem;
+            border: 1px solid var(--accent-color);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            width: 95%;
+            max-width: 1200px;
+        }
+
+        /* 左側畫布區 */
+        #canvas-container {
+            position: relative;
+            background: black;
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        canvas { border-radius: 12px; }
+
+        /* 右側控制區 */
+        .controls {
+            flex: 1;
+            min-width: 320px;
+            max-width: 450px;
+            background: var(--panel-bg);
+            padding: 25px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* 區塊標題 */
+        .control-section h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+            color: var(--accent-color);
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 5px;
+        }
+        
+        /* 原子序輸入區 */
+        .z-input-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .z-input-group label { font-size: 1.2rem; font-weight: bold; }
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            font-size: 1.2rem;
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #555;
+            color: white;
+            border-radius: 4px;
+        }
+        #atomName {
+            font-size: 1.1rem;
+            color: var(--electron-color);
+            font-weight: bold;
+        }
+
+        /* 按鈕群組 */
+        .level-btn-group {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+        button {
+            padding: 12px 0;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #aaa;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: monospace;
+            font-size: 1rem;
+        }
+        button:hover { background: rgba(76, 201, 240, 0.3); color: white; }
+        button.active {
+            background: var(--electron-color);
+            border-color: var(--electron-color);
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 0 10px var(--electron-color);
+        }
+
+        /* 數據顯示儀表板 */
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .data-card {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .data-label { font-size: 0.8rem; color: #888; margin-bottom: 5px; }
+        .data-value { font-size: 1.1rem; font-weight: bold; font-family: monospace; color: #fff; }
+        .data-unit { font-size: 0.8rem; color: #aaa; }
+
+        .photon-display {
+            grid-column: span 2;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            background: #222;
+            color: #666;
+            transition: background 0.3s, color 0.3s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="../index.html" class="back-link">← 回首頁</a>
+    <h1>⚛️ 類氫原子模型 (Hydrogen-like Atoms)</h1>
+</header>
+
+<div class="main-container">
+    <div id="canvas-container">
+        <canvas id="atomCanvas" width="600" height="600"></canvas>
+    </div>
+
+    <div class="controls">
+        
+        <div class="control-section">
+            <h3>原子核設定</h3>
+            <div class="z-input-group">
+                <label for="zInput">Z = </label>
+                <input type="number" id="zInput" min="1" max="10" value="1" onchange="changeZ(this.value)">
+                <span id="atomName">氫原子 (H)</span>
+            </div>
+            <div style="font-size: 0.8rem; color:#888; margin-top:5px;">
+                * 改變原子序 Z，能階能量將變為 Z² 倍
+            </div>
+        </div>
+
+        <div class="control-section">
+            <h3>選擇躍遷目標能階 (n)</h3>
+            <div class="level-btn-group">
+                <button onclick="changeLevel(1)">1</button>
+                <button onclick="changeLevel(2)">2</button>
+                <button onclick="changeLevel(3)">3</button>
+                <button onclick="changeLevel(4)">4</button>
+                <button onclick="changeLevel(5)">5</button>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <h3>躍遷數據分析</h3>
+            
+            <div class="data-grid">
+                <div class="photon-display" id="photonStatus">等待躍遷...</div>
+
+                <div class="data-card">
+                    <div class="data-label">能量差 (ΔE)</div>
+                    <div class="data-value" id="deltaE">-</div>
+                    <div class="data-unit">eV</div>
+                </div>
+
+                <div class="data-card">
+                    <div class="data-label">波長 (λ)</div>
+                    <div class="data-value" id="wavelength">-</div>
+                    <div class="data-unit">nm</div>
+                </div>
+
+                <div class="data-card" style="grid-column: span 2;">
+                    <div class="data-label">頻率 (f)</div>
+                    <div class="data-value" id="frequency">-</div>
+                    <div class="data-unit">Hz</div>
+                </div>
+            </div>
+        </div>
+        
+        </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('atomCanvas');
+    const ctx = canvas.getContext('2d');
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    // --- 物理常數與設定 ---
+    const levels = 5;
+    const baseRadius = 11; // 基礎半徑係數
+    
+    // 原子序與名稱對照
+    let atomicZ = 1;
+    const atomNames = {
+        1: "氫原子 (H)",
+        2: "氦離子 (He⁺)",
+        3: "鋰離子 (Li²⁺)",
+        4: "鈹離子 (Be³⁺)",
+        5: "硼離子 (B⁴⁺)"
+    };
+
+    // 計算視覺軌道半徑 (這裡僅作視覺呈現，不隨 Z 縮放以免太小看不見)
+    const radii = [0]; 
+    for(let i=1; i<=levels; i++) {
+        radii.push(baseRadius * i * i);
+    }
+
+    let currentN = 1;
+    let targetN = 1;
+    
+    // 電子動畫變數
+    let electronAngle = 0;
+    let electronRadius = radii[1];
+    let isTransitioning = false;
+    let transitionProgress = 0;
+    
+    // 光子動畫物件
+    let photon = { active: false, x: 0, y: 0, type: 'none', color: '#fff' };
+
+    // --- 繪圖主迴圈 ---
+    function draw() {
+        // 清除畫面
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 1. 畫軌道與能階標示
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        for(let i=1; i<=levels; i++) {
+            let r = radii[i];
+            
+            // 畫圓
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+            
+            // 樣式
+            if (i === currentN && !isTransitioning) {
+                ctx.strokeStyle = 'rgba(76, 201, 240, 0.6)'; // 高亮
+                ctx.lineWidth = 2;
+            } else {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'; // 暗淡
+                ctx.lineWidth = 1;
+            }
+            ctx.stroke();
+            
+            // 標示 n 值 (左側)
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.font = '12px monospace';
+            ctx.fillText(`n=${i}`, centerX - r - 15, centerY);
+
+            // 標示能階值 (改為下方顯示)
+            // En = -13.6 * Z^2 / n^2
+            let en = -13.6 * (atomicZ * atomicZ) / (i*i);
+            ctx.fillStyle = (i === currentN) ? '#4cc9f0' : 'rgba(255,255,255,0.3)';
+            ctx.font = '11px monospace';
+            // 位置：圓心下方 r + 15px 處
+            ctx.fillText(`${en.toFixed(2)} eV`, centerX, centerY + r + 15);
+        }
+
+        // 2. 畫原子核
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 10, 0, Math.PI * 2); 
+        ctx.fillStyle = '#ff4757';
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#ff4757';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        // 顯示電荷量
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText(`+${atomicZ}`, centerX, centerY);
+
+        // 3. 計算電子位置
+        if (isTransitioning) {
+            let rStart = radii[currentN];
+            let rEnd = radii[targetN];
+            let t = transitionProgress;
+            let ease = t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+            
+            electronRadius = rStart + (rEnd - rStart) * ease;
+            
+            transitionProgress += 0.02;
+            if (transitionProgress >= 1) {
+                currentN = targetN;
+                electronRadius = radii[currentN];
+                isTransitioning = false;
+                transitionProgress = 0;
+            }
+        } else {
+            electronRadius = radii[currentN];
+        }
+
+        // 角速度隨 Z 增加而變快 (古典近似 v ∝ Z/n)
+        electronAngle += (0.05 * atomicZ) / Math.sqrt(currentN); 
+        
+        let ex = centerX + electronRadius * Math.cos(electronAngle);
+        let ey = centerY + electronRadius * Math.sin(electronAngle);
+
+        // 4. 畫電子
+        ctx.beginPath();
+        ctx.arc(ex, ey, 5, 0, Math.PI * 2);
+        ctx.fillStyle = '#f72585';
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = '#f72585';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // 5. 畫光子
+        drawPhoton();
+
+        requestAnimationFrame(draw);
+    }
+
+    function drawPhoton() {
+        if (!photon.active) return;
+
+        let angle = -Math.PI / 4; 
+        let distMax = 350;
+        let displayX, displayY;
+
+        if (photon.type === 'in') {
+            if (transitionProgress < 0.5) {
+                let p = transitionProgress * 2;
+                let currentDist = distMax * (1 - p) + radii[targetN];
+                displayX = centerX + Math.cos(angle) * currentDist;
+                displayY = centerY + Math.sin(angle) * currentDist;
+                drawWave(displayX, displayY, photon.color);
+            }
+        } else {
+            if (transitionProgress > 0.2) {
+                let p = (transitionProgress - 0.2) * 1.25;
+                if(p > 1) p = 1;
+                let currentDist = radii[currentN] + distMax * p;
+                displayX = centerX + Math.cos(angle) * currentDist;
+                displayY = centerY + Math.sin(angle) * currentDist;
+                drawWave(displayX, displayY, photon.color);
+            }
+        }
+    }
+
+    function drawWave(x, y, color) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(-Math.PI / 4);
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.lineCap = "round";
+        for(let i=0; i<30; i++) {
+            let wx = i - 15;
+            let wy = Math.sin(i * 0.8) * 6;
+            if(i===0) ctx.moveTo(wx, wy);
+            else ctx.lineTo(wx, wy);
+        }
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    // --- 控制邏輯 ---
+    function changeZ(val) {
+        let newZ = parseInt(val);
+        if (newZ < 1) newZ = 1;
+        atomicZ = newZ;
+        
+        // 更新名稱
+        let name = atomNames[atomicZ] || `類氫離子 (Z=${atomicZ})`;
+        document.getElementById('atomName').innerText = name;
+
+        // 重置躍遷顯示 (因為能量全變了)
+        document.getElementById('photonStatus').innerText = "參數已變更";
+        document.getElementById('photonStatus').style.background = "#222";
+        document.getElementById('photonStatus').style.color = "#666";
+        document.getElementById('deltaE').innerText = "-";
+        document.getElementById('wavelength').innerText = "-";
+        document.getElementById('frequency').innerText = "-";
+        photon.active = false;
+        
+        // 強制重畫以更新軌道能量標示
+    }
+
+    function changeLevel(n) {
+        if (isTransitioning || n === currentN) return;
+        
+        let prevN = currentN;
+        targetN = n;
+        
+        // 物理計算 (含 Z)
+        // E = -13.6 * Z^2 / n^2
+        let zSq = atomicZ * atomicZ;
+        let E_i = -13.6 * zSq / (prevN * prevN);
+        let E_f = -13.6 * zSq / (targetN * targetN);
+        let dE = E_f - E_i;
+        let absDE = Math.abs(dE);
+        
+        // 波長計算
+        let wavelength = 1240 / absDE;
+        let frequency = 3e17 / wavelength;
+
+        updateDisplay(prevN, targetN, dE, wavelength, frequency);
+
+        isTransitioning = true;
+        transitionProgress = 0;
+        
+        document.querySelectorAll('.level-btn-group button').forEach((btn, idx) => {
+            btn.classList.remove('active');
+            if(idx + 1 === targetN) btn.classList.add('active');
+        });
+
+        setTimeout(() => { currentN = targetN; }, 1200);
+    }
+
+    function updateDisplay(ni, nf, dE, wavelength, freq) {
+        const statusBox = document.getElementById('photonStatus');
+        
+        // 頻率顯示處理
+        let exponent = Math.floor(Math.log10(freq));
+        let mantissa = (freq / Math.pow(10, exponent)).toFixed(2);
+        let freqHtml = `${mantissa} × 10<sup>${exponent}</sup>`;
+
+        document.getElementById('deltaE').innerText = Math.abs(dE).toFixed(2);
+        document.getElementById('wavelength').innerText = wavelength.toFixed(1); // 顯示小數點
+        document.getElementById('frequency').innerHTML = freqHtml;
+
+        // 顏色判斷 (含紫外線/X光)
+        let color = '#fff';
+        let typeText = '';
+        let seriesText = '';
+
+        if (wavelength < 10) {
+            color = '#ddd'; // X-ray (極短波長)
+            seriesText = 'X射線 / 極紫外光';
+        } else if (wavelength < 380) { 
+            color = '#9b5de5'; 
+            seriesText = '紫外線 (UV)';
+        } else if (wavelength > 750) { 
+            color = '#f15bb5'; 
+            seriesText = '紅外線 (IR)';
+        } else { 
+            seriesText = '可見光';
+            if (wavelength > 600) color = '#ff0000';
+            else if (wavelength > 500) color = '#00f2ea';
+            else color = '#3a0ca3';
+        }
+
+        if (dE > 0) {
+            photon.type = 'in';
+            typeText = `⬆️ 吸收光子`;
+            statusBox.style.background = '#333';
+            statusBox.style.color = color;
+            statusBox.style.borderColor = color;
+        } else {
+            photon.type = 'out';
+            typeText = `⬇️ 放出光子`;
+            statusBox.style.background = color;
+            statusBox.style.color = (wavelength >= 380 && wavelength <= 750) ? '#000' : '#fff';
+            statusBox.style.borderColor = color;
+        }
+
+        statusBox.innerHTML = `${typeText}<br><small>${seriesText}</small>`;
+        photon.color = color;
+        photon.active = true;
+    }
+
+    // 初始化
+    draw();
+    document.querySelector('.level-btn-group button:first-child').classList.add('active');
+
+</script>
+
+</body>
+</html>
