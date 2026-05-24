@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>李捷物理 - 單擺與木塊完全彈性碰撞</title>
+    <style>
+        :root {
+            --bg-main: #0a0c10; --bg-card: #141923;
+            --text-main: #f0f3f8; --text-muted: #8a99ad;
+            --cyan: #00d4ff; --pink: #ff2e63; --yellow: #ffcc00; --green: #00e676;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-main); color: var(--text-main);
+            margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center;
+        }
+        .nav { width: 100%; max-width: 900px; margin-bottom: 10px; }
+        .nav a { color: var(--cyan); text-decoration: none; font-size: 14px; }
+        header { text-align: center; margin-bottom: 15px; }
+        h1 { margin: 0; font-size: 1.6rem; color: var(--cyan); }
+        .subtitle { margin: 5px 0 0 0; font-size: 0.9rem; color: var(--text-muted); }
+        
+        .container { width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 15px; }
+        
+        .card { background: var(--bg-card); border-radius: 12px; padding: 15px; border: 1px solid #252e3d; }
+        .card-title { font-size: 1rem; color: var(--yellow); margin-bottom: 10px; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        
+        #canvas-container { width: 100%; display: flex; justify-content: center; background: #080a0f; border-radius: 8px; padding: 10px 0; border: 1px solid #1a202c; }
+        canvas { max-width: 100%; height: auto; }
+
+        /* 控制列 */
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .control-item { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; }
+        .control-item label { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 5px; color: #b0c0d6; }
+        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        button { flex: 1; background: var(--cyan); border: none; padding: 10px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        button:hover { filter: brightness(1.2); }
+        button.btn-reset { background: #445; color: white; }
+
+        /* 解析面板 */
+        .analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .opt-item { background: #111622; padding: 10px; border-radius: 6px; border-left: 4px solid #444; font-size: 0.9rem; line-height: 1.5; }
+        .opt-item.true { border-left-color: var(--green); }
+        .opt-item.false { border-left-color: var(--pink); }
+        .opt-title { font-weight: bold; margin-bottom: 5px; color: #fff; }
+        .opt-desc { color: var(--text-muted); font-size: 0.85rem; }
+        .highlight { color: var(--yellow); font-family: monospace; font-size: 1.1em; }
+        
+        @media (max-width: 600px) { .analysis-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div class="nav"><a href="../index.html">← 返回首頁</a></div>
+
+    <header>
+        <h1>🧪 李捷物理實驗室</h1>
+        <p class="subtitle">單擺與木塊完全彈性碰撞 (題型解析模擬)</p>
+    </header>
+
+    <div class="container">
+        
+        <div class="card">
+            <div class="card-title">⚙️ 實驗參數與質量比設定</div>
+            <div class="controls">
+                <div class="control-item">
+                    <label>擺錘質量 (m) <span id="val_m" style="color:var(--cyan); font-weight:bold;">1.0 kg</span></label>
+                    <input type="range" id="sl_m" min="0.5" max="5.0" step="0.1" value="1.0">
+                </div>
+                <div class="control-item">
+                    <label>木塊質量 (M) <span id="val_M" style="color:var(--pink); font-weight:bold;">2.0 kg</span></label>
+                    <input type="range" id="sl_M" min="0.1" max="10.0" step="0.1" value="2.0">
+                </div>
+                <div class="control-item" style="display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                    <div style="font-size:1.2rem; color:var(--yellow);">質量比 M / m = <span id="val_ratio">2.00</span></div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button id="btn_play">釋放單擺 (Play)</button>
+                <button id="btn_reset" class="btn-reset">重置 (Reset)</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div id="canvas-container">
+                <canvas id="simCanvas" width="800" height="300"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📝 考題選項即時判斷 (完全彈性碰撞)</div>
+            <div class="analysis-grid">
+                
+                <div id="opt_A" class="opt-item">
+                    <div class="opt-title">(A) 若 M/m > 1，碰撞後擺錘會反彈</div>
+                    <div class="opt-desc">當前狀態：<span id="res_A">等待碰撞...</span></div>
+                </div>
+                
+                <div id="opt_B" class="opt-item">
+                    <div class="opt-title">(B) 若 M/m < 1，碰後兩者運動方向相同</div>
+                    <div class="opt-desc">當前狀態：<span id="res_B">等待碰撞...</span></div>
+                </div>
+                
+                <div id="opt_C" class="opt-item">
+                    <div class="opt-title">(C) 若 M/m = 1，碰後瞬間繩張力為零</div>
+                    <div class="opt-desc">當前張力 T = <span class="highlight" id="res_C_T">--</span> N <br>(公式：T = mg + mv²/L) <span id="res_C"></span></div>
+                </div>
+                
+                <div id="opt_D" class="opt-item">
+                    <div class="opt-title">(D) 若 M/m 愈大，木塊獲動量愈大</div>
+                    <div class="opt-desc">當前木塊動量 P_M = <span class="highlight" id="res_D">--</span> kg·m/s</div>
+                </div>
+
+                <div id="opt_E" class="opt-item" style="grid-column: 1 / -1;">
+                    <div class="opt-title">(E) 若 M/m ≪ 1，碰後木塊與擺錘速率幾乎相等</div>
+                    <div class="opt-desc">當前速率比較：擺錘 v_m = <span id="res_E_vm">--</span> , 木塊 v_M = <span id="res_E_vM">--</span> <br><span id="res_E"></span></div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 物理常數與狀態
+        const g = 9.8;
+        const L = 180; // 繩長 (像素)
+        const pivotX = 550; // 懸掛點 X (偏右，因為往左擺)
+        const pivotY = 30;  // 懸掛點 Y
+        const initialTheta = Math.PI / 3; // 起始角 60度
+        
+        let m = 1.0;
+        let M = 2.0;
+        let theta = initialTheta;
+        let omega = 0;
+        
+        let blockX = 0;
+        const blockY = pivotY + L; 
+        const bobRadius = 15;
+        const blockWidth = 40;
+        
+        let phase = 0; // 0:就緒, 1:擺動中, 2:碰後
+        let v_m_after = 0;
+        let v_M_after = 0;
+        let v_impact = 0;
+
+        // DOM 元件
+        const sl_m = document.getElementById('sl_m');
+        const sl_M = document.getElementById('sl_M');
+        const btn_play = document.getElementById('btn_play');
+        const btn_reset = document.getElementById('btn_reset');
+
+        function initSimulation() {
+            m = parseFloat(sl_m.value);
+            M = parseFloat(sl_M.value);
+            document.getElementById('val_m').innerText = m.toFixed(1) + " kg";
+            document.getElementById('val_M').innerText = M.toFixed(1) + " kg";
+            document.getElementById('val_ratio').innerText = (M/m).toFixed(2);
+            
+            theta = initialTheta;
+            omega = 0;
+            phase = 0;
+            
+            // 木塊放在最低點左側剛好接觸的位置
+            blockX = pivotX - bobRadius - blockWidth/2;
+            
+            updateAnalysisPanel(false);
+            draw();
+        }
+
+        function play() {
+            if (phase === 0) {
+                phase = 1;
+                // 計算到達最低點的衝擊速度 (能量守恆 mgh = 1/2 mv^2)
+                // h = L - L*cos(theta)
+                let h = L * (1 - Math.cos(initialTheta)); // 這裡用像素當單位示意
+                // 為了讓動畫速度合理，稍微縮放 g
+                v_impact = Math.sqrt(2 * 0.5 * h); // 衝擊速率
+                requestAnimationFrame(loop);
+            }
+        }
+
+        function loop() {
+            if (phase === 1) {
+                // 單擺擺動 (向左，角度遞減)
+                let alpha = -(0.5 / L) * Math.sin(theta); // 簡化角加速度
+                omega += alpha;
+                theta += omega;
+                
+                // 到達最低點 (theta <= 0)
+                if (theta <= 0) {
+                    theta = 0;
+                    phase = 2;
+                    
+                    // 執行一維完全彈性碰撞 (1D Elastic Collision)
+                    // 擺錘初速 v_impact (向左為正方向)
+                    // v1' = (m-M)/(m+M) * v1
+                    // v2' = (2m)/(m+M) * v1
+                    
+                    v_m_after = ((m - M) / (m + M)) * v_impact;
+                    v_M_after = ((2 * m) / (m + M)) * v_impact;
+                    
+                    // 轉換回擺錘的角速度
+                    omega = v_m_after / L; 
+                    
+                    updateAnalysisPanel(true);
+                }
+            } else if (phase === 2) {
+                // 碰後運動
+                // 1. 擺錘繼續擺動 (可能反彈也可能繼續往前)
+                let alpha = -(0.5 / L) * Math.sin(theta);
+                omega += alpha;
+                theta += omega;
+                // 阻尼，避免永動
+                omega *= 0.999; 
+                
+                // 2. 木塊向左等速滑動 (畫面左移)
+                blockX -= v_M_after;
+            }
+            
+            draw();
+            if (phase > 0) requestAnimationFrame(loop);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 畫天花板
+            ctx.fillStyle = '#444';
+            ctx.fillRect(pivotX - 100, pivotY - 10, 200, 10);
+            for(let i=pivotX-100; i<pivotX+100; i+=10) {
+                ctx.beginPath(); ctx.moveTo(i, pivotY-10); ctx.lineTo(i+10, pivotY-20);
+                ctx.strokeStyle='#666'; ctx.stroke();
+            }
+
+            // 畫光滑水平面
+            ctx.fillStyle = '#ccc';
+            ctx.fillRect(0, blockY + bobRadius, canvas.width, 40);
+
+            // 畫最低點輔助虛線
+            ctx.beginPath();
+            ctx.setLineDash([5, 5]);
+            ctx.moveTo(pivotX, pivotY);
+            ctx.lineTo(pivotX, blockY);
+            ctx.strokeStyle = '#555';
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 畫木塊 M
+            ctx.fillStyle = '#ff2e63';
+            ctx.fillRect(blockX - blockWidth/2, blockY + bobRadius - blockWidth, blockWidth, blockWidth);
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 16px Arial'; ctx.textAlign = 'center';
+            ctx.fillText('M', blockX, blockY + bobRadius - blockWidth/2 + 6);
+
+            // 計算擺錘位置
+            let bobX = pivotX + L * Math.sin(theta);
+            let bobY = pivotY + L * Math.cos(theta);
+
+            // 畫繩子
+            ctx.beginPath();
+            ctx.moveTo(pivotX, pivotY);
+            ctx.lineTo(bobX, bobY);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 畫擺錘 m
+            ctx.beginPath();
+            ctx.arc(bobX, bobY, bobRadius, 0, Math.PI * 2);
+            ctx.fillStyle = '#00d4ff';
+            ctx.fill();
+            ctx.fillStyle = '#000'; ctx.fillText('m', bobX, bobY + 5);
+
+            // 標示 P 點
+            if (phase === 0) {
+                ctx.fillStyle = '#fff';
+                ctx.fillText('P', bobX + 25, bobY);
+            }
+        }
+
+        // 更新題目分析面板
+        function updateAnalysisPanel(isCollided) {
+            let ratio = M / m;
+            
+            // (A) M/m > 1
+            let optA = document.getElementById('opt_A');
+            let resA = document.getElementById('res_A');
+            if (ratio > 1) {
+                optA.className = "opt-item true";
+                resA.innerHTML = "<span style='color:var(--green)'>條件成立 (M > m)</span>。碰後速度公式為負值，<b>擺錘向右反彈</b>。";
+            } else {
+                optA.className = "opt-item false";
+                resA.innerHTML = "<span style='color:var(--pink)'>條件不成立</span>。此時不反彈。";
+            }
+
+            // (B) M/m < 1
+            let optB = document.getElementById('opt_B');
+            let resB = document.getElementById('res_B');
+            if (ratio < 1) {
+                optB.className = "opt-item true";
+                resB.innerHTML = "<span style='color:var(--green)'>條件成立 (M < m)</span>。碰後速度公式為正，<b>兩者皆向左運動</b>。";
+            } else {
+                optB.className = "opt-item false";
+                resB.innerHTML = "<span style='color:var(--pink)'>條件不成立</span>。";
+            }
+
+            // (C) M/m = 1
+            let optC = document.getElementById('opt_C');
+            let resC = document.getElementById('res_C');
+            let T_val = document.getElementById('res_C_T');
+            // 計算最低點張力 T = mg + m(v'^2)/L
+            let v_after_real = isCollided ? Math.abs(v_m_after) : 0; 
+            let Tension = m * g + m * (v_after_real * v_after_real) / L; // 示意數值
+            
+            if (isCollided) {
+                T_val.innerText = Tension.toFixed(1);
+                optC.className = "opt-item false"; // 永遠不為零
+                resC.innerHTML = "<span style='color:var(--pink)'>❌ 錯誤：</span>即使停下 (v=0)，繩子仍須支撐重力，<b>張力最小為 mg，不可能為零</b>。";
+            } else {
+                T_val.innerText = "--";
+                resC.innerHTML = "等待碰撞計算...";
+                optC.className = "opt-item";
+            }
+
+            // (D) 動量 P
+            let optD = document.getElementById('opt_D');
+            let resD = document.getElementById('res_D');
+            if (isCollided) {
+                // 真實衝擊速度 (利用力學能守恆計算真實 m/s, 假設 L = 1m)
+                let real_v0 = Math.sqrt(2 * g * 1 * (1 - Math.cos(initialTheta)));
+                let real_vM = ((2 * m) / (m + M)) * real_v0;
+                let PM = M * real_vM;
+                resD.innerText = PM.toFixed(2);
+                optD.className = "opt-item true";
+                document.getElementById('opt_D').querySelector('.opt-desc').innerHTML += "<br><span style='color:var(--green)'>✅ 正確：</span>代入公式 P_M = [2Mm/(m+M)]v，M 愈大則 P_M 愈趨近 2mv。";
+            } else {
+                resD.innerText = "--";
+                optD.className = "opt-item";
+            }
+
+            // (E) M/m << 1
+            let optE = document.getElementById('opt_E');
+            if (isCollided) {
+                document.getElementById('res_E_vm').innerText = Math.abs(v_m_after).toFixed(2) + " (向左)";
+                document.getElementById('res_E_vM').innerText = v_M_after.toFixed(2) + " (向左)";
+                if (ratio <= 0.1) {
+                    optE.className = "opt-item false";
+                    document.getElementById('res_E').innerHTML = "<span style='color:var(--pink)'>❌ 錯誤：</span>當 M 極小時，木塊速度會趨近於擺錘的 <b>2倍</b>，絕非相等。";
+                } else {
+                    optE.className = "opt-item";
+                    document.getElementById('res_E').innerHTML = "請將木塊質量拉到最小 (0.1) 測試此選項。";
+                }
+            } else {
+                document.getElementById('res_E_vm').innerText = "--";
+                document.getElementById('res_E_vM').innerText = "--";
+                document.getElementById('res_E').innerHTML = "";
+                optE.className = "opt-item";
+            }
+        }
+
+        // 事件綁定
+        sl_m.addEventListener('input', initSimulation);
+        sl_M.addEventListener('input', initSimulation);
+        btn_play.addEventListener('click', play);
+        btn_reset.addEventListener('click', initSimulation);
+
+        // 初始化
+        initSimulation();
+
+    </script>
+</body>
+</html>
