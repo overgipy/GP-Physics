@@ -31,7 +31,6 @@
             box-sizing: border-box;
         }
 
-        /* 導覽列 */
         .nav { width: 100%; max-width: 800px; margin-bottom: 10px; }
         .nav a { color: var(--cyan); text-decoration: none; font-size: 14px; }
 
@@ -148,4 +147,266 @@
                 <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
                     <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted);">
                         <span>時間軸自由拖曳</span>
-                        <span>t = <b id="lbl_time" style="color:#fff; font-family:monospace;">
+                        <span>t = <b id="lbl_time" style="color:#fff; font-family:monospace;">0.00</b> s</span>
+                    </div>
+                    <input type="range" id="timeSlider" min="0" max="999" value="0">
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">速度 - 時間 (v-t) 變化曲線圖</div>
+            <div class="chart-container">
+                <canvas id="vtChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">系統即時物理數據分析 Dashboard</div>
+            <div class="dashboard-grid">
+                <div class="meter" style="border-left: 3px solid var(--cyan);">
+                    <div class="meter-title">球 A 速度 v_A</div>
+                    <div class="meter-value cyan-text" id="dat_vA">0.00<span class="unit">m/s</span></div>
+                </div>
+                <div class="meter" style="border-left: 3px solid var(--pink);">
+                    <div class="meter-title">球 B 速度 v_B</div>
+                    <div class="meter-value pink-text" id="dat_vB">0.00<span class="unit">m/s</span></div>
+                </div>
+                <div class="meter" style="border-left: 3px solid var(--yellow);">
+                    <div class="meter-title">質心速度 v_c</div>
+                    <div class="meter-value" id="dat_vc" style="color:var(--yellow);">0.00<span class="unit">m/s</span></div>
+                </div>
+                <div class="meter">
+                    <div class="meter-title">質心動能 Kc</div>
+                    <div class="meter-value" id="dat_Kc">0.00<span class="unit">J</span></div>
+                </div>
+                <div class="meter" style="border-left: 3px solid var(--green);">
+                    <div class="meter-title">內動能 K_int</div>
+                    <div class="meter-value" id="dat_Kint" style="color:var(--green);">0.00<span class="unit">J</span></div>
+                </div>
+                <div class="meter" style="border-left: 3px solid #ff9100;">
+                    <div class="meter-title">彈性位能 Us</div>
+                    <div class="meter-value" id="dat_Us" style="color:#ff9100;">0.00<span class="unit">J</span></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const DT = 0.004;          
+        const TOTAL_STEPS = 1000;  
+        const BALL_R = 35;         
+        const K_SPRING = 800;      
+        
+        let simulationHistory = []; 
+        let currentIndex = 0;
+        let isPlaying = true;
+        let chartInstance = null;
+
+        const pmA = document.getElementById('param_mA');
+        const pvA = document.getElementById('param_vA');
+        const pmB = document.getElementById('param_mB');
+        const pvB = document.getElementById('param_vB');
+        
+        const lblmA = document.getElementById('lbl_mA');
+        const lblvA = document.getElementById('lbl_vA');
+        const lblmB = document.getElementById('lbl_mB');
+        const lblvB = document.getElementById('lbl_vB');
+        
+        const btnPlayPause = document.getElementById('btnPlayPause');
+        const timeSlider = document.getElementById('timeSlider');
+        const lblTime = document.getElementById('lbl_time');
+        const colIndicator = document.getElementById('collision-indicator');
+
+        function runPhysicsSimulation() {
+            simulationHistory = [];
+            
+            let mA = parseFloat(pmA.value);
+            let vA = parseFloat(pvA.value);
+            let mB = parseFloat(pmB.value);
+            let vB = parseFloat(pvB.value);
+            
+            let xA = 120;
+            let xB = 680;
+
+            for (let step = 0; step < TOTAL_STEPS; step++) {
+                let t = step * DT;
+                
+                let distance = xB - xA;
+                let overlap = (BALL_R + BALL_R) - distance;
+                
+                let force = 0;
+                let Us = 0;
+                
+                if (overlap > 0) {
+                    force = K_SPRING * overlap;
+                    Us = 0.5 * K_SPRING * overlap * overlap;
+                }
+                
+                let aA = -force / mA;
+                let aB = force / mB;
+                
+                vA += aA * DT;
+                vB += aB * DT;
+                xA += vA * DT;
+                xB += vB * DT;
+                
+                let vc = (mA * vA + mB * vB) / (mA + mB);
+                let Kc = 0.5 * (mA + mB) * vc * vc;
+                let Ktotal = 0.5 * mA * vA * vA + 0.5 * mB * vB * vB;
+                let Kint = Ktotal - Kc;
+                if (Kint < 0) Kint = 0; 
+
+                simulationHistory.push({
+                    t: t, xA: xA, xB: xB, vA: vA, vB: vB, vc: vc, Kc: Kc, Kint: Kint, Us: Us,
+                    overlap: overlap > 0 ? overlap : 0
+                });
+            }
+        }
+
+        function initChart() {
+            const ctxChart = document.getElementById('vtChart').getContext('2d');
+            const labels = simulationHistory.map(d => d.t.toFixed(2));
+            const dataA = simulationHistory.map(d => d.vA);
+            const dataB = simulationHistory.map(d => d.vB);
+
+            if(chartInstance) {
+                chartInstance.destroy(); 
+            }
+
+            chartInstance = new Chart(ctxChart, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: '球 A 速度 (vA)', data: dataA, borderColor: '#00d4ff', borderWidth: 2, pointRadius: 0, tension: 0.1 },
+                        { label: '球 B 速度 (vB)', data: dataB, borderColor: '#ff2e63', borderWidth: 2, pointRadius: 0, tension: 0.1 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, animation: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: { grid: { color: '#1a2230' }, ticks: { color: '#8a99ad', maxTicksLimit: 10 } },
+                        y: { grid: { color: '#1a2230' }, ticks: { color: '#8a99ad' }, title: { display: true, text: '速度 (m/s)', color: '#8a99ad' } }
+                    },
+                    plugins: { legend: { labels: { color: '#f0f3f8', font: { size: 12 } } } }
+                }
+            });
+        }
+
+        function renderFrame() {
+            const data = simulationHistory[currentIndex];
+            if (!data) return;
+
+            lblTime.innerText = data.t.toFixed(2);
+            timeSlider.value = currentIndex;
+
+            document.getElementById('dat_vA').innerHTML = `${data.vA.toFixed(2)}<span class="unit">m/s</span>`;
+            document.getElementById('dat_vB').innerHTML = `${data.vB.toFixed(2)}<span class="unit">m/s</span>`;
+            document.getElementById('dat_vc').innerHTML = `${data.vc.toFixed(2)}<span class="unit">m/s</span>`;
+            document.getElementById('dat_Kc').innerHTML = `${data.Kc.toFixed(2)}<span class="unit">J</span>`;
+            document.getElementById('dat_Kint').innerHTML = `${data.Kint.toFixed(2)}<span class="unit">J</span>`;
+            document.getElementById('dat_Us').innerHTML = `${data.Us.toFixed(2)}<span class="unit">J</span>`;
+
+            if (data.overlap > 0) {
+                colIndicator.innerText = "💥 壓縮形變中";
+                colIndicator.style.backgroundColor = "rgba(255, 46, 99, 0.2)";
+                colIndicator.style.color = "#ff2e63"; 
+            } else {
+                colIndicator.innerText = "未碰撞";
+                colIndicator.style.backgroundColor = "rgba(0, 230, 118, 0.1)";
+                colIndicator.style.color = "#00e676";
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let cy = canvas.height / 2;
+
+            ctx.strokeStyle = '#1a2230';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath(); 
+            ctx.moveTo(0, cy); ctx.lineTo(canvas.width, cy); 
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            let squish = data.overlap * 0.5;
+            
+            ctx.beginPath();
+            let rxA = BALL_R - squish; 
+            let ryA = BALL_R + squish; 
+            if(rxA < 10) rxA = 10;     
+            ctx.ellipse(data.xA, cy, rxA, ryA, 0, 0, Math.PI * 2);
+            ctx.fillStyle = '#00d4ff';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'rgba(0, 212, 255, 0.4)';
+            ctx.fill();
+            
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 14px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('A', data.xA, cy);
+
+            ctx.beginPath();
+            let rxB = BALL_R - squish;
+            let ryB = BALL_R + squish;
+            if(rxB < 10) rxB = 10;
+            ctx.ellipse(data.xB, cy, rxB, ryB, 0, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff2e63';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'rgba(255, 46, 99, 0.4)';
+            ctx.fill();
+            
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#000';
+            ctx.fillText('B', data.xB, cy);
+        }
+
+        function tick() {
+            if (isPlaying) {
+                currentIndex++;
+                if (currentIndex >= TOTAL_STEPS) currentIndex = 0; 
+                renderFrame();
+            }
+            requestAnimationFrame(tick);
+        }
+
+        function refreshExperiment() {
+            lblmA.innerText = parseFloat(pmA.value).toFixed(1);
+            lblvA.innerText = parseFloat(pvA.value).toFixed(1);
+            lblmB.innerText = parseFloat(pmB.value).toFixed(1);
+            lblvB.innerText = parseFloat(pvB.value).toFixed(1);
+
+            runPhysicsSimulation();
+            initChart();
+            renderFrame();
+        }
+
+        btnPlayPause.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            btnPlayPause.innerText = isPlaying ? '暫停' : '播放';
+        });
+
+        timeSlider.addEventListener('input', function() {
+            isPlaying = false; 
+            btnPlayPause.innerText = '播放';
+            currentIndex = parseInt(this.value);
+            renderFrame();
+        });
+
+        [pmA, pvA, pmB, pvB].forEach(slider => {
+            slider.addEventListener('input', refreshExperiment);
+        });
+
+        runPhysicsSimulation();
+        initChart();
+        requestAnimationFrame(tick);
+    </script>
+</body>
+</html>
