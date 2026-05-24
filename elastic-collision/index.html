@@ -149,7 +149,7 @@
                         <span>時間軸自由拖曳</span>
                         <span>t = <b id="lbl_time" style="color:#fff; font-family:monospace;">0.00</b> s</span>
                     </div>
-                    <input type="range" id="timeSlider" min="0" max="999" value="0">
+                    <input type="range" id="timeSlider" min="0" max="1999" value="0">
                 </div>
             </div>
         </div>
@@ -197,10 +197,13 @@
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
         
-        const DT = 0.004;          
-        const TOTAL_STEPS = 1000;  
-        const BALL_R = 35;         
-        const K_SPRING = 800;      
+        // 物理引擎核心參數
+        const DT = 0.002;          // 縮小時間步長，提高精確度
+        const TOTAL_STEPS = 2000;  // 總共計算 2000 步 = 4.0 秒
+        const BALL_R_PX = 35;      // 畫面上球的視覺半徑 (像素)
+        const SCALE = 40;          // 比例尺：1公尺 = 40像素
+        const R_METER = BALL_R_PX / SCALE; // 真實物理半徑 (約0.875公尺)
+        const K_SPRING = 15000;    // 碰撞時的彈性常數 (N/m)
         
         let simulationHistory = []; 
         let currentIndex = 0;
@@ -230,14 +233,16 @@
             let mB = parseFloat(pmB.value);
             let vB = parseFloat(pvB.value);
             
-            let xA = 120;
-            let xB = 680;
+            // 將初始位置定在 3m 與 17m 處 (相距14公尺)
+            let xA = 3.0;
+            let xB = 17.0;
 
             for (let step = 0; step < TOTAL_STEPS; step++) {
                 let t = step * DT;
                 
+                // 完全使用「物理單位(公尺)」進行計算
                 let distance = xB - xA;
-                let overlap = (BALL_R + BALL_R) - distance;
+                let overlap = (R_METER + R_METER) - distance;
                 
                 let force = 0;
                 let Us = 0;
@@ -261,8 +266,11 @@
                 let Kint = Ktotal - Kc;
                 if (Kint < 0) Kint = 0; 
 
+                // 儲存進歷史紀錄
                 simulationHistory.push({
-                    t: t, xA: xA, xB: xB, vA: vA, vB: vB, vc: vc, Kc: Kc, Kint: Kint, Us: Us,
+                    t: t, 
+                    xA: xA, xB: xB, // 儲存公尺
+                    vA: vA, vB: vB, vc: vc, Kc: Kc, Kint: Kint, Us: Us,
                     overlap: overlap > 0 ? overlap : 0
                 });
             }
@@ -323,6 +331,7 @@
                 colIndicator.style.color = "#00e676";
             }
 
+            // 畫布清除與背景線
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             let cy = canvas.height / 2;
 
@@ -334,13 +343,18 @@
             ctx.stroke();
             ctx.setLineDash([]);
 
-            let squish = data.overlap * 0.5;
+            // 將公尺轉換為畫面上的像素位置
+            let px_xA = data.xA * SCALE;
+            let px_xB = data.xB * SCALE;
+            let px_overlap = data.overlap * SCALE;
+            let squish = px_overlap * 0.5; // 視覺壓扁量
             
+            // 繪製球 A
             ctx.beginPath();
-            let rxA = BALL_R - squish; 
-            let ryA = BALL_R + squish; 
+            let rxA = BALL_R_PX - squish; 
+            let ryA = BALL_R_PX + squish; 
             if(rxA < 10) rxA = 10;     
-            ctx.ellipse(data.xA, cy, rxA, ryA, 0, 0, Math.PI * 2);
+            ctx.ellipse(px_xA, cy, rxA, ryA, 0, 0, Math.PI * 2);
             ctx.fillStyle = '#00d4ff';
             ctx.shadowBlur = 15;
             ctx.shadowColor = 'rgba(0, 212, 255, 0.4)';
@@ -351,13 +365,14 @@
             ctx.font = 'bold 14px sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('A', data.xA, cy);
+            ctx.fillText('A', px_xA, cy);
 
+            // 繪製球 B
             ctx.beginPath();
-            let rxB = BALL_R - squish;
-            let ryB = BALL_R + squish;
+            let rxB = BALL_R_PX - squish;
+            let ryB = BALL_R_PX + squish;
             if(rxB < 10) rxB = 10;
-            ctx.ellipse(data.xB, cy, rxB, ryB, 0, 0, Math.PI * 2);
+            ctx.ellipse(px_xB, cy, rxB, ryB, 0, 0, Math.PI * 2);
             ctx.fillStyle = '#ff2e63';
             ctx.shadowBlur = 15;
             ctx.shadowColor = 'rgba(255, 46, 99, 0.4)';
@@ -365,7 +380,21 @@
             
             ctx.shadowBlur = 0;
             ctx.fillStyle = '#000';
-            ctx.fillText('B', data.xB, cy);
+            ctx.fillText('B', px_xB, cy);
+
+            // 在 Chart.js 上畫一條垂直線對應目前時間 (使用 API 模擬)
+            const minV = -15;
+            const maxV = 15;
+            if (chartInstance.data.datasets.length < 3) {
+                chartInstance.data.datasets.push({
+                    label: '當前時間', data: [], borderColor: '#ffcc00', borderWidth: 1.5, borderDash: [4, 4], pointRadius: 0
+                });
+            }
+            chartInstance.data.datasets[2].data = [
+                {x: chartInstance.data.labels[currentIndex], y: minV},
+                {x: chartInstance.data.labels[currentIndex], y: maxV}
+            ];
+            chartInstance.update('none');
         }
 
         function tick() {
