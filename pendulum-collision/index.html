@@ -30,9 +30,9 @@
         canvas { max-width: 100%; height: auto; }
 
         /* 控制列 */
-        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
         .control-item { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; }
-        .control-item label { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 5px; color: #b0c0d6; }
+        .control-item label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px; color: #b0c0d6; }
         input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
         
         .btn-group { display: flex; gap: 10px; margin-top: 10px; }
@@ -80,7 +80,16 @@
                     <label>釋放角度 (θ) <span id="val_theta" style="color:var(--yellow); font-weight:bold;">60°</span></label>
                     <input type="range" id="sl_theta" min="15" max="90" step="1" value="60">
                 </div>
+                
+                <div class="control-item" style="opacity: 0.6;">
+                    <label>繩子長度 (L) <span style="color:#ddd; font-weight:bold;">1.0 m</span></label>
+                    <input type="range" disabled value="1.0" max="1.0" style="cursor:not-allowed;">
+                </div>
+                <div class="control-item" style="display:flex; justify-content:center; align-items:center; background:transparent; border: 1px dashed #334;">
+                    <div style="font-size:1.1rem; color:var(--yellow); font-weight:bold;">質量比 M/m = <span id="val_ratio">2.00</span></div>
+                </div>
             </div>
+            
             <div class="btn-group">
                 <button id="btn_play">釋放單擺 (Play)</button>
                 <button id="btn_reset" class="btn-reset">重置 (Reset)</button>
@@ -145,8 +154,8 @@
 
         // 物理常數
         const g = 9.8;
-        const L_meter = 2.0; // 物理繩長 2m
-        const L_px = 180; // 畫面繩長 180px
+        const L_meter = 1.0; // 物理繩長固定為 1m，降低衝擊速度，減緩震盪
+        const L_px = 180;    // 畫面視覺長度保持不變
         const pivotX = 550; 
         const pivotY = 30;  
         
@@ -181,6 +190,7 @@
             document.getElementById('val_m').innerText = m.toFixed(1) + " kg";
             document.getElementById('val_M').innerText = M.toFixed(1) + " kg";
             document.getElementById('val_theta').innerText = sl_theta.value + "°";
+            document.getElementById('val_ratio').innerText = (M / m).toFixed(2);
             
             theta = initialTheta;
             omega = 0;
@@ -208,9 +218,11 @@
         }
 
         function loop() {
+            const dt = 0.02; // 動畫時間步長
+
             if (phase === 1) {
-                // 簡諧運動角加速度 approximation or actual
-                let alpha = -(g / L_meter) * Math.sin(theta) * 0.02; // 0.02 is delta time scale for animation
+                // 單擺擺動：簡諧運動角加速度 (縮放時間以利視覺舒適)
+                let alpha = -(g / L_meter) * Math.sin(theta) * dt;
                 omega += alpha;
                 theta += omega;
                 
@@ -223,18 +235,19 @@
                     v_M_after = ((2 * m) / (m + M)) * v0_impact;
                     
                     // 轉換角速度供後續擺動 (v = r*omega)
-                    omega = v_m_after / L_meter * 0.05; // 加上時間縮放係數
+                    // 由於 L = 1m，omega 數值上等於速度，再乘上 dt 保持視覺一致性
+                    omega = (v_m_after / L_meter) * dt * 1.5; 
                     
                     updateDashboard();
                 }
             } else if (phase === 2) {
-                // 碰後
-                let alpha = -(g / L_meter) * Math.sin(theta) * 0.02;
+                // 碰後擺動與滑行
+                let alpha = -(g / L_meter) * Math.sin(theta) * dt;
                 omega += alpha;
                 theta += omega;
-                omega *= 0.999; // 阻尼
+                omega *= 0.995; // 增加輕微阻尼避免無止盡震盪
                 
-                blockX -= v_M_after * 2; // 視覺速度放大
+                blockX -= v_M_after * 2; // 視覺滑動速度
             }
             
             draw();
