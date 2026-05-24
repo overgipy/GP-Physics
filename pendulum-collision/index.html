@@ -2,88 +2,354 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>李捷物理實驗室 - 單擺與木塊完全彈性碰撞</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>李捷物理 - 單擺與木塊完全彈性碰撞</title>
     <style>
-        :root { --bg-main: #0a0c10; --bg-card: #141923; --text-main: #f0f3f8; --cyan: #00d4ff; --pink: #ff2e63; --yellow: #ffcc00; }
-        body { font-family: -apple-system, sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        :root {
+            --bg-main: #0a0c10; --bg-card: #141923;
+            --text-main: #f0f3f8; --text-muted: #8a99ad;
+            --cyan: #00d4ff; --pink: #ff2e63; --yellow: #ffcc00; --green: #00e676;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-main); color: var(--text-main);
+            margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center;
+        }
+        .nav { width: 100%; max-width: 900px; margin-bottom: 10px; }
+        .nav a { color: var(--cyan); text-decoration: none; font-size: 14px; }
+        header { text-align: center; margin-bottom: 15px; }
+        h1 { margin: 0; font-size: 1.6rem; color: var(--cyan); }
+        .subtitle { margin: 5px 0 0 0; font-size: 0.9rem; color: var(--text-muted); }
+        
         .container { width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 15px; }
+        
         .card { background: var(--bg-card); border-radius: 12px; padding: 15px; border: 1px solid #252e3d; }
         .card-title { font-size: 1rem; color: var(--yellow); margin-bottom: 10px; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 5px; }
-        #canvas-container { width: 100%; display: flex; justify-content: center; background: #000; border-radius: 8px; padding: 10px 0; }
+        
+        #canvas-container { width: 100%; display: flex; justify-content: center; background: #080a0f; border-radius: 8px; padding: 10px 0; border: 1px solid #1a202c; }
+        canvas { max-width: 100%; height: auto; }
+
+        /* 控制列 */
         .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+        .control-item { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; }
+        .control-item label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px; color: #b0c0d6; }
+        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        button { flex: 1; background: var(--cyan); border: none; padding: 10px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        button:hover { filter: brightness(1.2); }
+        button.btn-reset { background: #445; color: white; }
+
+        /* 數據儀表板 */
+        .data-section { margin-bottom: 15px; }
+        .data-section-title { font-size: 0.9rem; color: #fff; margin-bottom: 8px; border-left: 3px solid; padding-left: 8px; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 10px; }
         .meter { background: #111622; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #1f2736; }
-        .meter-title { font-size: 0.8rem; color: #8a99ad; margin-bottom: 5px; }
+        .meter-title { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
         .meter-value { font-size: 1.2rem; font-weight: bold; font-family: monospace; }
         .unit { font-size: 0.75rem; color: #55657d; margin-left: 2px; }
-        button { padding: 10px; background: var(--cyan); border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .dir-tag { font-size: 0.75rem; color: #888; font-weight: normal; margin-left: 4px; }
+
+        .transfer-bar-container { background: #111622; padding: 15px; border-radius: 8px; border: 1px solid #1f2736; text-align: center;}
+        .progress-bg { width: 100%; height: 20px; background: #222; border-radius: 10px; overflow: hidden; margin-top: 10px; border: 1px solid #333;}
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--green)); width: 0%; transition: width 0.5s ease-out; }
     </style>
 </head>
 <body>
+
+    <div class="nav"><a href="../index.html">← 返回首頁</a></div>
+
+    <header>
+        <h1>🧪 李捷物理實驗室</h1>
+        <p class="subtitle">單擺與木塊完全彈性碰撞 (能量與動量分析)</p>
+    </header>
+
     <div class="container">
+        
         <div class="card">
-            <div class="card-title">實驗設定</div>
+            <div class="card-title">⚙️ 實驗參數設定</div>
             <div class="controls">
-                <div><label>m (kg): <input type="range" id="sl_m" min="0.5" max="5.0" step="0.1" value="1.0"></label></div>
-                <div><label>M (kg): <input type="range" id="sl_M" min="0.5" max="10.0" step="0.1" value="2.0"></label></div>
-                <div><label>角度 (°): <input type="range" id="sl_theta" min="15" max="90" value="60"></label></div>
+                <div class="control-item">
+                    <label>擺錘質量 (m) <span id="val_m" style="color:var(--cyan); font-weight:bold;">1.0 kg</span></label>
+                    <input type="range" id="sl_m" min="0.5" max="5.0" step="0.1" value="1.0">
+                </div>
+                <div class="control-item">
+                    <label>木塊質量 (M) <span id="val_M" style="color:var(--pink); font-weight:bold;">2.0 kg</span></label>
+                    <input type="range" id="sl_M" min="0.5" max="10.0" step="0.1" value="2.0">
+                </div>
+                <div class="control-item">
+                    <label>釋放角度 (θ) <span id="val_theta" style="color:var(--yellow); font-weight:bold;">60°</span></label>
+                    <input type="range" id="sl_theta" min="15" max="90" step="1" value="60">
+                </div>
+                
+                <div class="control-item" style="opacity: 0.6;">
+                    <label>繩子長度 (L) <span style="color:#ddd; font-weight:bold;">1.0 m</span></label>
+                    <input type="range" disabled value="1.0" max="1.0" style="cursor:not-allowed;">
+                </div>
+                <div class="control-item" style="display:flex; justify-content:center; align-items:center; background:transparent; border: 1px dashed #334;">
+                    <div style="font-size:1.1rem; color:var(--yellow); font-weight:bold;">質量比 M/m = <span id="val_ratio">2.00</span></div>
+                </div>
             </div>
-            <button id="btn_play" style="margin-top:10px; width:100%;">釋放單擺</button>
+            
+            <div class="btn-group">
+                <button id="btn_play">釋放單擺 (Play)</button>
+                <button id="btn_reset" class="btn-reset">重置 (Reset)</button>
+            </div>
         </div>
-
-        <div id="canvas-container"><canvas id="simCanvas" width="800" height="250"></canvas></div>
 
         <div class="card">
-            <div class="card-title">碰撞後分析</div>
-            <div class="dashboard-grid">
-                <div class="meter"><div class="meter-title">擺錘速度</div><div class="meter-value" id="dat_vm">0.00<span class="unit">m/s</span></div></div>
-                <div class="meter"><div class="meter-title">木塊速度</div><div class="meter-value" id="dat_vM">0.00<span class="unit">m/s</span></div></div>
-                <div class="meter"><div class="meter-title">動能轉移比例</div><div class="meter-value" id="dat_eff">0.0<span class="unit">%</span></div></div>
+            <div id="canvas-container">
+                <canvas id="simCanvas" width="800" height="300"></canvas>
             </div>
         </div>
+
+        <div class="card">
+            <div class="card-title">📊 碰撞後即時物理數據分析</div>
+            
+            <div class="data-section">
+                <div class="data-section-title" style="border-color: #888;">碰撞瞬間初始數據</div>
+                <div class="dashboard-grid">
+                    <div class="meter"><div class="meter-title">擺錘衝擊速度 v₀</div><div class="meter-value" id="dat_v0">0.00<span class="unit">m/s</span><span class="dir-tag" id="dir_v0"></span></div></div>
+                    <div class="meter"><div class="meter-title">系統總動能 K_total</div><div class="meter-value" id="dat_K0">0.00<span class="unit">J</span></div></div>
+                </div>
+            </div>
+
+            <div class="data-section">
+                <div class="data-section-title" style="border-color: var(--cyan);">擺錘 (m) 狀態與能量變化</div>
+                <div class="dashboard-grid">
+                    <div class="meter"><div class="meter-title">撞後速度 v_m</div><div class="meter-value cyan-text" id="dat_vm">0.00<span class="unit">m/s</span><span class="dir-tag" id="dir_vm"></span></div></div>
+                    <div class="meter"><div class="meter-title">撞後動能 K_m</div><div class="meter-value cyan-text" id="dat_Km">0.00<span class="unit">J</span></div></div>
+                    <div class="meter"><div class="meter-title" style="color:var(--pink);">轉移動量 ΔP</div><div class="meter-value" id="dat_loss_P">0.00<span class="unit">N·s</span></div></div>
+                    <div class="meter"><div class="meter-title" style="color:var(--pink);">轉移動能 ΔK</div><div class="meter-value" id="dat_loss_K">0.00<span class="unit">J</span></div></div>
+                </div>
+            </div>
+
+            <div class="data-section">
+                <div class="data-section-title" style="border-color: var(--pink);">木塊 (M) 狀態與能量獲得</div>
+                <div class="dashboard-grid">
+                    <div class="meter"><div class="meter-title">撞後速度 v_M</div><div class="meter-value pink-text" id="dat_vM">0.00<span class="unit">m/s</span><span class="dir-tag" id="dir_vM"></span></div></div>
+                    <div class="meter"><div class="meter-title">撞後動能 K_M</div><div class="meter-value pink-text" id="dat_KM">0.00<span class="unit">J</span></div></div>
+                    <div class="meter"><div class="meter-title" style="color:var(--green);">獲得動量 ΔP</div><div class="meter-value" id="dat_gain_P">0.00<span class="unit">N·s</span></div></div>
+                    <div class="meter"><div class="meter-title" style="color:var(--green);">獲得動能 ΔK</div><div class="meter-value" id="dat_gain_K">0.00<span class="unit">J</span></div></div>
+                </div>
+            </div>
+
+            <div class="transfer-bar-container">
+                <div style="display:flex; justify-content:space-between; color:#fff; font-weight:bold;">
+                    <span>動能轉移比例 (Transfer Efficiency)</span>
+                    <span id="dat_efficiency" style="color:var(--yellow); font-size:1.2em;">0.0 %</span>
+                </div>
+                <div class="progress-bg">
+                    <div class="progress-fill" id="progress_bar"></div>
+                </div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;">提示：當 M = m 時，轉移效率可達 100% (完全交換)</div>
+            </div>
+
+        </div>
+
     </div>
 
     <script>
-        const canvas = document.getElementById('simCanvas'); const ctx = canvas.getContext('2d');
-        let m=1, M=2, theta=Math.PI/3, omega=0, phase=0, L=180;
-        let v_m_f=0, v_M_f=0, v0=0;
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
 
-        function draw() {
-            ctx.clearRect(0,0,800,300);
-            let bx = 400 + L*Math.sin(theta), by = 30 + L*Math.cos(theta);
-            ctx.beginPath(); ctx.moveTo(400,30); ctx.lineTo(bx,by); ctx.stroke();
-            ctx.fillStyle='#00d4ff'; ctx.beginPath(); ctx.arc(bx,by,15,0,Math.PI*2); ctx.fill();
-            // 木塊簡單繪製
-            ctx.fillStyle='#ff2e63'; ctx.fillRect(400 - 20, 30+L, 40, 40);
+        // 純粹物理引擎常數
+        const g = 9.8;
+        const L_meter = 1.0; 
+        const L_px = 180;    
+        const pivotX = 550; 
+        const pivotY = 30;  
+        const SCALE = L_px / L_meter; // 像素與公尺的比例尺
+        
+        let m = 1.0;
+        let M = 2.0;
+        let initialTheta = Math.PI / 3; 
+        let theta = initialTheta;
+        let omega = 0; // 角速度
+        
+        let blockX_meter = 0;
+        const blockY_px = pivotY + L_px; 
+        const bobRadius = 15;
+        const blockWidth = 40;
+        
+        let phase = 0; // 0:就緒, 1:擺動中, 2:碰後
+        
+        // 速度變數 (設向左為負，向右為正)
+        let v_m_i = 0; 
+        let v_m_f = 0;
+        let v_M_f = 0;
+
+        const sl_m = document.getElementById('sl_m');
+        const sl_M = document.getElementById('sl_M');
+        const sl_theta = document.getElementById('sl_theta');
+        const btn_play = document.getElementById('btn_play');
+        const btn_reset = document.getElementById('btn_reset');
+
+        function initSimulation() {
+            m = parseFloat(sl_m.value);
+            M = parseFloat(sl_M.value);
+            initialTheta = parseFloat(sl_theta.value) * Math.PI / 180;
+            
+            document.getElementById('val_m').innerText = m.toFixed(1) + " kg";
+            document.getElementById('val_M').innerText = M.toFixed(1) + " kg";
+            document.getElementById('val_theta').innerText = sl_theta.value + "°";
+            document.getElementById('val_ratio').innerText = (M / m).toFixed(2);
+            
+            theta = initialTheta;
+            omega = 0;
+            phase = 0;
+            
+            // 將木塊放在最低點左側剛好碰到的位置
+            let blockX_px_start = pivotX - bobRadius - blockWidth/2;
+            blockX_meter = blockX_px_start / SCALE;
+            
+            resetDashboard();
+            draw();
+        }
+
+        function play() {
+            if (phase === 0) {
+                phase = 1;
+                
+                // 衝擊前的速度 (單擺由右向左，速度為負)
+                let v0_mag = Math.sqrt(2 * g * L_meter * (1 - Math.cos(initialTheta)));
+                v_m_i = -v0_mag; 
+                
+                // 更新 UI 初始數據
+                document.getElementById('dat_v0').innerHTML = `${v0_mag.toFixed(2)}<span class="unit">m/s</span>`;
+                document.getElementById('dir_v0').innerText = "(向左)";
+                let K0 = 0.5 * m * v0_mag * v0_mag;
+                document.getElementById('dat_K0').innerHTML = `${K0.toFixed(2)}<span class="unit">J</span>`;
+
+                requestAnimationFrame(loop);
+            }
         }
 
         function loop() {
-            if(phase===1) {
-                omega += -0.05 * Math.sin(theta); theta += omega;
-                if(theta <= 0) {
-                    theta = 0; phase = 2;
-                    v0 = Math.sqrt(2 * 9.8 * 1.0 * (1 - Math.cos(Math.PI/3)));
-                    v_m_f = ((m-M)/(m+M)) * v0;
-                    v_M_f = ((2*m)/(m+M)) * v0;
-                    omega = v_m_f / 1.0 * 0.1;
-                    updateData();
+            const dt = 0.02; // 真實物理時間步長
+
+            if (phase === 1) {
+                // 碰撞前：力學能守恆，Euler-Cromer 積分
+                let alpha = -(g / L_meter) * Math.sin(theta);
+                omega += alpha * dt;
+                theta += omega * dt;
+                
+                if (theta <= 0) {
+                    theta = 0;
+                    phase = 2;
+                    
+                    // 執行一維彈性碰撞 (帶正負號)
+                    v_m_f = ((m - M) / (m + M)) * v_m_i;
+                    v_M_f = ((2 * m) / (m + M)) * v_m_i;
+                    
+                    // 完美銜接旋轉動力學：ω = v / L
+                    // 若 v_m_f 為正 (向右)，ω 為正，單擺將自然向右上升！
+                    omega = v_m_f / L_meter; 
+                    
+                    updateDashboard();
                 }
-            } else if(phase===2) {
-                omega += -0.05 * Math.sin(theta); theta += omega;
+            } else if (phase === 2) {
+                // 碰撞後：單擺自由擺盪 (無假阻尼，完全展現力學能守恆)
+                let alpha = -(g / L_meter) * Math.sin(theta);
+                omega += alpha * dt;
+                theta += omega * dt;
+                
+                // 木塊等速滑行
+                blockX_meter += v_M_f * dt; 
             }
+            
             draw();
-            if(phase>0) requestAnimationFrame(loop);
+            if (phase > 0) requestAnimationFrame(loop);
         }
 
-        function updateData() {
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#444'; ctx.fillRect(pivotX - 100, pivotY - 10, 200, 10);
+            for(let i=pivotX-100; i<pivotX+100; i+=10) {
+                ctx.beginPath(); ctx.moveTo(i, pivotY-10); ctx.lineTo(i+10, pivotY-20);
+                ctx.strokeStyle='#666'; ctx.stroke();
+            }
+
+            ctx.fillStyle = '#ccc'; ctx.fillRect(0, blockY_px + bobRadius, canvas.width, 40);
+            ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.moveTo(pivotX, pivotY); ctx.lineTo(pivotX, blockY_px);
+            ctx.strokeStyle = '#555'; ctx.stroke(); ctx.setLineDash([]);
+
+            // 畫木塊
+            let blockX_px = blockX_meter * SCALE;
+            ctx.fillStyle = '#ff2e63';
+            ctx.fillRect(blockX_px - blockWidth/2, blockY_px + bobRadius - blockWidth, blockWidth, blockWidth);
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 16px Arial'; ctx.textAlign = 'center';
+            ctx.fillText('M', blockX_px, blockY_px + bobRadius - blockWidth/2 + 6);
+
+            // 畫單擺
+            let bobX = pivotX + L_px * Math.sin(theta);
+            let bobY = pivotY + L_px * Math.cos(theta);
+
+            ctx.beginPath(); ctx.moveTo(pivotX, pivotY); ctx.lineTo(bobX, bobY);
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+
+            ctx.beginPath(); ctx.arc(bobX, bobY, bobRadius, 0, Math.PI * 2);
+            ctx.fillStyle = '#00d4ff'; ctx.fill();
+            ctx.fillStyle = '#000'; ctx.fillText('m', bobX, bobY + 5);
+        }
+
+        function getDirText(v) {
+            if (Math.abs(v) < 0.01) return "(靜止)";
+            return v > 0 ? "(向右反彈)" : "(向左)";
+        }
+
+        function resetDashboard() {
+            const ids = ['dat_v0', 'dat_K0', 'dat_vm', 'dat_Km', 'dat_loss_P', 'dat_loss_K', 'dat_vM', 'dat_KM', 'dat_gain_P', 'dat_gain_K'];
+            ids.forEach(id => document.getElementById(id).innerHTML = `0.00`);
+            document.getElementById('dir_v0').innerText = "";
+            document.getElementById('dir_vm').innerText = "";
+            document.getElementById('dir_vM').innerText = "";
+            document.getElementById('dat_efficiency').innerText = `0.0 %`;
+            document.getElementById('progress_bar').style.width = `0%`;
+        }
+
+        function updateDashboard() {
+            // 初始動能
+            let K0 = 0.5 * m * v_m_i * v_m_i;
+            
+            // 撞後動能與動量 (皆取大小進行轉移計算)
+            let Km = 0.5 * m * v_m_f * v_m_f;
+            let KM = 0.5 * M * v_M_f * v_M_f;
+            
+            // 動量轉移量 ΔP = |P_M_f - P_M_i| = |M * v_M_f|
+            let transfer_P = Math.abs(M * v_M_f);
+            let transfer_K = KM; 
+            
+            let efficiency = (transfer_K / K0) * 100;
+
+            // 更新 UI (速度顯示絕對值，方向用文字輔助)
             document.getElementById('dat_vm').innerHTML = `${Math.abs(v_m_f).toFixed(2)}<span class="unit">m/s</span>`;
+            document.getElementById('dir_vm').innerText = getDirText(v_m_f);
+            
+            document.getElementById('dat_Km').innerHTML = `${Km.toFixed(2)}<span class="unit">J</span>`;
+            document.getElementById('dat_loss_P').innerHTML = `${transfer_P.toFixed(2)}`;
+            document.getElementById('dat_loss_K').innerHTML = `${transfer_K.toFixed(2)}<span class="unit">J</span>`;
+            
             document.getElementById('dat_vM').innerHTML = `${Math.abs(v_M_f).toFixed(2)}<span class="unit">m/s</span>`;
-            let eff = (0.5*M*v_M_f*v_M_f) / (0.5*m*v0*v0) * 100;
-            document.getElementById('dat_eff').innerText = eff.toFixed(1) + "%";
+            document.getElementById('dir_vM').innerText = getDirText(v_M_f); // v_M_f 永遠是負的(向左)
+            if(Math.abs(v_M_f) > 0.01) document.getElementById('dir_vM').innerText = "(向左)";
+            
+            document.getElementById('dat_KM').innerHTML = `${KM.toFixed(2)}<span class="unit">J</span>`;
+            document.getElementById('dat_gain_P').innerHTML = `${transfer_P.toFixed(2)}`;
+            document.getElementById('dat_gain_K').innerHTML = `${transfer_K.toFixed(2)}<span class="unit">J</span>`;
+            
+            document.getElementById('dat_efficiency').innerText = `${efficiency.toFixed(1)} %`;
+            document.getElementById('progress_bar').style.width = `${efficiency}%`;
         }
 
-        document.getElementById('btn_play').onclick = () => { phase=1; loop(); };
-        draw();
+        sl_m.addEventListener('input', initSimulation);
+        sl_M.addEventListener('input', initSimulation);
+        sl_theta.addEventListener('input', initSimulation);
+        btn_play.addEventListener('click', play);
+        btn_reset.addEventListener('click', initSimulation);
+
+        initSimulation();
     </script>
 </body>
 </html>
