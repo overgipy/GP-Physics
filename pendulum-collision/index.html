@@ -48,7 +48,7 @@
         .meter-title { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
         .meter-value { font-size: 1.2rem; font-weight: bold; font-family: monospace; }
         .unit { font-size: 0.75rem; color: #55657d; margin-left: 2px; }
-        .dir-tag { font-size: 0.75rem; color: #888; font-weight: normal; margin-left: 4px; }
+        .dir-tag { font-size: 0.75rem; color: #888; font-weight: normal; margin-top: 4px; display: block; }
 
         .transfer-bar-container { background: #111622; padding: 15px; border-radius: 8px; border: 1px solid #1f2736; text-align: center;}
         .progress-bg { width: 100%; height: 20px; background: #222; border-radius: 10px; overflow: hidden; margin-top: 10px; border: 1px solid #333;}
@@ -109,28 +109,28 @@
             <div class="data-section">
                 <div class="data-section-title" style="border-color: #888;">碰撞瞬間初始數據</div>
                 <div class="dashboard-grid">
-                    <div class="meter"><div class="meter-title">擺錘衝擊速度 v₀</div><div class="meter-value" id="dat_v0">0.00<span class="unit">m/s</span></div></div>
-                    <div class="meter"><div class="meter-title">系統總動能 K_total</div><div class="meter-value" id="dat_K0">0.00<span class="unit">J</span></div></div>
+                    <div class="meter"><div class="meter-title">擺錘衝擊速度 v₀</div><div class="meter-value"><span id="dat_v0">0.00</span><span class="unit">m/s</span></div></div>
+                    <div class="meter"><div class="meter-title">系統總動能 K_total</div><div class="meter-value"><span id="dat_K0">0.00</span><span class="unit">J</span></div></div>
                 </div>
             </div>
 
             <div class="data-section">
-                <div class="data-section-title" style="border-color: var(--cyan);">擺錘 (m) 狀態與損失量</div>
+                <div class="data-section-title" style="border-color: var(--cyan);">擺錘 (m) 狀態與轉移量</div>
                 <div class="dashboard-grid">
-                    <div class="meter"><div class="meter-title">撞後速度 v_m</div><div class="meter-value cyan-text" id="dat_vm">0.00<span class="unit">m/s</span><span class="dir-tag" id="dir_vm"></span></div></div>
-                    <div class="meter"><div class="meter-title">撞後動能 K_m</div><div class="meter-value cyan-text" id="dat_Km">0.00<span class="unit">J</span></div></div>
-                    <div class="meter"><div class="meter-title" style="color:var(--pink);">轉移動量 ΔP_m</div><div class="meter-value" id="dat_loss_P">0.00</div></div>
-                    <div class="meter"><div class="meter-title" style="color:var(--pink);">轉移動能 ΔK_m</div><div class="meter-value" id="dat_loss_K">0.00<span class="unit">J</span></div></div>
+                    <div class="meter"><div class="meter-title">撞後速度 v_m</div><div class="meter-value cyan-text"><span id="dat_vm">0.00</span><span class="unit">m/s</span><span class="dir-tag" id="dir_vm"></span></div></div>
+                    <div class="meter"><div class="meter-title">撞後動能 K_m</div><div class="meter-value cyan-text"><span id="dat_Km">0.00</span><span class="unit">J</span></div></div>
+                    <div class="meter"><div class="meter-title" style="color:var(--pink);">轉移動量 ΔP_m</div><div class="meter-value"><span id="dat_loss_P">0.00</span><span class="unit">N·s</span></div></div>
+                    <div class="meter"><div class="meter-title" style="color:var(--pink);">轉移動能 ΔK_m</div><div class="meter-value"><span id="dat_loss_K">0.00</span><span class="unit">J</span></div></div>
                 </div>
             </div>
 
             <div class="data-section">
                 <div class="data-section-title" style="border-color: var(--pink);">木塊 (M) 狀態與獲得量</div>
                 <div class="dashboard-grid">
-                    <div class="meter"><div class="meter-title">撞後速度 v_M</div><div class="meter-value pink-text" id="dat_vM">0.00<span class="unit">m/s</span><span class="dir-tag" id="dir_vM"></span></div></div>
-                    <div class="meter"><div class="meter-title">撞後動能 K_M</div><div class="meter-value pink-text" id="dat_KM">0.00<span class="unit">J</span></div></div>
-                    <div class="meter"><div class="meter-title" style="color:var(--green);">獲得動量 ΔP_M</div><div class="meter-value" id="dat_gain_P">0.00</div></div>
-                    <div class="meter"><div class="meter-title" style="color:var(--green);">獲得動能 ΔK_M</div><div class="meter-value" id="dat_gain_K">0.00<span class="unit">J</span></div></div>
+                    <div class="meter"><div class="meter-title">撞後速度 v_M</div><div class="meter-value pink-text"><span id="dat_vM">0.00</span><span class="unit">m/s</span><span class="dir-tag" id="dir_vM"></span></div></div>
+                    <div class="meter"><div class="meter-title">撞後動能 K_M</div><div class="meter-value pink-text"><span id="dat_KM">0.00</span><span class="unit">J</span></div></div>
+                    <div class="meter"><div class="meter-title" style="color:var(--green);">獲得動量 ΔP_M</div><div class="meter-value"><span id="dat_gain_P">0.00</span><span class="unit">N·s</span></div></div>
+                    <div class="meter"><div class="meter-title" style="color:var(--green);">獲得動能 ΔK_M</div><div class="meter-value"><span id="dat_gain_K">0.00</span><span class="unit">J</span></div></div>
                 </div>
             </div>
 
@@ -164,7 +164,7 @@
         let M = 2.0;
         let initialTheta = Math.PI / 3; 
         let theta = initialTheta;
-        let omega = 0; // 角速度 (rad/s)
+        let omega = 0; 
         
         let blockX = 0;
         const blockY = pivotY + L_px; 
@@ -211,9 +211,9 @@
                 // 力學能守恆計算初速 v = sqrt(2gL(1-cos(theta)))
                 v0_impact = Math.sqrt(2 * g * L_meter * (1 - Math.cos(initialTheta)));
                 
-                document.getElementById('dat_v0').innerHTML = `${v0_impact.toFixed(2)}<span class="unit">m/s</span>`;
+                document.getElementById('dat_v0').innerText = v0_impact.toFixed(2);
                 let K0 = 0.5 * m * v0_impact * v0_impact;
-                document.getElementById('dat_K0').innerHTML = `${K0.toFixed(2)}<span class="unit">J</span>`;
+                document.getElementById('dat_K0').innerText = K0.toFixed(2);
 
                 requestAnimationFrame(loop);
             }
@@ -239,7 +239,6 @@
                     v_M_after = ((2 * m) / (m + M)) * v0_impact;
                     
                     // 將碰撞後的線速度轉換為角速度 ω = v/r
-                    // 因為向左(正向)對應 theta 小於 0，所以掛上負號完美銜接反彈
                     omega = -(v_m_after / L_meter); 
                     
                     updateDashboard();
@@ -292,16 +291,12 @@
         }
 
         function resetDashboard() {
-            document.getElementById('dat_v0').innerHTML = `0.00<span class="unit">m/s</span>`;
-            document.getElementById('dat_K0').innerHTML = `0.00<span class="unit">J</span>`;
-            document.getElementById('dat_vm').innerHTML = `0.00<span class="unit">m/s</span>`;
-            document.getElementById('dat_Km').innerHTML = `0.00<span class="unit">J</span>`;
-            document.getElementById('dat_loss_P').innerHTML = `0.00`;
-            document.getElementById('dat_loss_K').innerHTML = `0.00<span class="unit">J</span>`;
-            document.getElementById('dat_vM').innerHTML = `0.00<span class="unit">m/s</span>`;
-            document.getElementById('dat_KM').innerHTML = `0.00<span class="unit">J</span>`;
-            document.getElementById('dat_gain_P').innerHTML = `0.00`;
-            document.getElementById('dat_gain_K').innerHTML = `0.00<span class="unit">J</span>`;
+            // 安全重置，只修改單純的文字內容
+            const ids = ['dat_v0', 'dat_K0', 'dat_vm', 'dat_Km', 'dat_loss_P', 'dat_loss_K', 'dat_vM', 'dat_KM', 'dat_gain_P', 'dat_gain_K'];
+            ids.forEach(id => {
+                let el = document.getElementById(id);
+                if(el) el.innerText = "0.00";
+            });
             
             document.getElementById('dir_vm').innerText = "";
             document.getElementById('dir_vM').innerText = "";
@@ -320,16 +315,16 @@
             let transfer_K = KM; 
             let efficiency = (transfer_K / K0) * 100;
 
-            // 更新儀表板
-            document.getElementById('dat_vm').innerHTML = `${Math.abs(v_m_after).toFixed(2)}<span class="unit">m/s</span>`;
-            document.getElementById('dat_Km').innerHTML = `${Km.toFixed(2)}<span class="unit">J</span>`;
-            document.getElementById('dat_loss_P').innerHTML = `${transfer_P.toFixed(2)}`;
-            document.getElementById('dat_loss_K').innerHTML = `${transfer_K.toFixed(2)}<span class="unit">J</span>`;
+            // 更新儀表板 (僅修改 innerText 以保護結構)
+            document.getElementById('dat_vm').innerText = Math.abs(v_m_after).toFixed(2);
+            document.getElementById('dat_Km').innerText = Km.toFixed(2);
+            document.getElementById('dat_loss_P').innerText = transfer_P.toFixed(2);
+            document.getElementById('dat_loss_K').innerText = transfer_K.toFixed(2);
             
-            document.getElementById('dat_vM').innerHTML = `${Math.abs(v_M_after).toFixed(2)}<span class="unit">m/s</span>`;
-            document.getElementById('dat_KM').innerHTML = `${KM.toFixed(2)}<span class="unit">J</span>`;
-            document.getElementById('dat_gain_P').innerHTML = `${transfer_P.toFixed(2)}`;
-            document.getElementById('dat_gain_K').innerHTML = `${transfer_K.toFixed(2)}<span class="unit">J</span>`;
+            document.getElementById('dat_vM').innerText = Math.abs(v_M_after).toFixed(2);
+            document.getElementById('dat_KM').innerText = KM.toFixed(2);
+            document.getElementById('dat_gain_P').innerText = transfer_P.toFixed(2);
+            document.getElementById('dat_gain_K').innerText = transfer_K.toFixed(2);
             
             // 方向標示
             if (Math.abs(v_m_after) < 0.01) {
@@ -343,6 +338,7 @@
             document.getElementById('progress_bar').style.width = `${efficiency}%`;
         }
 
+        // 綁定事件
         sl_m.addEventListener('input', initSimulation);
         sl_M.addEventListener('input', initSimulation);
         sl_theta.addEventListener('input', initSimulation);
