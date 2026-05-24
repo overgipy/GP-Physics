@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>一維完全彈性碰撞模擬器 - 視覺優化版</title>
+    <title>一維完全彈性碰撞模擬器 - 完美教學版</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -53,17 +53,8 @@
             display: flex; justify-content: space-between; align-items: center;
         }
 
-        #canvas-container {
-            width: 100%; display: flex; justify-content: center;
-            background: #080a0f; border-radius: 8px; overflow: hidden; border: 1px solid #1a202c;
-            padding: 20px 0;
-        }
-        canvas { width: 100%; height: auto; max-height: 200px; display: block; }
-
-        .controls-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 15px;
-        }
-
+        /* 控制區樣式 */
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 15px; }
         .control-group { background-color: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid #222b3a; }
         .control-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px; color: #b0c0d6; }
         .control-label b { font-family: monospace; font-size: 1rem; }
@@ -80,7 +71,7 @@
         }
 
         .playback-bar {
-            display: flex; align-items: center; gap: 15px; margin-top: 10px;
+            display: flex; align-items: center; gap: 15px; margin-top: 5px;
             background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px;
         }
 
@@ -90,8 +81,18 @@
         }
         button:hover { opacity: 0.9; box-shadow: 0 0 10px rgba(0, 212, 255, 0.5); }
 
+        /* 動畫區樣式 */
+        #canvas-container {
+            width: 100%; display: flex; justify-content: center;
+            background: #080a0f; border-radius: 8px; overflow: hidden; border: 1px solid #1a202c;
+            padding: 15px 0;
+        }
+        canvas { width: 100%; height: auto; max-height: 200px; display: block; }
+
+        /* 圖表區樣式 */
         .chart-container { position: relative; width: 100%; height: 220px; }
 
+        /* 儀表板樣式 */
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
         .meter { background: #111622; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #1f2736; }
         .meter-title { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
@@ -110,33 +111,23 @@
 
     <div class="container">
         <div class="card">
-            <div class="card-title">
-                <span>物理真實場景 (形變與相對距離)</span>
-                <span id="collision-indicator" style="font-size:0.8rem; padding:2px 6px; border-radius:4px;">未碰撞</span>
-            </div>
-            <div id="canvas-container">
-                <canvas id="simCanvas" width="800" height="200"></canvas>
-            </div>
-        </div>
-
-        <div class="card">
             <div class="card-title">實驗參數設定與時間控制</div>
             <div class="controls-grid">
                 <div class="control-group">
                     <div class="control-label">球 A 質量 <b class="cyan-text"><span id="lbl_mA">2.0</span> kg</b></div>
-                    <input type="range" id="param_mA" min="0.5" max="5.0" value="2.0" step="0.1">
+                    <input type="range" id="param_mA" min="0.5" max="4.0" value="2.0" step="0.1">
                 </div>
                 <div class="control-group">
-                    <div class="control-label">球 A 初速 <b class="cyan-text"><span id="lbl_vA">5.0</span> m/s</b></div>
-                    <input type="range" id="param_vA" min="0.0" max="10.0" value="5.0" step="0.5">
+                    <div class="control-label">球 A 初速 <b class="cyan-text"><span id="lbl_vA">3.0</span> m/s</b></div>
+                    <input type="range" id="param_vA" min="0.0" max="6.0" value="3.0" step="0.5">
                 </div>
                 <div class="control-group">
                     <div class="control-label">球 B 質量 <b class="pink-text"><span id="lbl_mB">1.0</span> kg</b></div>
-                    <input type="range" id="param_mB" min="0.5" max="5.0" value="1.0" step="0.1">
+                    <input type="range" id="param_mB" min="0.5" max="4.0" value="1.0" step="0.1">
                 </div>
                 <div class="control-group">
-                    <div class="control-label">球 B 初速 <b class="pink-text"><span id="lbl_vB">-5.0</span> m/s</b></div>
-                    <input type="range" id="param_vB" min="-10.0" max="0.0" value="-5.0" step="0.5">
+                    <div class="control-label">球 B 初速 <b class="pink-text"><span id="lbl_vB">-2.0</span> m/s</b></div>
+                    <input type="range" id="param_vB" min="-6.0" max="0.0" value="-2.0" step="0.5">
                 </div>
             </div>
 
@@ -147,8 +138,18 @@
                         <span>時間軸自由拖曳</span>
                         <span>t = <b id="lbl_time" style="color:#fff; font-family:monospace;">0.00</b> s</span>
                     </div>
-                    <input type="range" id="timeSlider" min="0" max="1999" value="0">
+                    <input type="range" id="timeSlider" min="0" max="1249" value="0">
                 </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <span>物理真實場景 (形變與相對距離)</span>
+                <span id="collision-indicator" style="font-size:0.8rem; padding:2px 6px; border-radius:4px;">未碰撞</span>
+            </div>
+            <div id="canvas-container">
+                <canvas id="simCanvas" width="800" height="200"></canvas>
             </div>
         </div>
 
@@ -194,12 +195,12 @@
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
         
-        // --- 核心物理比例尺與常數 ---
-        const DT = 0.002;          // 時間步長 0.002s
-        const TOTAL_STEPS = 2000;  // 總時長 4.0s
-        const R_METER = 1.0;       // 球的真實物理半徑 (1公尺)
-        const K_SPRING = 200;      // 彈簧常數調軟！讓碰撞時間拉長到肉眼可見 (約0.4秒)
-        const SCALE = 45;          // 畫面比例：1公尺 = 45像素
+        // --- 重新調校的完美物理比例尺 ---
+        const DT = 0.002;          // 時間步長
+        const TOTAL_STEPS = 1250;  // 總時長縮短為 2.5s (能將碰撞時間放大顯示)
+        const R_METER = 1.3;       // 放大物理半徑(1.3公尺)，避免高動能時完全穿透
+        const K_SPRING = 40;       // 更軟的彈簧！拉長碰撞時間 (約佔圖表25%~35%)
+        const SCALE = 32;          // 畫面比例：1公尺 = 32像素 (畫布800px對應25公尺)
         const R_PX = R_METER * SCALE; 
         
         let simulationHistory = []; 
@@ -230,14 +231,13 @@
             let mB = parseFloat(pmB.value);
             let vB = parseFloat(pvB.value);
             
-            // 初始位置設定：A在左(4m)，B在右(14m)，總畫布約寬度18m
-            let xA = 4.0;
+            // 初始位置拉近：A在左(5m)，B在右(14m)，總長度約25m
+            let xA = 5.0;
             let xB = 14.0;
 
             for (let step = 0; step < TOTAL_STEPS; step++) {
                 let t = step * DT;
                 
-                // 距離與壓縮量
                 let dx = xB - xA;
                 let distance = Math.abs(dx);
                 let overlap = (R_METER * 2) - distance;
@@ -245,23 +245,19 @@
                 let force = 0;
                 let Us = 0;
                 
-                // 發生碰撞形變
                 if (overlap > 0) {
-                    force = K_SPRING * overlap; // 虎克定律
-                    Us = 0.5 * K_SPRING * overlap * overlap; // 彈性位能
+                    force = K_SPRING * overlap; 
+                    Us = 0.5 * K_SPRING * overlap * overlap; 
                 }
                 
-                // 計算加速度 (A在左受向左的力，B在右受向右的力)
                 let aA = -force / mA;
                 let aB = force / mB;
                 
-                // 更新速度與位置
                 vA += aA * DT;
                 vB += aB * DT;
                 xA += vA * DT;
                 xB += vB * DT;
                 
-                // 能量計算
                 let vc = (mA * vA + mB * vB) / (mA + mB);
                 let Kc = 0.5 * (mA + mB) * vc * vc;
                 let Ktotal = 0.5 * mA * vA * vA + 0.5 * mB * vB * vB;
@@ -282,11 +278,9 @@
             const labels = simulationHistory.map(d => d.t.toFixed(2));
             const dataA = simulationHistory.map(d => d.vA);
             const dataB = simulationHistory.map(d => d.vB);
-            const dataVc = simulationHistory.map(d => d.vc); // 質心速度線
+            const dataVc = simulationHistory.map(d => d.vc); 
 
-            if(chartInstance) {
-                chartInstance.destroy(); 
-            }
+            if(chartInstance) { chartInstance.destroy(); }
 
             chartInstance = new Chart(ctxChart, {
                 type: 'line',
@@ -318,7 +312,6 @@
             lblTime.innerText = data.t.toFixed(2);
             timeSlider.value = currentIndex;
 
-            // 更新儀表板數據
             document.getElementById('dat_vA').innerHTML = `${data.vA.toFixed(2)}<span class="unit">m/s</span>`;
             document.getElementById('dat_vB').innerHTML = `${data.vB.toFixed(2)}<span class="unit">m/s</span>`;
             document.getElementById('dat_vc').innerHTML = `${data.vc.toFixed(2)}<span class="unit">m/s</span>`;
@@ -326,7 +319,6 @@
             document.getElementById('dat_Kint').innerHTML = `${data.Kint.toFixed(2)}<span class="unit">J</span>`;
             document.getElementById('dat_Us').innerHTML = `${data.Us.toFixed(2)}<span class="unit">J</span>`;
 
-            // 狀態指示燈
             if (data.overlap > 0) {
                 colIndicator.innerText = "💥 壓縮形變中";
                 colIndicator.style.backgroundColor = "rgba(255, 46, 99, 0.2)";
@@ -337,48 +329,39 @@
                 colIndicator.style.color = "#00e676";
             }
 
-            // 更新圖表上的垂直時間線
-            const minV = -15, maxV = 15;
+            const minV = -10, maxV = 10;
             chartInstance.data.datasets[3].data = [
                 {x: chartInstance.data.labels[currentIndex], y: minV},
                 {x: chartInstance.data.labels[currentIndex], y: maxV}
             ];
             chartInstance.update('none');
 
-            // --- Canvas 繪圖 ---
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            let cy = canvas.height / 2 + 20; // 稍微往下移，留出上方畫距離線的空間
+            let cy = canvas.height / 2 + 20; 
 
-            // 畫中心軌道線
             ctx.strokeStyle = '#1a2230'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]);
             ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(canvas.width, cy); ctx.stroke(); ctx.setLineDash([]);
 
-            // 換算畫面座標
             let px_xA = data.xA * SCALE;
             let px_xB = data.xB * SCALE;
             let px_overlap = data.overlap * SCALE;
 
-            // 繪製上方「距離 d = ...」標示線
+            // 繪製距離標示線
             ctx.strokeStyle = '#8a99ad'; ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(px_xA, cy - R_PX - 15);
             ctx.lineTo(px_xB, cy - R_PX - 15);
             ctx.stroke();
-            
-            // 兩端的垂直小短線
             ctx.beginPath(); ctx.moveTo(px_xA, cy - R_PX - 20); ctx.lineTo(px_xA, cy - R_PX - 10); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(px_xB, cy - R_PX - 20); ctx.lineTo(px_xB, cy - R_PX - 10); ctx.stroke();
-
-            // 距離文字
             ctx.fillStyle = '#f0f3f8'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
             ctx.fillText(`距離 d = ${data.distance.toFixed(2)} m`, (px_xA + px_xB) / 2, cy - R_PX - 25);
 
-            // 完美的形變數學：若壓縮，rx 減少一半，兩球邊緣剛好完美貼齊在中心
+            // 真實物理面積守恆形變算法: rx * ry = R^2 
             let rx = R_PX - (px_overlap / 2); 
-            let ry = R_PX + (px_overlap * 0.6); // 縱向稍微隆起表現體積守恆
-            if (rx < 5) rx = 5; // 極限保護
-            
-            // 畫球 A
+            if (rx < 8) rx = 8; 
+            let ry = (R_PX * R_PX) / rx; // 上下真實隆起
+
             ctx.beginPath();
             ctx.ellipse(px_xA, cy, rx, ry, 0, 0, Math.PI * 2);
             ctx.fillStyle = 'rgba(0, 212, 255, 0.85)';
@@ -386,7 +369,6 @@
             ctx.shadowColor = 'rgba(0, 212, 255, 0.5)';
             ctx.fill();
             
-            // 畫球 B
             ctx.beginPath();
             ctx.ellipse(px_xB, cy, rx, ry, 0, 0, Math.PI * 2);
             ctx.fillStyle = 'rgba(255, 46, 99, 0.85)';
@@ -394,7 +376,6 @@
             ctx.shadowColor = 'rgba(255, 46, 99, 0.5)';
             ctx.fill();
             
-            // 標籤文字
             ctx.shadowBlur = 0; ctx.fillStyle = '#fff'; ctx.font = 'bold 16px sans-serif'; ctx.textBaseline = 'middle';
             ctx.fillText('A', px_xA, cy);
             ctx.fillText('B', px_xB, cy);
@@ -402,7 +383,7 @@
 
         function tick() {
             if (isPlaying) {
-                currentIndex += 4; // 播放速度微調
+                currentIndex += 3; // 優化播放速度感
                 if (currentIndex >= TOTAL_STEPS) currentIndex = 0; 
                 renderFrame();
             }
@@ -414,10 +395,7 @@
             lblvA.innerText = parseFloat(pvA.value).toFixed(1);
             lblmB.innerText = parseFloat(pmB.value).toFixed(1);
             lblvB.innerText = parseFloat(pvB.value).toFixed(1);
-
-            runPhysicsSimulation();
-            initChart();
-            renderFrame();
+            runPhysicsSimulation(); initChart(); renderFrame();
         }
 
         btnPlayPause.addEventListener('click', () => {
@@ -426,20 +404,13 @@
         });
 
         timeSlider.addEventListener('input', function() {
-            isPlaying = false; 
-            btnPlayPause.innerText = '播放';
-            currentIndex = parseInt(this.value);
-            renderFrame();
+            isPlaying = false; btnPlayPause.innerText = '播放';
+            currentIndex = parseInt(this.value); renderFrame();
         });
 
-        [pmA, pvA, pmB, pvB].forEach(slider => {
-            slider.addEventListener('input', refreshExperiment);
-        });
+        [pmA, pvA, pmB, pvB].forEach(slider => { slider.addEventListener('input', refreshExperiment); });
 
-        // 啟動
-        runPhysicsSimulation();
-        initChart();
-        requestAnimationFrame(tick);
+        runPhysicsSimulation(); initChart(); requestAnimationFrame(tick);
     </script>
 </body>
 </html>
