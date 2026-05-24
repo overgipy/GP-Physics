@@ -154,8 +154,8 @@
 
         // 物理常數
         const g = 9.8;
-        const L_meter = 1.0; // 物理繩長固定為 1m，降低衝擊速度，減緩震盪
-        const L_px = 180;    // 畫面視覺長度保持不變
+        const L_meter = 1.0; 
+        const L_px = 180;    
         const pivotX = 550; 
         const pivotY = 30;  
         
@@ -221,7 +221,7 @@
             const dt = 0.02; // 動畫時間步長
 
             if (phase === 1) {
-                // 單擺擺動：簡諧運動角加速度 (縮放時間以利視覺舒適)
+                // 單擺擺動：簡諧運動角加速度
                 let alpha = -(g / L_meter) * Math.sin(theta) * dt;
                 omega += alpha;
                 theta += omega;
@@ -234,18 +234,18 @@
                     v_m_after = ((m - M) / (m + M)) * v0_impact;
                     v_M_after = ((2 * m) / (m + M)) * v0_impact;
                     
-                    // 轉換角速度供後續擺動 (v = r*omega)
-                    // 由於 L = 1m，omega 數值上等於速度，再乘上 dt 保持視覺一致性
-                    omega = (v_m_after / L_meter) * dt * 1.5; 
+                    // 【精準修正】轉換角速度供後續擺動 (v = r*omega)
+                    // 向左(v為正)對應 theta 往負方向，因此加上負號；乘以 dt 以符合系統積分
+                    omega = -(v_m_after / L_meter) * dt; 
                     
                     updateDashboard();
                 }
             } else if (phase === 2) {
-                // 碰後擺動與滑行
+                // 【精準修正】碰後擺動與滑行 (移除阻尼，完全遵守力學能守恆！)
                 let alpha = -(g / L_meter) * Math.sin(theta) * dt;
                 omega += alpha;
                 theta += omega;
-                omega *= 0.995; // 增加輕微阻尼避免無止盡震盪
+                // 注意：這裡移除了 omega *= 0.995; 讓力學能完美守恆
                 
                 blockX -= v_M_after * 2; // 視覺滑動速度
             }
@@ -271,70 +271,4 @@
             ctx.fillStyle = '#ff2e63';
             ctx.fillRect(blockX - blockWidth/2, blockY + bobRadius - blockWidth, blockWidth, blockWidth);
             ctx.fillStyle = '#fff'; ctx.font = 'bold 16px Arial'; ctx.textAlign = 'center';
-            ctx.fillText('M', blockX, blockY + bobRadius - blockWidth/2 + 6);
-
-            let bobX = pivotX + L_px * Math.sin(theta);
-            let bobY = pivotY + L_px * Math.cos(theta);
-
-            ctx.beginPath(); ctx.moveTo(pivotX, pivotY); ctx.lineTo(bobX, bobY);
-            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
-
-            ctx.beginPath(); ctx.arc(bobX, bobY, bobRadius, 0, Math.PI * 2);
-            ctx.fillStyle = '#00d4ff'; ctx.fill();
-            ctx.fillStyle = '#000'; ctx.fillText('m', bobX, bobY + 5);
-        }
-
-        function resetDashboard() {
-            const ids = ['dat_v0', 'dat_K0', 'dat_vm', 'dat_Km', 'dat_loss_P', 'dat_loss_K', 'dat_vM', 'dat_KM', 'dat_gain_P', 'dat_gain_K'];
-            ids.forEach(id => document.getElementById(id).innerHTML = `0.00`);
-            document.getElementById('dat_efficiency').innerText = `0.0 %`;
-            document.getElementById('progress_bar').style.width = `0%`;
-        }
-
-        function updateDashboard() {
-            // 初始量
-            let P0 = m * v0_impact;
-            let K0 = 0.5 * m * v0_impact * v0_impact;
-            
-            // 撞後 m
-            let Km = 0.5 * m * v_m_after * v_m_after;
-            let Pm = m * v_m_after;
-            
-            // 撞後 M
-            let KM = 0.5 * M * v_M_after * v_M_after;
-            let PM = M * v_M_after;
-            
-            // 變化量
-            let loss_K = K0 - Km;
-            let loss_P = P0 - Pm;
-            
-            let gain_K = KM;
-            let gain_P = PM;
-            
-            let efficiency = (gain_K / K0) * 100;
-
-            // UI 更新
-            document.getElementById('dat_vm').innerHTML = `${v_m_after.toFixed(2)}<span class="unit">m/s</span>`;
-            document.getElementById('dat_Km').innerHTML = `${Km.toFixed(2)}<span class="unit">J</span>`;
-            document.getElementById('dat_loss_P').innerHTML = `${loss_P.toFixed(2)}`;
-            document.getElementById('dat_loss_K').innerHTML = `${loss_K.toFixed(2)}<span class="unit">J</span>`;
-            
-            document.getElementById('dat_vM').innerHTML = `${v_M_after.toFixed(2)}<span class="unit">m/s</span>`;
-            document.getElementById('dat_KM').innerHTML = `${KM.toFixed(2)}<span class="unit">J</span>`;
-            document.getElementById('dat_gain_P').innerHTML = `${gain_P.toFixed(2)}`;
-            document.getElementById('dat_gain_K').innerHTML = `${gain_K.toFixed(2)}<span class="unit">J</span>`;
-            
-            document.getElementById('dat_efficiency').innerText = `${efficiency.toFixed(1)} %`;
-            document.getElementById('progress_bar').style.width = `${efficiency}%`;
-        }
-
-        sl_m.addEventListener('input', initSimulation);
-        sl_M.addEventListener('input', initSimulation);
-        sl_theta.addEventListener('input', initSimulation);
-        btn_play.addEventListener('click', play);
-        btn_reset.addEventListener('click', initSimulation);
-
-        initSimulation();
-    </script>
-</body>
-</html>
+            ctx.fillText('M', blockX, blockY + bobRadius - blockWidth/2 +
