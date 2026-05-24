@@ -48,6 +48,7 @@
         .meter-title { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
         .meter-value { font-size: 1.2rem; font-weight: bold; font-family: monospace; }
         .unit { font-size: 0.75rem; color: #55657d; margin-left: 2px; }
+        .dir-tag { font-size: 0.75rem; color: #888; font-weight: normal; margin-left: 4px; }
 
         .transfer-bar-container { background: #111622; padding: 15px; border-radius: 8px; border: 1px solid #1f2736; text-align: center;}
         .progress-bg { width: 100%; height: 20px; background: #222; border-radius: 10px; overflow: hidden; margin-top: 10px; border: 1px solid #333;}
@@ -60,7 +61,7 @@
 
     <header>
         <h1>🧪 李捷物理實驗室</h1>
-        <p class="subtitle">單擺與木塊完全彈性碰撞 (能量與動量分析)</p>
+        <p class="subtitle">單擺與木塊完全彈性碰撞 (力學能守恆版)</p>
     </header>
 
     <div class="container">
@@ -116,17 +117,17 @@
             <div class="data-section">
                 <div class="data-section-title" style="border-color: var(--cyan);">擺錘 (m) 狀態與損失量</div>
                 <div class="dashboard-grid">
-                    <div class="meter"><div class="meter-title">撞後速度 v_m</div><div class="meter-value cyan-text" id="dat_vm">0.00<span class="unit">m/s</span></div></div>
+                    <div class="meter"><div class="meter-title">撞後速度 v_m</div><div class="meter-value cyan-text" id="dat_vm">0.00<span class="unit">m/s</span><span class="dir-tag" id="dir_vm"></span></div></div>
                     <div class="meter"><div class="meter-title">撞後動能 K_m</div><div class="meter-value cyan-text" id="dat_Km">0.00<span class="unit">J</span></div></div>
-                    <div class="meter"><div class="meter-title" style="color:var(--pink);">損失動量 ΔP_m</div><div class="meter-value" id="dat_loss_P">0.00</div></div>
-                    <div class="meter"><div class="meter-title" style="color:var(--pink);">損失動能 ΔK_m</div><div class="meter-value" id="dat_loss_K">0.00<span class="unit">J</span></div></div>
+                    <div class="meter"><div class="meter-title" style="color:var(--pink);">轉移動量 ΔP_m</div><div class="meter-value" id="dat_loss_P">0.00</div></div>
+                    <div class="meter"><div class="meter-title" style="color:var(--pink);">轉移動能 ΔK_m</div><div class="meter-value" id="dat_loss_K">0.00<span class="unit">J</span></div></div>
                 </div>
             </div>
 
             <div class="data-section">
                 <div class="data-section-title" style="border-color: var(--pink);">木塊 (M) 狀態與獲得量</div>
                 <div class="dashboard-grid">
-                    <div class="meter"><div class="meter-title">撞後速度 v_M</div><div class="meter-value pink-text" id="dat_vM">0.00<span class="unit">m/s</span></div></div>
+                    <div class="meter"><div class="meter-title">撞後速度 v_M</div><div class="meter-value pink-text" id="dat_vM">0.00<span class="unit">m/s</span><span class="dir-tag" id="dir_vM"></span></div></div>
                     <div class="meter"><div class="meter-title">撞後動能 K_M</div><div class="meter-value pink-text" id="dat_KM">0.00<span class="unit">J</span></div></div>
                     <div class="meter"><div class="meter-title" style="color:var(--green);">獲得動量 ΔP_M</div><div class="meter-value" id="dat_gain_P">0.00</div></div>
                     <div class="meter"><div class="meter-title" style="color:var(--green);">獲得動能 ΔK_M</div><div class="meter-value" id="dat_gain_K">0.00<span class="unit">J</span></div></div>
@@ -141,7 +142,7 @@
                 <div class="progress-bg">
                     <div class="progress-fill" id="progress_bar"></div>
                 </div>
-                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;">提示：當 M = m 時，轉移效率可達 100%</div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;">提示：當 M = m 時，轉移效率可達 100% (完全交換)</div>
             </div>
 
         </div>
@@ -152,7 +153,7 @@
         const canvas = document.getElementById('simCanvas');
         const ctx = canvas.getContext('2d');
 
-        // 物理常數
+        // --- 核心物理常數 ---
         const g = 9.8;
         const L_meter = 1.0; 
         const L_px = 180;    
@@ -163,7 +164,7 @@
         let M = 2.0;
         let initialTheta = Math.PI / 3; 
         let theta = initialTheta;
-        let omega = 0;
+        let omega = 0; // 角速度 (rad/s)
         
         let blockX = 0;
         const blockY = pivotY + L_px; 
@@ -175,13 +176,14 @@
         let v_m_after = 0;
         let v_M_after = 0;
 
-        // DOM
+        // DOM 綁定
         const sl_m = document.getElementById('sl_m');
         const sl_M = document.getElementById('sl_M');
         const sl_theta = document.getElementById('sl_theta');
         const btn_play = document.getElementById('btn_play');
         const btn_reset = document.getElementById('btn_reset');
 
+        // 初始化環境
         function initSimulation() {
             m = parseFloat(sl_m.value);
             M = parseFloat(sl_M.value);
@@ -196,6 +198,7 @@
             omega = 0;
             phase = 0;
             
+            // 木塊放置於最低點左側剛好接觸處
             blockX = pivotX - bobRadius - blockWidth/2;
             
             resetDashboard();
@@ -205,10 +208,9 @@
         function play() {
             if (phase === 0) {
                 phase = 1;
-                // 真實物理衝擊速度 v = sqrt(2gL(1-cos(theta)))
+                // 力學能守恆計算初速 v = sqrt(2gL(1-cos(theta)))
                 v0_impact = Math.sqrt(2 * g * L_meter * (1 - Math.cos(initialTheta)));
                 
-                // 更新第一區塊初始數據
                 document.getElementById('dat_v0').innerHTML = `${v0_impact.toFixed(2)}<span class="unit">m/s</span>`;
                 let K0 = 0.5 * m * v0_impact * v0_impact;
                 document.getElementById('dat_K0').innerHTML = `${K0.toFixed(2)}<span class="unit">J</span>`;
@@ -217,37 +219,39 @@
             }
         }
 
+        // 核心物理引擎 (完美力學能守恆)
         function loop() {
-            const dt = 0.02; // 動畫時間步長
+            const dt = 0.02; // 時間步長
 
             if (phase === 1) {
-                // 單擺擺動：簡諧運動角加速度
-                let alpha = -(g / L_meter) * Math.sin(theta) * dt;
-                omega += alpha;
-                theta += omega;
+                // 碰撞前擺盪
+                let alpha = -(g / L_meter) * Math.sin(theta);
+                omega += alpha * dt;
+                theta += omega * dt;
                 
+                // 抵達最低點，發生碰撞
                 if (theta <= 0) {
                     theta = 0;
                     phase = 2;
                     
-                    // 碰撞公式 (向左為正方向)
+                    // 1D彈性碰撞公式 (定義向左為正)
                     v_m_after = ((m - M) / (m + M)) * v0_impact;
                     v_M_after = ((2 * m) / (m + M)) * v0_impact;
                     
-                    // 【精準修正】轉換角速度供後續擺動 (v = r*omega)
-                    // 向左(v為正)對應 theta 往負方向，因此加上負號；乘以 dt 以符合系統積分
-                    omega = -(v_m_after / L_meter) * dt; 
+                    // 將碰撞後的線速度轉換為角速度 ω = v/r
+                    // 因為向左(正向)對應 theta 小於 0，所以掛上負號完美銜接反彈
+                    omega = -(v_m_after / L_meter); 
                     
                     updateDashboard();
                 }
             } else if (phase === 2) {
-                // 【精準修正】碰後擺動與滑行 (移除阻尼，完全遵守力學能守恆！)
-                let alpha = -(g / L_meter) * Math.sin(theta) * dt;
-                omega += alpha;
-                theta += omega;
-                // 注意：這裡移除了 omega *= 0.995; 讓力學能完美守恆
+                // 碰撞後擺盪 (完全沒有阻尼摩擦，精準反彈)
+                let alpha = -(g / L_meter) * Math.sin(theta);
+                omega += alpha * dt;
+                theta += omega * dt;
                 
-                blockX -= v_M_after * 2; // 視覺滑動速度
+                // 木塊在無摩擦力平面等速滑動 (視覺放大係數 60)
+                blockX -= v_M_after * dt * 60; 
             }
             
             draw();
@@ -257,18 +261,96 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
+            // 繪製天花板
             ctx.fillStyle = '#444'; ctx.fillRect(pivotX - 100, pivotY - 10, 200, 10);
             for(let i=pivotX-100; i<pivotX+100; i+=10) {
                 ctx.beginPath(); ctx.moveTo(i, pivotY-10); ctx.lineTo(i+10, pivotY-20);
                 ctx.strokeStyle='#666'; ctx.stroke();
             }
 
+            // 繪製地板
             ctx.fillStyle = '#ccc'; ctx.fillRect(0, blockY + bobRadius, canvas.width, 40);
-
             ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.moveTo(pivotX, pivotY); ctx.lineTo(pivotX, blockY);
             ctx.strokeStyle = '#555'; ctx.stroke(); ctx.setLineDash([]);
 
+            // 繪製木塊 M
             ctx.fillStyle = '#ff2e63';
             ctx.fillRect(blockX - blockWidth/2, blockY + bobRadius - blockWidth, blockWidth, blockWidth);
             ctx.fillStyle = '#fff'; ctx.font = 'bold 16px Arial'; ctx.textAlign = 'center';
-            ctx.fillText('M', blockX, blockY + bobRadius - blockWidth/2 +
+            ctx.fillText('M', blockX, blockY + bobRadius - blockWidth/2 + 6);
+
+            // 繪製單擺 m
+            let bobX = pivotX + L_px * Math.sin(theta);
+            let bobY = pivotY + L_px * Math.cos(theta);
+
+            ctx.beginPath(); ctx.moveTo(pivotX, pivotY); ctx.lineTo(bobX, bobY);
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+
+            ctx.beginPath(); ctx.arc(bobX, bobY, bobRadius, 0, Math.PI * 2);
+            ctx.fillStyle = '#00d4ff'; ctx.fill();
+            ctx.fillStyle = '#000'; ctx.fillText('m', bobX, bobY + 5);
+        }
+
+        function resetDashboard() {
+            document.getElementById('dat_v0').innerHTML = `0.00<span class="unit">m/s</span>`;
+            document.getElementById('dat_K0').innerHTML = `0.00<span class="unit">J</span>`;
+            document.getElementById('dat_vm').innerHTML = `0.00<span class="unit">m/s</span>`;
+            document.getElementById('dat_Km').innerHTML = `0.00<span class="unit">J</span>`;
+            document.getElementById('dat_loss_P').innerHTML = `0.00`;
+            document.getElementById('dat_loss_K').innerHTML = `0.00<span class="unit">J</span>`;
+            document.getElementById('dat_vM').innerHTML = `0.00<span class="unit">m/s</span>`;
+            document.getElementById('dat_KM').innerHTML = `0.00<span class="unit">J</span>`;
+            document.getElementById('dat_gain_P').innerHTML = `0.00`;
+            document.getElementById('dat_gain_K').innerHTML = `0.00<span class="unit">J</span>`;
+            
+            document.getElementById('dir_vm').innerText = "";
+            document.getElementById('dir_vM').innerText = "";
+            document.getElementById('dat_efficiency').innerText = `0.0 %`;
+            document.getElementById('progress_bar').style.width = `0%`;
+        }
+
+        function updateDashboard() {
+            let P0 = m * v0_impact;
+            let K0 = 0.5 * m * v0_impact * v0_impact;
+            
+            let Km = 0.5 * m * v_m_after * v_m_after;
+            let KM = 0.5 * M * v_M_after * v_M_after;
+            
+            let transfer_P = Math.abs(M * v_M_after); 
+            let transfer_K = KM; 
+            let efficiency = (transfer_K / K0) * 100;
+
+            // 更新儀表板
+            document.getElementById('dat_vm').innerHTML = `${Math.abs(v_m_after).toFixed(2)}<span class="unit">m/s</span>`;
+            document.getElementById('dat_Km').innerHTML = `${Km.toFixed(2)}<span class="unit">J</span>`;
+            document.getElementById('dat_loss_P').innerHTML = `${transfer_P.toFixed(2)}`;
+            document.getElementById('dat_loss_K').innerHTML = `${transfer_K.toFixed(2)}<span class="unit">J</span>`;
+            
+            document.getElementById('dat_vM').innerHTML = `${Math.abs(v_M_after).toFixed(2)}<span class="unit">m/s</span>`;
+            document.getElementById('dat_KM').innerHTML = `${KM.toFixed(2)}<span class="unit">J</span>`;
+            document.getElementById('dat_gain_P').innerHTML = `${transfer_P.toFixed(2)}`;
+            document.getElementById('dat_gain_K').innerHTML = `${transfer_K.toFixed(2)}<span class="unit">J</span>`;
+            
+            // 方向標示
+            if (Math.abs(v_m_after) < 0.01) {
+                document.getElementById('dir_vm').innerText = "(靜止)";
+            } else {
+                document.getElementById('dir_vm').innerText = v_m_after < 0 ? "(向右反彈)" : "(向左前進)";
+            }
+            if (Math.abs(v_M_after) > 0.01) document.getElementById('dir_vM').innerText = "(向左)";
+            
+            document.getElementById('dat_efficiency').innerText = `${efficiency.toFixed(1)} %`;
+            document.getElementById('progress_bar').style.width = `${efficiency}%`;
+        }
+
+        sl_m.addEventListener('input', initSimulation);
+        sl_M.addEventListener('input', initSimulation);
+        sl_theta.addEventListener('input', initSimulation);
+        btn_play.addEventListener('click', play);
+        btn_reset.addEventListener('click', initSimulation);
+
+        // 確保 DOM 載入後執行初始繪製
+        initSimulation();
+    </script>
+</body>
+</html>
