@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>帶電粒子在磁場中的運動 - 李捷物理實驗室</title>
+    <style>
+        :root { --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432; --text-main: #f0f3f8; --text-muted: #9aa8bd; --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676;
+            --vel: #4d8dff; --fmag: #ff4d6d; --felec: #ff9f43; --grav: #9aa8bd; --bfield: #35d6ff; }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6; }
+        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; } .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
+        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; } h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; } .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
+        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
+        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
+        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+        .mode-btn { flex: 1 1 200px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 10px 12px; font-size: .92rem; cursor: pointer; text-align: left; } .mode-btn b { display: block; color: var(--cyan); } .mode-btn.active { border-color: var(--cyan); background: #12303a; }
+        .mode-desc { font-size: .92rem; color: var(--text-muted); margin-bottom: 12px; }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; } .control-group.off { display: none; }
+        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; } .control-label b { font-family: monospace; font-size: 1.05rem; }
+        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
+        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; } input[type=range]:disabled { cursor: not-allowed; opacity: .5; }
+        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
+        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; } .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; } button.btn.secondary { background: #3a465b; color: #fff; } button.btn.green { background: var(--green); color: #00210f; }
+        button.btn:disabled { opacity: .4; cursor: not-allowed; } button.btn:not(:disabled):hover { filter: brightness(1.12); }
+        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; } canvas { display: block; width: 100%; height: auto; }
+        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; } .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #111622; font-size: 1rem; } .status b { color: var(--yellow); }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; } .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; } .meter-title { font-size: .82rem; color: var(--text-muted); } .meter-value { font-size: 1.25rem; font-weight: bold; font-family: monospace; } .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
+        .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+        table { width: 100%; border-collapse: collapse; font-size: .88rem; font-family: monospace; } th, td { border-bottom: 1px solid #263044; padding: 5px 6px; text-align: right; } th { color: var(--text-muted); font-weight: normal; } .table-scroll { max-height: 260px; overflow-y: auto; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; } .fit-text b { color: var(--yellow); }
+        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; } summary { cursor: pointer; font-weight: bold; color: var(--cyan); } details ol, details ul { margin: 8px 0 2px; padding-left: 22px; } details li { margin-bottom: 4px; }
+        .assume { font-size: .88rem; color: var(--text-muted); } footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>⚛️ 帶電粒子在磁場中的運動</h1>
+    <p class="subtitle">F = q v × B　｜　磁力不作功 → 速率不變　｜　r = mv ÷ (|q|B)　、　T = 2πm ÷ (|q|B)</p>
+</header>
+<div class="container">
+    <div class="card">
+        <div class="card-title">操作模式</div>
+        <div class="mode-bar">
+            <button class="mode-btn active" data-mode="circ"><b>① 圓周運動</b>垂直磁場射入：r、T 與 v 的關係</button>
+            <button class="mode-btn" data-mode="helix"><b>② 螺旋運動</b>速度與磁場有夾角；可加平行電場（106 指考）</button>
+            <button class="mode-btn" data-mode="field"><b>③ 電場＋磁場</b>速度選擇器、擺線、油滴（範例 5）</button>
+            <button class="mode-btn" data-mode="mass"><b>④ 荷質比實驗</b>加速電壓 V、半圓軌跡，由 r²–V 求 q/m</button>
+        </div>
+        <div class="mode-desc" id="modeDesc"></div>
+        <div class="controls-grid">
+            <div class="control-group" id="grpQ"><div class="control-label"><span>電荷 q</span><b style="color:#ffe14d"><span id="lblQ">+1</span> C</b></div><select id="selQ"><option value="1">+1 C（正電荷）</option><option value="2">+2 C</option><option value="3">+3 C</option><option value="-1">−1 C（負電荷）</option><option value="-2">−2 C</option><option value="-3">−3 C</option></select></div>
+            <div class="control-group" id="grpM"><div class="control-label"><span>質量 m</span><b style="color:#ffe14d"><span id="lblM">1.0</span> kg</b></div><input type="range" id="slM" min="0.5" max="4" step="0.5" value="1"></div>
+            <div class="control-group" id="grpV"><div class="control-label"><span>初速率 v</span><b style="color:var(--vel)"><span id="lblV">4.0</span> m/s</b></div><input type="range" id="slV" min="1" max="8" step="0.5" value="4"></div>
+            <div class="control-group" id="grpAl"><div class="control-label"><span>初速方向（與 +x 夾角）</span><b style="color:var(--vel)"><span id="lblAl">0</span> °</b></div><input type="range" id="slAl" min="0" max="360" step="15" value="0"></div>
+            <div class="control-group" id="grpTh"><div class="control-label"><span>速度與磁場夾角 θ</span><b style="color:var(--vel)"><span id="lblTh">60</span> °</b></div><input type="range" id="slTh" min="0" max="180" step="5" value="60"><div class="sub-note">θ = 90° 為圓；θ = 0° 為沿磁場直線</div></div>
+            <div class="control-group" id="grpB"><div class="control-label"><span>磁場大小 B</span><b style="color:var(--bfield)"><span id="lblB">2.0</span> T</b></div><input type="range" id="slB" min="0.5" max="5" step="0.5" value="2"></div>
+            <div class="control-group" id="grpBd"><div class="control-label"><span>磁場方向</span></div><select id="selBd"><option value="1">出紙面 ⊙</option><option value="-1">入紙面 ⊗</option></select></div>
+            <div class="control-group" id="grpEz"><div class="control-label"><span>平行電場 E∥（沿 +z 為正）</span><b style="color:var(--felec)"><span id="lblEz">0.0</span> V/m</b></div><input type="range" id="slEz" min="-4" max="4" step="0.5" value="0"><div class="sub-note">E∥B：只改變沿 B 方向的運動</div></div>
+            <div class="control-group" id="grpE"><div class="control-label"><span>電場 E（向上為正）</span><b style="color:var(--felec)"><span id="lblE">4.0</span> V/m</b></div><input type="range" id="slE" min="-8" max="8" step="0.5" value="4"></div>
+            <div class="control-group" id="grpG"><div class="control-label"><span>重力加速度 g</span><b style="color:var(--grav)"><span id="lblG">0.0</span> m/s²</b></div><input type="range" id="slG" min="0" max="10" step="0.5" value="0"><div class="sub-note">設為 0 表示忽略重力；範例 5（油滴）可設 9.8</div></div>
+            <div class="control-group" id="grpSp"><div class="control-label"><span>粒子種類</span></div><select id="selSp"><option value="e">電子</option><option value="p">質子</option><option value="a">α 粒子</option><option value="d">氘核</option></select><div class="sub-note" id="spNote"></div></div>
+            <div class="control-group" id="grpVa"><div class="control-label"><span>加速電壓 V</span><b style="color:#ffe14d"><span id="lblVa">400</span> V</b></div><input type="range" id="slVa" min="100" max="1000" step="50" value="400"></div>
+            <div class="control-group" id="grpBm"><div class="control-label"><span>磁場 B（入紙面）</span><b style="color:var(--bfield)"><span id="lblBm">4</span> mT</b></div><input type="range" id="slBm" min="1" max="250" step="1" value="4"></div>
+            <div class="control-group"><div class="control-label"><span>播放速度</span></div><select id="selSlow"><option value="0.25">0.25 倍</option><option value="0.5">0.5 倍</option><option value="1" selected>1 倍</option><option value="2">2 倍</option></select></div>
+        </div>
+        <div class="check-row" id="chkRow">
+            <label><input type="checkbox" id="chkVec" checked> 顯示速度與力的向量</label><label><input type="checkbox" id="chkTrail" checked> 顯示軌跡</label><label><input type="checkbox" id="chkLoop"> 自動連續播放</label><label id="rowNoise"><input type="checkbox" id="chkNoise"> 實驗加入量測誤差（±1 mm）</label>
+        </div>
+        <div class="btn-row">
+            <button class="btn green" id="btnPlay">▶ 播放</button><button class="btn secondary" id="btnPause">⏸ 暫停</button><button class="btn secondary" id="btnReset">↺ 重設</button>
+            <button class="btn secondary" id="btnPreset" style="display:none">📝 106 指考情境</button><button class="btn secondary" id="btnPreset2" style="display:none">📝 速度選擇器 v = E÷B</button>
+            <button class="btn secondary" id="btnUnknown" style="display:none">🎲 未知粒子</button><button class="btn secondary" id="btnReveal" style="display:none" disabled>揭曉</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span id="sceneTitle">運動軌跡（俯視）</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div>
+        <div class="canvas-wrap"><canvas id="scene" width="760" height="440"></canvas></div>
+        <div class="canvas-wrap" id="sideWrap" style="margin-top:8px"><canvas id="side" width="760" height="200"></canvas></div>
+        <div class="legend"><span style="--c:var(--vel)">速度 v</span><span style="--c:var(--fmag)">磁力 F<sub>B</sub> = qv×B</span><span style="--c:var(--felec)">電力 F<sub>E</sub> = qE</span><span style="--c:var(--grav)">重力 mg</span><span style="--c:var(--bfield)">磁場 B</span></div>
+        <div class="status" id="status"></div>
+    </div>
+
+    <div class="card"><div class="card-title">即時數據</div><div class="dashboard" id="dash"></div></div>
+
+    <div class="card" id="gCard">
+        <div class="card-title">速度分量與速率（同步圖）</div>
+        <div class="graph-box"><canvas id="gV" width="760" height="260"></canvas></div>
+    </div>
+
+    <div class="card" id="expCard" style="display:none">
+        <div class="card-title">實驗：r² 對 V，求荷質比 q/m</div>
+        <div class="btn-row" style="margin-bottom:10px"><button class="btn secondary" id="btnRecord">＋ 記錄目前的 V 與落點</button><button class="btn secondary" id="btnSweep">⚡ 自動掃描 V</button><button class="btn secondary" id="btnClear">清除數據</button></div>
+        <div class="two-col">
+            <div class="graph-box"><canvas id="gExp" width="480" height="320"></canvas></div>
+            <div><div class="table-scroll"><table><thead><tr><th>#</th><th>V (V)</th><th>落點 d (cm)</th><th>r (cm)</th><th>r² (cm²)</th></tr></thead><tbody id="dataBody"></tbody></table></div></div>
+        </div>
+        <div class="fit-text" id="fitText"></div>
+        <div class="sub-note">加速：qV = ½mv²；圓周：qvB = mv²/r　→　<b>r² = (2m ÷ qB²)·V</b>，所以 r²–V 為通過原點的直線，斜率 = 2m/(qB²)，<b>q/m = 2 ÷ (斜率 × B²)</b>。落點到入口的距離 d = 2r。</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary>
+            <ul>
+                <li>磁力：<b>F = q v × B</b>（q：電荷 C；v：速度 m/s；B：磁場 T）。<b>F ⟂ v</b>，大小 F = |q| v B sinθ，方向用「開掌定則」：拇指＝v、四指＝B、掌心＝正電荷受力方向（負電荷相反）。</li>
+                <li>磁力恆垂直速度，<b>不作功</b>：W = F·Δs = 0，所以<b>速率與動能不變</b>，只改變方向。</li>
+                <li>垂直磁場入射（θ = 90°）：做等速率圓周運動，磁力提供向心力 |q| v B = m v²/r → <b>r = m v ÷ (|q| B)</b>；<b>T = 2π m ÷ (|q| B)</b>，與速率 v、半徑 r 無關；角速度 ω = |q| B ÷ m。</li>
+                <li>速度與磁場夾角 θ：v⊥ = v sinθ 繞圈、v∥ = v cosθ 沿磁場等速前進 → 螺旋；<b>r = m v sinθ ÷ (|q|B)</b>、螺距 <b>p = v∥ T = 2πm v cosθ ÷ (|q|B)</b>。</li>
+                <li>電場＋磁場：若 qE 與 qvB 反向平衡，直線等速條件 <b>v = E ÷ B</b>（速度選擇器，與 q、m 無關）；其餘粒子走擺線，平均漂移速度 <b>E×B ÷ B²</b>。有重力時，以等效電場 E<sub>eff</sub> = E − mg/q 取代 E。</li>
+                <li>質譜／荷質比：qV = ½mv²，再配合圓周運動 → <b>q/m = 2V ÷ (B²r²)</b>。</li>
+            </ul>
+            <p class="assume">理想化假設：模式①②③ 使用教學用的「假想粒子」（q 以庫侖、m 以公斤、B 以特斯拉為單位，數值取小）以便計算與驗算；模式④ 使用真實的電子、質子、α 粒子與氘核常數。磁場、電場均勻且範圍夠大；忽略輻射損失、粒子間作用與相對論效應；軌跡由運動方程式數值積分（RK4）或解析解計算，並在畫面下方檢驗動能守恆。</p>
+        </details>
+        <details><summary>建議講解順序</summary>
+            <ol>
+                <li>模式①：先不講公式。只拖「速率」，問學生：速率變大，軌跡變大，轉一圈花的時間會不會變？（週期不變）</li>
+                <li>換成負電荷、換磁場方向：軌跡的轉向如何改變？對照開掌定則。</li>
+                <li>看即時數據：磁力作功 = 0、動能不變。講義「磁力恆＿＿、做＿＿運動」的空格。</li>
+                <li>模式②：速度有一個分量沿磁場：螺旋，並用「106 指考情境」演示電子在 E、B 同向時的螺旋。</li>
+                <li>模式③：用速度選擇器 v = E/B，再調離 E/B，看擺線；加入重力，對照範例 5 的油滴。</li>
+                <li>模式④：做荷質比實驗，由 r²–V 求 q/m，用「未知粒子」猜是哪一種粒子。</li>
+            </ol>
+        </details>
+        <details><summary>可以問學生的問題</summary>
+            <ul>
+                <li>粒子速率加倍，半徑和週期各變為幾倍？質量加倍呢？電荷加倍呢？</li>
+                <li>為什麼磁場無法使粒子加速或減速？那電場可以嗎？</li>
+                <li>β 衰變中，電子、反微中子、質子在磁場中的軌跡各是什麼？（範例 4：荷質比最大，半徑最小）</li>
+                <li>速度選擇器：改變粒子的電荷或質量，還能直線通過嗎？只改速率呢？</li>
+                <li>兩粒子經同一電壓加速、進入同一磁場，落點差多少？（質譜儀）</li>
+            </ul>
+        </details>
+        <details><summary>常見迷思</summary>
+            <ul>
+                <li><b>「磁力使粒子加速」</b>：磁力只改變速度方向，不改變速率（但加速度不為零，因為方向在變）。</li>
+                <li><b>「速率越大，轉一圈越久」</b>：半徑也同比增大，週期 T = 2πm/(|q|B) 與 v 無關。</li>
+                <li><b>「負電荷受力方向和正電荷相同」</b>：相反；開掌定則的掌背才是負電荷受力方向。</li>
+                <li><b>「電場和磁場都能使粒子偏轉，所以都能作功」</b>：電力可以作功，磁力不行。</li>
+                <li><b>「速度選擇器只選特定的質量」</b>：選的是特定的<b>速度</b>，與電荷、質量無關。</li>
+            </ul>
+        </details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script>
+(() => {
+    'use strict';
+    const el = id => document.getElementById(id), c = el('scene').getContext('2d'), c2 = el('side').getContext('2d');
+    const E0 = 1.602176634e-19, ME = 9.1093837e-31, MP = 1.67262192e-27, MA = 6.6446573e-27, MD = 3.343583e-27;
+    const SPEC = { e: { n: '電子', q: -E0, m: ME, b: 4 }, p: { n: '質子', q: E0, m: MP, b: 100 }, a: { n: 'α 粒子', q: 2 * E0, m: MA, b: 200 }, d: { n: '氘核', q: E0, m: MD, b: 150 } };
+    const S = { mode: 'circ', q: 1, m: 1, v: 4, al: 0, th: 60, B: 2, bd: 1, Ez: 0, E: 4, g: 0, sp: 'e', Va: 400, Bm: 4, slow: 1, t: 0, playing: true, hidden: false, trueSp: 'e', data: [],
+        st: [0, 0, 0, 0], trail: [], hist: [], cam: [0, 0], WB: 0, keStart: 0, finished: false };
+    const Bz = () => S.bd * S.B;
+    // ===================== 解析解（模式 ①②） =====================
+    function analytic(t) {
+        const w = S.q * Bz() / S.m, vp = S.mode === 'circ' ? S.v : S.v * Math.sin(S.th * Math.PI / 180), a = S.mode === 'circ' ? S.al * Math.PI / 180 : 0;
+        const x = (vp / w) * (Math.sin(a) - Math.sin(a - w * t)), y = (vp / w) * (Math.cos(a - w * t) - Math.cos(a));
+        const vx = vp * Math.cos(a - w * t), vy = vp * Math.sin(a - w * t);
+        let z = 0, vz = 0; if (S.mode === 'helix') { const vpar = S.v * Math.cos(S.th * Math.PI / 180), az = S.q * S.Ez / S.m; z = vpar * t + 0.5 * az * t * t; vz = vpar + az * t; }
+        return { x, y, z, vx, vy, vz, w, cx: (vp / w) * Math.sin(a), cy: -(vp / w) * Math.cos(a), r: Math.abs(vp / w) };
+    }
+    // ===================== RK4（模式 ③） =====================
+    function acc(s) { const k = S.q / S.m, b = Bz(); return [k * (s[3] * b), k * (S.E - s[2] * b) - S.g]; }          // F = q(E ŷ + v×B) − mg ŷ ，v×B = (vy Bz, −vx Bz)
+    function rk4(s, h) {
+        const f = u => { const a = acc(u); return [u[2], u[3], a[0], a[1]]; }, add = (u, k, d) => u.map((x, i) => x + k[i] * d);
+        const k1 = f(s), k2 = f(add(s, k1, h / 2)), k3 = f(add(s, k2, h / 2)), k4 = f(add(s, k3, h)); return s.map((x, i) => x + h / 6 * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]));
+    }
+    const effE = () => S.E - S.m * S.g / S.q;
+    function init() {
+        S.t = 0; S.trail = []; S.hist = []; S.WB = 0; S.finished = false; S.playing = true; S.cam = [0, 0];
+        if (S.mode === 'field') { const a = S.al * Math.PI / 180; S.st = [0, 0, S.v * Math.cos(a), S.v * Math.sin(a)]; S.keStart = 0.5 * S.m * S.v * S.v; }
+        syncUI();
+    }
+    // ===================== 模式④（質譜／荷質比） =====================
+    const sp = () => SPEC[S.hidden ? S.trueSp : S.sp];
+    function massCalc(V, Bmt) { const s = sp(), v = Math.sqrt(2 * Math.abs(s.q) * V / s.m), r = s.m * v / (Math.abs(s.q) * Bmt * 1e-3), T = 2 * Math.PI * s.m / (Math.abs(s.q) * Bmt * 1e-3); return { v, r, T, side: s.q > 0 ? -1 : 1 }; }   // 入紙面磁場、粒子向上射入：正電荷向左偏
+    const MAXR = 0.033;                                                                                     // 偵測板可看到的最大半徑 7.5 cm
+
+    // ===================== 繪圖 =====================
+    function arrow(ctx, x1, y1, x2, y2, color, w = 3, head = 10) { const len = Math.hypot(x2 - x1, y2 - y1); if (len < 2) return; const a = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(head, len * .6); ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(a) * hl * .6, y2 - Math.sin(a) * hl * .6); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - hl * Math.cos(a - .45), y2 - hl * Math.sin(a - .45)); ctx.lineTo(x2 - hl * Math.cos(a + .45), y2 - hl * Math.sin(a + .45)); ctx.closePath(); ctx.fill(); ctx.restore(); }
+    function txt(ctx, s, x, y, color, size = 14, align = 'left') { ctx.save(); ctx.font = `bold ${size}px sans-serif`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y); ctx.restore(); }
+    function bSymbols(ctx, ox, oy, sc, dir, W, H, step = 48) { ctx.strokeStyle = 'rgba(53,214,255,.35)'; ctx.fillStyle = 'rgba(53,214,255,.35)'; ctx.lineWidth = 1.5; const sx = ((ox % step) + step) % step, sy = ((oy % step) + step) % step; for (let x = sx; x < W; x += step) for (let y = sy; y < H; y += step) { if (dir > 0) { ctx.beginPath(); ctx.arc(x, y, 6, 0, 7); ctx.stroke(); ctx.beginPath(); ctx.arc(x, y, 1.8, 0, 7); ctx.fill(); } else { ctx.beginPath(); ctx.moveTo(x - 5, y - 5); ctx.lineTo(x + 5, y + 5); ctx.moveTo(x + 5, y - 5); ctx.lineTo(x - 5, y + 5); ctx.stroke(); } } }
+    function particle(ctx, px, py, q) { ctx.fillStyle = q > 0 ? '#ff6b6b' : '#6fa8ff'; ctx.beginPath(); ctx.arc(px, py, 9, 0, 7); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); txt(ctx, q > 0 ? '+' : '−', px, py + 1, '#fff', 15, 'center'); }
+
+    function drawScene() {
+        c.clearRect(0, 0, 760, 440); c.fillStyle = '#080a0f'; c.fillRect(0, 0, 760, 440);
+        if (S.mode === 'mass') return drawMass();
+        const showV = el('chkVec').checked;
+        let cur, sc, camx, camy;
+        if (S.mode === 'field') { cur = { x: S.st[0], y: S.st[1], vx: S.st[2], vy: S.st[3], vz: 0 }; sc = 42; S.cam[0] += (cur.x - S.cam[0]) * 0.12; S.cam[1] += (cur.y - S.cam[1]) * 0.12; camx = S.cam[0]; camy = S.cam[1]; }
+        else { cur = analytic(S.t); const A = analytic(0), r = cur.r; sc = Math.min(48, 175 / Math.max(r, 0.05)); camx = cur.cx; camy = cur.cy; if (S.mode === 'helix') { sc = Math.min(48, 175 / Math.max(r, 0.05)); } }
+        const PX = x => 380 + (x - camx) * sc, PY = y => 220 - (y - camy) * sc;
+        bSymbols(c, PX(0), PY(0), sc, Bz() > 0 ? 1 : -1, 760, 440);
+        // 軌跡
+        if (el('chkTrail').checked && S.trail.length > 1) { c.strokeStyle = 'rgba(255,225,77,.85)'; c.lineWidth = 2.2; c.beginPath(); S.trail.forEach((p, i) => i ? c.lineTo(PX(p[0]), PY(p[1])) : c.moveTo(PX(p[0]), PY(p[1]))); c.stroke(); }
+        if (S.mode !== 'field') { c.strokeStyle = 'rgba(255,255,255,.18)'; c.setLineDash([4, 6]); c.beginPath(); c.arc(PX(cur.cx), PY(cur.cy), cur.r * sc, 0, 7); c.stroke(); c.setLineDash([]); c.fillStyle = '#9aa8bd'; c.beginPath(); c.arc(PX(cur.cx), PY(cur.cy), 3, 0, 7); c.fill(); txt(c, '圓心', PX(cur.cx) + 8, PY(cur.cy) + 12, '#9aa8bd', 12); }
+        const px = PX(cur.x), py = PY(cur.y);
+        if (showV) {
+            const vs = Math.hypot(cur.vx, cur.vy), L = 20 + vs * 9; if (vs > 1e-6) arrow(c, px, py, px + cur.vx / vs * L, py - cur.vy / vs * L, '#4d8dff', 4, 12);
+            const b = Bz(), k = S.q; const Fx = k * cur.vy * b, Fy = -k * cur.vx * b, Fm = Math.hypot(Fx, Fy); if (Fm > 1e-9) { const Lf = 20 + Fm * 5; arrow(c, px, py, px + Fx / Fm * Lf, py - Fy / Fm * Lf, '#ff4d6d', 4, 12); }
+            if (S.mode === 'field') { const Fe = S.q * S.E; if (Math.abs(Fe) > 1e-6) arrow(c, px + 18, py, px + 18, py - Math.sign(Fe) * (14 + Math.abs(Fe) * 5), '#ff9f43', 4, 12); if (S.g > 0) arrow(c, px - 18, py, px - 18, py + 14 + S.m * S.g * 5, '#9aa8bd', 4, 12); }
+        }
+        particle(c, px, py, S.q);
+        // 比例尺
+        const bar = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20].find(u => u * sc >= 60) || 20; c.strokeStyle = '#c3d0e4'; c.lineWidth = 2; c.beginPath(); c.moveTo(20, 420); c.lineTo(20 + bar * sc, 420); c.stroke(); txt(c, bar + ' m', 20 + bar * sc / 2, 407, '#c3d0e4', 13, 'center');
+        txt(c, `t = ${S.t.toFixed(2)} s　　磁場 ${Bz() > 0 ? '出紙面 ⊙' : '入紙面 ⊗'}　B = ${S.B.toFixed(1)} T${S.mode === 'field' ? `　E = ${S.E.toFixed(1)} V/m（向${S.E >= 0 ? '上' : '下'}）` : ''}`, 14, 20, '#9aa8bd', 14);
+        if (S.mode === 'field') { const vd = effE() / Bz(); txt(c, `漂移速度 E_eff/B = ${vd.toFixed(2)} m/s（${vd >= 0 ? '向右' : '向左'}）`, 14, 44, '#ff9f43', 14); }
+    }
+    function drawMass() {
+        const s = sp(), mc = massCalc(S.Va, S.Bm), r = mc.r, sc = 5600 /* px per m: 1 cm = 56 px */, OX = 380, OY = 380, side = mc.side;
+        bSymbols(c, 0, 0, 1, -1, 760, 440, 56);
+        c.fillStyle = '#10151f'; c.fillRect(0, OY, 760, 60); c.strokeStyle = '#8fa3c4'; c.lineWidth = 3; c.beginPath(); c.moveTo(0, OY); c.lineTo(760, OY); c.stroke(); txt(c, '偵測板', 60, OY + 38, '#9aa8bd', 15, 'center');
+        for (let cm = -6; cm <= 6; cm++) { c.strokeStyle = '#8fa3c4'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(OX + cm * 56, OY); c.lineTo(OX + cm * 56, OY + 8); c.stroke(); if (cm % 2 === 0) txt(c, cm + '', OX + cm * 56, OY + 22, '#9aa8bd', 12, 'center'); }
+        // 加速區（下方）
+        c.fillStyle = '#3a465b'; c.fillRect(OX - 40, 428, 80, 6); txt(c, `加速電壓 V = ${S.Va} V`, OX + 130, 428, '#ffe14d', 14, 'center'); txt(c, '粒子源', OX - 52, 422, '#9aa8bd', 12, 'right');
+        const offscreen = r > MAXR; const Rpx = r * sc;
+        c.strokeStyle = 'rgba(255,225,77,.35)'; c.lineWidth = 2; c.setLineDash([5, 5]); c.beginPath(); c.arc(OX + side * Rpx, OY, Rpx, Math.PI, 0); c.stroke(); c.setLineDash([]);
+        const ph = Math.min(1, S.t / 3) * Math.PI;                                                                // 慢動作：3 s 走半圈
+        c.strokeStyle = 'rgba(255,225,77,.9)'; c.lineWidth = 2.5; c.beginPath(); for (let a = 0; a <= ph + 1e-9; a += 0.03) { const px = OX + side * Rpx - side * Rpx * Math.cos(a) * 1, py = OY - Rpx * Math.sin(a); a ? c.lineTo(px, py) : c.moveTo(px, py); } c.stroke();
+        const px = OX + side * Rpx - side * Rpx * Math.cos(ph), py = OY - Rpx * Math.sin(ph); particle(c, px, py, s.q);
+        if (el('chkVec').checked && ph < Math.PI - 0.01) { const vx = side * Math.sin(ph), vy = Math.cos(ph); arrow(c, px, py, px + vx * 50, py - vy * 50, '#4d8dff', 4, 12); const fx = -side * Math.cos(ph) * -1; const cx = OX + side * Rpx; const dx = cx - px, dy = OY - py, dl = Math.hypot(dx, dy); if (dl > 1) arrow(c, px, py, px + dx / dl * 45, py + dy / dl * 45, '#ff4d6d', 4, 12); }
+        if (ph >= Math.PI - 0.01) { c.fillStyle = '#ffe14d'; c.beginPath(); c.arc(OX + side * 2 * Rpx, OY, 6, 0, 7); c.fill(); txt(c, `落點 d = 2r = ${(2 * r * 100).toFixed(2)} cm`, OX + side * 2 * Rpx, OY - 40, '#ffe14d', 14, 'center'); }
+        if (offscreen) txt(c, '⚠ 落點超出偵測板範圍（請調小 V 或調大 B）', 380, 30, '#ff9f43', 16, 'center');
+        txt(c, `粒子：${S.hidden ? '？（未知）' : s.n}　磁場入紙面 ⊗　B = ${S.Bm} mT`, 14, 20, '#9aa8bd', 14);
+    }
+    function drawSide() {
+        c2.clearRect(0, 0, 760, 200); c2.fillStyle = '#080a0f'; c2.fillRect(0, 0, 760, 200);
+        const cur = analytic(S.t), tEnd = Math.max(6, S.t + 0.5), W = 700, OXs = 30, OYs = 100;
+        const total = (() => { let mx = 1, mn = 0; for (let tt = 0; tt <= Math.max(S.t, 1); tt += 0.05) { const z = analytic(tt).z; mx = Math.max(mx, Math.abs(z)); } return mx; })(), scz = 80 / Math.max(total, cur.r + 0.01), sc = Math.min(scz, 40);
+        c2.strokeStyle = '#1b2433'; c2.beginPath(); c2.moveTo(OXs, OYs); c2.lineTo(OXs + W, OYs); c2.stroke();
+        txt(c2, '側視圖：橫軸為沿磁場方向的位置 z，縱軸為 x（朝向觀察者的方向為 +z；E∥ 使螺距逐漸改變）', 12, 14, '#9aa8bd', 13);
+        const zmax = Math.max(1, ...Array.from({ length: 200 }, (_, i) => Math.abs(analytic(Math.max(S.t, 1) * i / 199).z)));
+        const sx = W / (zmax * 1.1), sxp = Math.min(sx, 120), sy = Math.min(80 / Math.max(cur.r, 0.01), 60);
+        c2.strokeStyle = 'rgba(255,225,77,.85)'; c2.lineWidth = 2.2; c2.beginPath(); for (let i = 0; i <= 400; i++) { const tt = S.t * i / 400, a = analytic(tt); const px = OXs + a.z * sxp + (S.mode === 'helix' && a.z < 0 ? 0 : 0), py = OYs - (a.x - 0) * sy; if (px < 0) continue; i ? c2.lineTo(px, py) : c2.moveTo(px, py); } c2.stroke();
+        const a = cur; c2.fillStyle = S.q > 0 ? '#ff6b6b' : '#6fa8ff'; c2.beginPath(); c2.arc(OXs + a.z * sxp, OYs - a.x * sy, 7, 0, 7); c2.fill(); c2.strokeStyle = '#fff'; c2.stroke();
+    }
+
+    // ===================== 圖表 =====================
+    function drawGraph() {
+        const cv = el('gV'), x = cv.getContext('2d'), W = cv.width, H = cv.height, L = 62, Rm = 14, T = 30, B = 40, pw = W - L - Rm, ph = H - T - B;
+        const x0 = Math.max(0, S.t - 12), x1 = Math.max(12, S.t), amp = Math.max(1, ...S.hist.map(h => Math.max(Math.abs(h.vx), Math.abs(h.vy), h.sp))) * 1.15;
+        const PX = v => L + (v - x0) / (x1 - x0) * pw, PY = v => T + ph / 2 - v / amp * ph / 2;
+        x.clearRect(0, 0, W, H); x.fillStyle = '#0d121b'; x.fillRect(0, 0, W, H); x.font = '12px sans-serif';
+        const sy = amp > 8 ? 2 : amp > 4 ? 1 : 0.5; for (let v = -Math.floor(amp / sy) * sy; v <= amp + 1e-9; v += sy) { x.strokeStyle = Math.abs(v) < 1e-9 ? '#5b6a82' : '#1b2433'; x.beginPath(); x.moveTo(L, PY(v)); x.lineTo(L + pw, PY(v)); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'right'; x.fillText(v.toFixed(1), L - 6, PY(v) + 4); }
+        for (let v = Math.ceil(x0); v <= x1; v += 2) { x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(PX(v), T); x.lineTo(PX(v), T + ph); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(v, PX(v), T + ph + 15); }
+        x.save(); x.beginPath(); x.rect(L, T, pw, ph); x.clip();
+        [['vx', '#6fc3ff', 'vₓ'], ['vy', '#b78bff', 'v_y'], ['sp', '#ffe14d', '速率 |v|']].forEach(([k, col]) => { x.strokeStyle = col; x.lineWidth = k === 'sp' ? 3 : 2; x.beginPath(); S.hist.forEach((h, i) => i ? x.lineTo(PX(h.t), PY(h[k])) : x.moveTo(PX(h.t), PY(h[k]))); x.stroke(); });
+        x.restore(); x.font = 'bold 13px sans-serif'; x.textAlign = 'left'; x.fillStyle = '#6fc3ff'; x.fillText('vₓ', L + 8, 20); x.fillStyle = '#b78bff'; x.fillText('v_y', L + 40, 20); x.fillStyle = '#ffe14d'; x.fillText('速率 |v|（模式①：恆定）', L + 82, 20);
+        x.fillStyle = '#8a99ad'; x.font = '12px sans-serif'; x.textAlign = 'center'; x.fillText('時間 t (s)', L + pw / 2, H - 6); x.save(); x.translate(14, T + ph / 2); x.rotate(-Math.PI / 2); x.fillText('速度 (m/s)', 0, 0); x.restore();
+    }
+
+    // ===================== 實驗 =====================
+    const noise = () => el('chkNoise').checked ? (Math.random() + Math.random() - 1) * 0.1 : 0;      // ±1 mm = ±0.1 cm
+    function recordPoint() { const mc = massCalc(S.Va, S.Bm); if (mc.r > MAXR) { alert('落點超出偵測板，請調小 V 或調大 B。'); return; } const d = 2 * mc.r * 100 + noise(); S.data.push({ V: S.Va, d }); if (S.data.length > 30) S.data.shift(); renderExp(); }
+    function sweep() { for (let V = 100; V <= 1000; V += 150) { const mc = massCalc(V, S.Bm); if (mc.r > MAXR) continue; S.data.push({ V, d: 2 * mc.r * 100 + noise() }); } renderExp(); }
+    function renderExp() {
+        const cv = el('gExp'), x = cv.getContext('2d'), W = cv.width, H = cv.height, Lm = 62, Rm = 14, T = 30, B = 40, pw = W - Lm - Rm, ph = H - T - B;
+        const pts = S.data.map(d => ({ V: d.V, r: d.d / 2, r2: (d.d / 2) ** 2 })), xmax = 1000, ymax = Math.max(4, ...pts.map(p => p.r2 * 1.15), (MAXR * 100) ** 2 * 0.0 + 4);
+        const PX = v => Lm + v / xmax * pw, PY = v => T + ph - v / ymax * ph; x.clearRect(0, 0, W, H); x.fillStyle = '#0d121b'; x.fillRect(0, 0, W, H); x.font = '12px sans-serif';
+        for (let v = 0; v <= xmax; v += 200) { x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(PX(v), T); x.lineTo(PX(v), T + ph); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(v, PX(v), T + ph + 15); }
+        const sy = ymax > 40 ? 10 : ymax > 16 ? 5 : ymax > 8 ? 2 : 1; for (let v = 0; v <= ymax; v += sy) { x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(Lm, PY(v)); x.lineTo(Lm + pw, PY(v)); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'right'; x.fillText(v, Lm - 6, PY(v) + 4); }
+        x.strokeStyle = '#5b6a82'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(Lm, T); x.lineTo(Lm, T + ph); x.lineTo(Lm + pw, T + ph); x.stroke();
+        let t = pts.length < 2 ? '至少需要 2 筆數據（按「記錄」或「自動掃描」）。' : ''; const sxx = pts.reduce((a, p) => a + p.V * p.V, 0);
+        if (pts.length >= 2 && sxx > 0) { const s = pts.reduce((a, p) => a + p.V * p.r2, 0) / sxx;            // cm²/V
+            x.strokeStyle = 'rgba(0,212,255,.9)'; x.setLineDash([6, 5]); x.lineWidth = 2; x.beginPath(); x.moveTo(PX(0), PY(0)); x.lineTo(PX(xmax), PY(s * xmax)); x.stroke(); x.setLineDash([]);
+            const Bt = S.Bm * 1e-3, slope = s * 1e-4, qm = 2 / (slope * Bt * Bt);                           // 轉成 m²/V
+            t = `斜率 ＝ <b>${s.toFixed(5)} cm²/V</b> ＝ ${slope.toExponential(3)} m²/V　→ <b>q/m ＝ 2 ÷ (斜率 × B²) ≈ ${qm.toExponential(3)} C/kg</b>（B ＝ ${S.Bm} mT）`;
+            const tru = sp(); t += S.hidden ? '<br>（粒子種類已隱藏，與下列常見粒子比較：電子 1.76×10¹¹、質子 9.58×10⁷、氘核 4.79×10⁷、α 粒子 4.82×10⁷ C/kg；氘核與 α 粒子很接近，需要用電荷與質量進一步判斷。按「揭曉」對答案）' : `<br>真實值：${tru.n} 的 |q|/m ＝ ${(Math.abs(tru.q) / tru.m).toExponential(3)} C/kg。`; }
+        pts.forEach(p => { x.fillStyle = '#ffcc00'; x.beginPath(); x.arc(PX(p.V), PY(p.r2), 5, 0, 7); x.fill(); });
+        x.fillStyle = '#c3d0e4'; x.font = 'bold 14px sans-serif'; x.textAlign = 'left'; x.fillText('r² 對 V', Lm, 18); x.font = '12px sans-serif'; x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText('加速電壓 V (V)', Lm + pw / 2, H - 6); x.save(); x.translate(14, T + ph / 2); x.rotate(-Math.PI / 2); x.fillText('r² (cm²)', 0, 0); x.restore();
+        el('fitText').innerHTML = t; el('dataBody').innerHTML = S.data.map((d, i) => `<tr><td>${i + 1}</td><td>${d.V}</td><td>${d.d.toFixed(2)}</td><td>${(d.d / 2).toFixed(2)}</td><td>${((d.d / 2) ** 2).toFixed(2)}</td></tr>`).join('');
+    }
+
+    // ===================== 儀表與狀態 =====================
+    function renderDash() {
+        const m = (t, v, u, col = '#c3d0e4') => `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value" style="color:${col}">${v}<span class="unit">${u}</span></div></div>`;
+        let h = '', msg = '';
+        if (S.mode === 'circ' || S.mode === 'helix') {
+            const a = analytic(S.t), vperp = Math.hypot(a.vx, a.vy), sp0 = Math.hypot(a.vx, a.vy, a.vz), r = S.m * (S.mode === 'circ' ? S.v : S.v * Math.sin(S.th * Math.PI / 180)) / (Math.abs(S.q) * S.B), T = 2 * Math.PI * S.m / (Math.abs(S.q) * S.B);
+            h = m('半徑 r = mv⊥÷(|q|B)', r.toFixed(3), 'm', '#ffe14d') + m('週期 T = 2πm÷(|q|B)', T.toFixed(3), 's', '#ffe14d') + m('角速度 ω', (Math.abs(S.q) * S.B / S.m).toFixed(3), 'rad/s') + m('速率 |v|', sp0.toFixed(3), 'm/s', '#4d8dff') + m('動能 K', (0.5 * S.m * sp0 * sp0).toFixed(3), 'J', '#4d8dff') + m('磁力 F = |q|v⊥B', (Math.abs(S.q) * vperp * S.B).toFixed(3), 'N', '#ff4d6d') + m('磁力作功 W（累計）', S.WB.toExponential(1), 'J', '#ff4d6d');
+            if (S.mode === 'helix') { const vpar = S.v * Math.cos(S.th * Math.PI / 180); h += m('螺距 p = v∥T', (vpar * T).toFixed(3), 'm') + m('沿磁場分速 v∥', a.vz.toFixed(3), 'm/s'); }
+            msg = S.mode === 'circ' ? `磁力 F = qv×B 恆垂直速度，提供向心力；<b>速率不變、動能不變、磁力不作功（累計 W ≈ 0）</b>。週期 T 與速率 v 無關。` : '速度分成兩份：垂直磁場的分量 v⊥ 繞圓、平行磁場的分量 v∥ 不受磁力' + (S.Ez !== 0 ? '，但<b>平行電場</b>使 v∥ 逐漸改變（螺距變化），圓周的半徑不變。' : '，合起來是等螺距螺旋。');
+        } else if (S.mode === 'field') {
+            const s = S.st, sp0 = Math.hypot(s[2], s[3]), ke = 0.5 * S.m * sp0 * sp0, Ee = effE(), vd = Ee / Bz(), wE = S.q * S.E * 0; h = m('速率 |v|', sp0.toFixed(3), 'm/s', '#4d8dff') + m('動能 K', ke.toFixed(3), 'J', '#4d8dff') + m('等效電場 E − mg/q', Ee.toFixed(2), 'V/m', '#ff9f43') + m('速度選擇 E_eff ÷ B', vd.toFixed(3), 'm/s', '#ff9f43') + m('電力 qE', (S.q * S.E).toFixed(2), 'N', '#ff9f43') + m('重力 mg', (S.m * S.g).toFixed(2), 'N', '#9aa8bd') + m('磁力 |qv×B|', (Math.abs(S.q) * sp0 * S.B).toFixed(2), 'N', '#ff4d6d') + m('動能變化 K − K₀', (ke - S.keStart).toFixed(3), 'J');
+            const bal = Math.abs(S.st[2] - vd) < 0.05 && Math.abs(S.st[3]) < 0.05; msg = bal ? '<b>達到平衡</b>：qE、重力與磁力的合力為零，粒子等速直線運動（速度選擇器：v = E÷B）。' : '電力（與重力）可以作功、改變動能；磁力不作功。合力不為零時，軌跡是擺線；平均前進速度為 E_eff÷B。';
+        } else {
+            const mc = massCalc(S.Va, S.Bm), s = sp(), qm = Math.abs(s.q) / s.m;
+            h = m('加速後速率 v = √(2qV/m)', (mc.v / 1e6).toFixed(3), '×10⁶ m/s', '#4d8dff') + m('半徑 r = mv÷(|q|B)', (mc.r * 100).toFixed(3), 'cm', '#ffe14d') + m('落點 d = 2r', (2 * mc.r * 100).toFixed(2), 'cm', '#ffe14d') + m('半圓所需時間 T/2', (mc.T / 2 * 1e9).toFixed(1), 'ns') + m('荷質比 |q|/m', S.hidden ? '？' : qm.toExponential(3), 'C/kg', '#ff4d6d') + m('B', S.Bm, 'mT', '#35d6ff');
+            msg = '粒子先被電壓 V 加速（電力作功 qV），進入磁場後只受磁力：做半圓運動，落在入口外 2r 處。（動畫為慢動作；實際時間只有 ns 等級）';
+        }
+        el('dash').innerHTML = h; el('status').innerHTML = msg; el('runState').textContent = S.finished ? '已完成' : (S.playing ? '播放中' : '暫停');
+    }
+    const DESC = { circ: '速度垂直磁場射入：磁力提供向心力，做等速率圓周運動。調整 q、m、v、B，觀察 r 與 T 如何變化。', helix: '速度與磁場成 θ 角：垂直分量繞圈、平行分量前進，形成螺旋。可加入沿磁場方向的電場。', field: '同時有電場（向上）與磁場：調整 E、B、初速、重力。試試 v = E÷B 的直線，與 v ≠ E÷B 的擺線。', mass: '粒子由加速電壓 V 獲得動能，進入入紙面的磁場做半圓運動。記錄不同 V 的落點，作 r²–V 圖求荷質比。' };
+    function syncUI() {
+        const g = k => el(k); g('lblQ').textContent = (S.q > 0 ? '+' : '') + S.q; g('lblM').textContent = S.m.toFixed(1); g('lblV').textContent = S.v.toFixed(1); g('lblAl').textContent = S.al; g('lblTh').textContent = S.th; g('lblB').textContent = S.B.toFixed(1); g('lblEz').textContent = S.Ez.toFixed(1); g('lblE').textContent = S.E.toFixed(1); g('lblG').textContent = S.g.toFixed(1); g('lblVa').textContent = S.Va; g('lblBm').textContent = S.Bm;
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === S.mode)); g('modeDesc').textContent = DESC[S.mode];
+        const show = (id, on) => g(id).classList.toggle('off', !on), M = S.mode, m3 = M === 'circ' || M === 'helix' || M === 'field';
+        show('grpQ', m3); show('grpM', m3); show('grpV', m3); show('grpAl', M === 'circ' || M === 'field'); show('grpTh', M === 'helix'); show('grpB', m3); show('grpBd', m3); show('grpEz', M === 'helix'); show('grpE', M === 'field'); show('grpG', M === 'field'); show('grpSp', M === 'mass'); show('grpVa', M === 'mass'); show('grpBm', M === 'mass');
+        g('sideWrap').style.display = M === 'helix' ? '' : 'none'; g('gCard').style.display = M === 'mass' ? 'none' : ''; g('expCard').style.display = M === 'mass' ? '' : 'none'; g('rowNoise').style.display = M === 'mass' ? '' : 'none';
+        g('btnPreset').style.display = M === 'helix' ? '' : 'none'; g('btnPreset2').style.display = M === 'field' ? '' : 'none'; g('btnUnknown').style.display = M === 'mass' ? '' : 'none'; g('btnReveal').style.display = M === 'mass' ? '' : 'none'; g('btnReveal').disabled = !S.hidden;
+        g('selSp').disabled = S.hidden; g('spNote').textContent = S.hidden ? '未知粒子：由 r²–V 圖估計荷質比' : `q/m = ${(Math.abs(SPEC[S.sp].q) / SPEC[S.sp].m).toExponential(3)} C/kg`;
+        g('sceneTitle').textContent = M === 'mass' ? '質譜儀（俯視，磁場入紙面）' : M === 'field' ? '運動軌跡（俯視，畫面隨粒子移動）' : M === 'helix' ? '俯視圖（投影到垂直磁場的平面）' : '運動軌跡（俯視）';
+    }
+
+    // ===================== 事件 =====================
+    const reinit = () => { init(); };
+    document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.mode; if (S.mode === 'helix') { S.th = 60; el('slTh').value = 60; } reinit(); }));
+    const bindR = (id, key, f = Number) => el(id).addEventListener('input', e => { S[key] = f(e.target.value); if (key === 'Va' || key === 'Bm') { S.t = 0; S.playing = true; syncUI(); } else reinit(); });
+    bindR('slM', 'm'); bindR('slV', 'v'); bindR('slAl', 'al'); bindR('slTh', 'th'); bindR('slB', 'B'); bindR('slEz', 'Ez'); bindR('slE', 'E'); bindR('slG', 'g'); bindR('slVa', 'Va'); bindR('slBm', 'Bm');
+    el('selQ').addEventListener('change', e => { S.q = +e.target.value; reinit(); }); el('selBd').addEventListener('change', e => { S.bd = +e.target.value; reinit(); }); el('selSlow').addEventListener('change', e => { S.slow = +e.target.value; });
+    el('selSp').addEventListener('change', e => { S.sp = e.target.value; S.Bm = SPEC[S.sp].b; el('slBm').value = S.Bm; S.data = []; S.t = 0; S.playing = true; syncUI(); renderExp(); });
+    el('btnPlay').addEventListener('click', () => { if (S.finished || (S.mode === 'mass' && S.t >= 3)) { S.t = 0; S.finished = false; if (S.mode !== 'mass') init(); } S.playing = true; }); el('btnPause').addEventListener('click', () => { S.playing = false; }); el('btnReset').addEventListener('click', reinit);
+    el('btnPreset').addEventListener('click', () => { S.mode = 'helix'; S.q = -1; el('selQ').value = '-1'; S.bd = -1; el('selBd').value = '-1'; S.th = 90; el('slTh').value = 90; S.Ez = -2; el('slEz').value = -2; S.v = 4; el('slV').value = 4; init(); });
+    el('btnPreset2').addEventListener('click', () => { S.mode = 'field'; S.g = 0; el('slG').value = 0; S.al = 0; el('slAl').value = 0; S.v = Math.max(1, Math.floor(Math.min(4, 8 / S.B))); el('slV').value = S.v; S.E = Bz() * S.v; el('slE').value = S.E; init(); });
+    el('btnUnknown').addEventListener('click', () => { const keys = ['e', 'p', 'a', 'd']; S.trueSp = keys[Math.floor(Math.random() * 4)]; S.hidden = true; S.Bm = SPEC[S.trueSp].b; el('slBm').value = S.Bm; S.data = []; S.t = 0; S.playing = true; syncUI(); renderExp(); });
+    el('btnReveal').addEventListener('click', () => { S.hidden = false; S.sp = S.trueSp; el('selSp').value = S.sp; syncUI(); renderExp(); });
+    el('btnRecord').addEventListener('click', recordPoint); el('btnSweep').addEventListener('click', sweep); el('btnClear').addEventListener('click', () => { S.data = []; renderExp(); });
+
+    // ===================== 迴圈 =====================
+    let last = null, fn = 0;
+    function stepSim(dt) {
+        if (S.mode === 'mass') { S.t += dt; if (S.t >= 3.6) { S.t = 3.6; if (el('chkLoop').checked) setTimeout(() => { S.t = 0; }, 300); } return; }
+        if (S.mode === 'field') { let rem = dt; while (rem > 1e-9) { const h = Math.min(0.002, rem), old = S.st; S.st = rk4(S.st, h); rem -= h; } S.t += dt; }
+        else S.t += dt;
+        let cur; if (S.mode === 'field') { cur = { x: S.st[0], y: S.st[1], vx: S.st[2], vy: S.st[3], vz: 0 }; } else cur = analytic(S.t);
+        // 磁力作功累計：W = ∫ F_B · v dt（F_B = q v×B，理論上恆為 0，用數值驗證）
+        const b = Bz(), Fx = S.q * cur.vy * b, Fy = -S.q * cur.vx * b; S.WB += (Fx * cur.vx + Fy * cur.vy) * dt;
+        const last = S.trail[S.trail.length - 1]; if (!last || Math.hypot(cur.x - last[0], cur.y - last[1]) > 0.01) { S.trail.push([cur.x, cur.y]); if (S.trail.length > 4000) S.trail.shift(); }
+        if (!S.hist.length || S.t - S.hist[S.hist.length - 1].t >= 0.02) { S.hist.push({ t: S.t, vx: cur.vx, vy: cur.vy, sp: Math.hypot(cur.vx, cur.vy, cur.vz || 0) }); if (S.hist.length > 3000) S.hist.shift(); }
+    }
+    function frame(ts) {
+        if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05) * S.slow; last = ts;
+        if (S.playing) stepSim(dt); drawScene(); if (S.mode === 'helix') drawSide(); if (!(fn++ % 2)) { if (S.mode !== 'mass') drawGraph(); renderDash(); } requestAnimationFrame(frame);
+    }
+    window.__cp = { S, analytic, rk4, acc, massCalc, effE, stepSim, init, recordPoint, sweep, SPEC, sp };
+    syncUI(); init(); renderExp(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
