@@ -58,21 +58,53 @@
             display: none; 
         }
         .info-text { font-size: 12px; color: #666; margin-top: 10px; text-align: center;}
+        /* 分頁與實驗模式 */
+        .tabs { width: 100%; max-width: 600px; display: flex; gap: 8px; margin-bottom: 12px; }
+        .tab-btn { flex: 1; background: #1a1a1a; color: #ddd; border: 2px solid #333; border-radius: 10px; padding: 10px; font-size: 15px; cursor: pointer; }
+        .tab-btn.active { border-color: #00d4ff; background: #0c2a33; color: #fff; font-weight: bold; }
+        #exp { display: none; width: 100%; max-width: 600px; flex-direction: column; gap: 12px; margin-top: 15px; }
+        body.exp-mode #exp { display: flex; }
+        body.exp-mode #grpN1, body.exp-mode #grpN2 { display: none; }
+        .xcard { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 14px 16px; box-sizing: border-box; }
+        .xcard h3 { margin: 0 0 8px; font-size: 15px; color: #ffcc00; }
+        .xrow { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        .xbtn { background: #00d4ff; color: #00131a; border: none; border-radius: 8px; padding: 9px 12px; font-size: 14px; font-weight: bold; cursor: pointer; }
+        .xbtn.sec { background: #3a465b; color: #fff; }
+        .xbtn.grn { background: #00e676; color: #00210f; }
+        .xbtn:disabled { opacity: .4; cursor: not-allowed; }
+        .xsel { background: #222; color: #eee; border: 1px solid #444; border-radius: 6px; padding: 6px 8px; font-size: 14px; width: 100%; }
+        .xnote { font-size: 12px; color: #999; margin-top: 6px; line-height: 1.5; }
+        .xcanvas { width: 100%; height: auto; display: block; background: #080808; border: 1px solid #333; border-radius: 6px; }
+        table.xt { width: 100%; border-collapse: collapse; font-size: 13px; font-family: monospace; }
+        table.xt th, table.xt td { border-bottom: 1px solid #333; padding: 4px 5px; text-align: right; }
+        table.xt th { color: #888; font-weight: normal; }
+        .xfit { margin-top: 8px; font-size: 14px; color: #cfd8e6; line-height: 1.6; }
+        .xfit b { color: #ffcc00; }
+        .xdetails { background: #111; border: 1px solid #2a2a2a; border-radius: 8px; padding: 8px 12px; margin-top: 8px; font-size: 14px; line-height: 1.6; }
+        .xdetails summary { cursor: pointer; color: #00d4ff; font-weight: bold; }
+        .xdetails ul, .xdetails ol { margin: 6px 0; padding-left: 20px; }
+        .highlight-r { color: #ff4444; } /* 紅色：能量不足 */
+
     </style>
 </head>
 <body>
     <div class="nav"><a href="../index.html">← 返回首頁</a></div>
+
+    <div class="tabs">
+        <button class="tab-btn active" id="tabDemo">展示模式</button>
+        <button class="tab-btn" id="tabExp">🔬 實驗模式：測折射率 n</button>
+    </div>
 
     <div class="controls-container">
         <div class="slider-group">
             <div class="slider-label">入射角 (θ₁) <b id="val_theta1">45°</b></div>
             <input type="range" id="sl_angle" min="0" max="85" value="45">
         </div>
-        <div class="slider-group">
+        <div class="slider-group" id="grpN1">
             <div class="slider-label">上層折射率 n₁ <b id="val_n1">1.50</b></div>
             <input type="range" id="sl_n1" min="1.00" max="2.50" value="1.50" step="0.01">
         </div>
-        <div class="slider-group">
+        <div class="slider-group" id="grpN2">
             <div class="slider-label">下層折射率 n₂ <b id="val_n2">1.00</b></div>
             <input type="range" id="sl_n2" min="1.00" max="2.50" value="1.00" step="0.01">
         </div>
@@ -94,8 +126,91 @@
     </div>
     <div class="info-text">💡 提示：可以直接用手指拖動雷射筆改變角度</div>
 
+
+    <div id="exp">
+        <div class="xcard">
+            <h3>① 選擇實驗</h3>
+            <select id="xType" class="xsel">
+                <option value="A">實驗 A：光從空氣射入「未知介質」，測折射率 n（斯乃耳定律）</option>
+                <option value="B">實驗 B：光從「未知介質」射向空氣，測臨界角與全反射</option>
+            </select>
+            <select id="xMed" class="xsel" style="margin-top:8px;">
+                <option value="unknown">🎲 未知介質（折射率隱藏，由你測出來）</option>
+                <option value="1.33">水（約 1.33）</option>
+                <option value="1.49">壓克力（約 1.49）</option>
+                <option value="1.52">玻璃（約 1.52）</option>
+                <option value="2.42">鑽石（約 2.42）</option>
+            </select>
+            <div class="xrow"><button class="xbtn sec" id="xNew">換一個未知介質</button><button class="xbtn sec" id="xReveal">揭曉折射率</button></div>
+            <div class="xnote">用上方的雷射筆（可直接拖動）或入射角滑桿改變 θ₁。折射率為示意值。</div>
+        </div>
+
+        <div class="xcard">
+            <h3>② 量角器讀數與記錄</h3>
+            <div id="xReadout" style="font-size:16px;line-height:1.8;"></div>
+            <div class="xrow">
+                <button class="xbtn grn" id="xRec">＋ 記錄 (θ₁, θ₂)</button>
+                <button class="xbtn grn" id="xRecC" style="display:none;">＋ 記錄臨界角</button>
+                <button class="xbtn sec" id="xAuto">⚡ 自動掃描</button>
+                <button class="xbtn sec" id="xClear">清除</button>
+            </div>
+            <div class="xnote"><label><input type="checkbox" id="xNoise"> 加入讀數誤差（θ₂ 約 ±0.3°）</label>　θ₂ 以量角器讀數（最小刻度 0.5°）。<br id="xBr">記錄臨界角：把 θ₁ 調到「折射光剛好消失」的那一格（再小 1° 折射光會出現），按下按鈕。</div>
+        </div>
+
+        <div class="xcard">
+            <h3>③ sin θ₁ – sin θ₂ 圖</h3>
+            <canvas id="xPlot" class="xcanvas" width="600" height="320"></canvas>
+            <div class="xfit" id="xFit"></div>
+        </div>
+
+        <div class="xcard">
+            <h3>④ 數據</h3>
+            <table class="xt"><thead><tr><th>#</th><th>θ₁ (°)</th><th>θ₂ (°)</th><th>sin θ₁</th><th>sin θ₂</th><th>sinθ₁/sinθ₂</th></tr></thead><tbody id="xBody"></tbody></table>
+            <div class="xfit" id="xCrit"></div>
+        </div>
+
+        <div class="xcard">
+            <h3>公式與教學提示</h3>
+            <details class="xdetails" open><summary>核心公式（符號與單位）</summary>
+                <ul>
+                    <li>斯乃耳定律：<b>n₁ sinθ₁ = n₂ sinθ₂</b>　n：折射率（無單位）、θ₁：入射角、θ₂：折射角（都由法線量起）</li>
+                    <li>實驗 A（n₁ = 1，空氣）：sinθ₁ = n₂ · sinθ₂，所以 <b>sinθ₁–sinθ₂ 圖是通過原點的直線，斜率 = n₂</b>。</li>
+                    <li>實驗 B（n₂ = 1，空氣）：sinθ₁ = (1/n₁) · sinθ₂，斜率 = 1/n₁；折射光剛好消失時 θ₂ = 90°：<b>sinθc = 1/n₁</b>，所以 <b>n₁ = 1 ÷ sinθc</b>。</li>
+                    <li>全反射條件：光從折射率較大的介質射向較小的介質，且 θ₁ ≥ θc。</li>
+                </ul>
+                <div class="xnote">理想化假設：單色光、介面平整、介質均勻；忽略反射光強度隨角度的變化。</div>
+            </details>
+            <details class="xdetails"><summary>建議講解順序</summary>
+                <ol>
+                    <li>實驗 A：先量 3 組，直接用 sinθ₁ ÷ sinθ₂ 算 n，看看是不是每次都一樣（常數）。</li>
+                    <li>用自動掃描收集 7 組，作 sinθ₁–sinθ₂ 圖，說明斜率就是折射率。</li>
+                    <li>為什麼要作圖？因為單一量測誤差大，用直線擬合可以平均掉誤差（打開讀數誤差試試）。</li>
+                    <li>實驗 B：慢慢增加入射角，觀察折射角接近 90°，折射光消失；記錄臨界角並算 n。</li>
+                    <li>比較兩種方法測得的 n，最後「揭曉」對答案。</li>
+                </ol>
+            </details>
+            <details class="xdetails"><summary>可以問學生的問題</summary>
+                <ul>
+                    <li>θ₁ 越大，sinθ₁/sinθ₂ 會變嗎？為什麼要在不同角度各量幾次？</li>
+                    <li>入射角很小（例如 10°）和很大（例如 70°），哪一種的量角器讀數誤差對 n 的影響比較大？</li>
+                    <li>為什麼從空氣射入玻璃不會發生全反射？</li>
+                    <li>鑽石的臨界角為什麼這麼小？對鑽石的閃耀有什麼影響？</li>
+                </ul>
+            </details>
+            <details class="xdetails"><summary>常見迷思</summary>
+                <ul>
+                    <li><b>「角度是從介面量起」</b>：斯乃耳定律的角度要從法線量起。</li>
+                    <li><b>「折射角永遠比入射角小」</b>：只在從折射率小進入折射率大的介質時才成立。</li>
+                    <li><b>「全反射時光完全消失」</b>：折射光消失，但能量全部被反射。</li>
+                </ul>
+            </details>
+        </div>
+    </div>
+
     <script>
         let sl_angle, sl_n1, sl_n2;
+        window.hiddenN = 0;                // 0：不隱藏；1：隱藏 n₁；2：隱藏 n₂（實驗模式的未知介質）
+        window.refrReadout = null;         // 實驗模式：θ₂ 以量角器讀數顯示
         let canvasW, canvasH;
         let isDragging = false;
         // 雷射筆在法線的哪一側：+1 = 左側（原本的預設），-1 = 右側。
@@ -159,9 +274,9 @@
 
             // UI Update
             select('#val_theta1').html(abs(theta1_deg).toFixed(1) + "°");
-            select('#val_n1').html(n1.toFixed(2));
-            select('#val_n2').html(n2.toFixed(2));
-            select('#val_critical').html(critical_angle_deg);
+            select('#val_n1').html(window.hiddenN === 1 ? '？' : n1.toFixed(2));
+            select('#val_n2').html(window.hiddenN === 2 ? '？' : n2.toFixed(2));
+            select('#val_critical').html(window.hiddenN === 1 && n1 > n2 ? '？' : critical_angle_deg);
 
             let t2_display = select('#val_theta2');
             let tir_box = select('#tir_msg');
@@ -170,7 +285,7 @@
                 t2_display.html("--");
                 tir_box.style('display', 'block');
             } else {
-                t2_display.html(degrees(abs(theta2)).toFixed(1) + "°");
+                t2_display.html(window.refrReadout ? window.refrReadout(degrees(abs(theta2))) : degrees(abs(theta2)).toFixed(1) + "°");
                 tir_box.style('display', 'none');
             }
 
@@ -192,8 +307,8 @@
             drawingContext.setLineDash([]); 
 
             noStroke(); fill(150); textSize(12);
-            text(`n₁ = ${n1}`, -width/2 + 30, -20);
-            text(`n₂ = ${n2}`, -width/2 + 30, 30);
+            text(`n₁ = ${window.hiddenN === 1 ? '？' : n1}`, -width/2 + 30, -20);
+            text(`n₂ = ${window.hiddenN === 2 ? '？' : n2}`, -width/2 + 30, 30);
 
             // 3. 角度標示 (弧線與文字)
             // θ1: 入射角
@@ -326,6 +441,115 @@
             canvasW = min(windowWidth - 20, 600);
             resizeCanvas(canvasW, 350);
         }
+    </script>
+
+    <script>
+    (() => {
+        const $ = id => document.getElementById(id);
+        const X = { on: false, type: 'A', n: 1.5, unknown: false, dataA: [], dataB: [], critB: [] };
+        const rad = d => d * Math.PI / 180, deg = r => r * 180 / Math.PI;
+        const sliderSet = (id, v) => { const e = $(id); e.value = v; e.dispatchEvent(new Event('input')); };
+        const th1 = () => parseFloat($('sl_angle').value);
+        const noise = a => $('xNoise').checked ? (Math.random() + Math.random() - 1) * a : 0;
+        const round05 = d => Math.round(d * 2) / 2;
+        const nPair = () => X.type === 'A' ? [1.0, X.n] : [X.n, 1.0];
+        const t2of = a => { const [n1, n2] = nPair(); const s = n1 / n2 * Math.sin(rad(a)); return s > 1 ? null : deg(Math.asin(s)); };
+        const isTIR = a => t2of(a) === null;
+
+        // 量角器讀數（0.5° 刻度），每個 θ₁ 只產生一次誤差，避免畫面上的數字一直跳動
+        let lastKey = '', lastRead = null;
+        function reading(a) {
+            const t = t2of(a); if (t === null) return null;
+            const key = a + '|' + X.n + '|' + X.type + '|' + $('xNoise').checked;
+            if (key !== lastKey) { lastKey = key; lastRead = Math.max(0, round05(t + noise(0.3))); }
+            return lastRead;
+        }
+        window.refrReadout = t => { if (!X.on) return t.toFixed(1) + '°'; const r = reading(th1()); return r === null ? '--' : r.toFixed(1) + '°'; };
+
+        function applyMedium() {
+            const v = $('xMed').value;
+            if (v === 'unknown') { if (!X.unknown) X.n = Math.round((1.2 + Math.random() * 1.2) * 100) / 100; X.unknown = true; }
+            else { X.unknown = false; X.n = parseFloat(v); }
+            const [n1, n2] = nPair(); sliderSet('sl_n1', n1); sliderSet('sl_n2', n2);
+            window.hiddenN = X.unknown ? (X.type === 'A' ? 2 : 1) : 0;
+        }
+        function resetData() { X.dataA = []; X.dataB = []; X.critB = []; }
+        function setMode(on) {
+            X.on = on; document.body.classList.toggle('exp-mode', on);
+            $('tabDemo').classList.toggle('active', !on); $('tabExp').classList.toggle('active', on);
+            if (on) { applyMedium(); } else { window.hiddenN = 0; }
+            refresh();
+        }
+        function data() { return X.type === 'A' ? X.dataA : X.dataB; }
+
+        function record() {
+            const a = th1(); if (a <= 0) { alert('入射角為 0°，光不會偏折，請先把 θ₁ 調大一點。'); return; }
+            const r = reading(a);
+            if (r === null) { alert('這個角度發生全反射，沒有折射光，無法量到 θ₂。請把 θ₁ 調小。'); return; }
+            const d = data(); d.push({ t1: a, t2: r }); if (d.length > 30) d.shift(); refresh();
+        }
+        function recordCritical() {
+            const a = th1();
+            if (X.type !== 'B') return;
+            if (!(isTIR(a) && a >= 1 && !isTIR(a - 1))) { alert('還沒調到臨界角的邊緣。\n請調到「折射光剛好消失」的那一格：這一格全反射，但再小 1° 就會看到折射光。'); return; }
+            const thc = a - 0.5 + noise(0.3);                      // 取全反射／非全反射兩格的中點
+            X.critB.push({ thc, n: 1 / Math.sin(rad(thc)) }); refresh();
+        }
+        function autoScan() {
+            const angles = X.type === 'A' ? [10, 20, 30, 40, 50, 60, 70] : [5, 10, 15, 20, 25, 30, 35];
+            angles.forEach(a => { const t = t2of(a); if (t !== null) data().push({ t1: a, t2: Math.max(0, round05(t + noise(0.3))) }); });
+            if (X.type === 'B') { const a0 = Math.floor(deg(Math.asin(1 / X.n))) + 1; const thc = a0 - 0.5 + noise(0.3); X.critB.push({ thc, n: 1 / Math.sin(rad(thc)) }); }
+            refresh();
+        }
+
+        // ---------- 繪圖 ----------
+        function niceStep(range) { const t = range / 5, p = Math.pow(10, Math.floor(Math.log10(t))), n = t / p; return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * p; }
+        function plot(cv, o) {
+            const x = cv.getContext('2d'), W = cv.width, H = cv.height, L = 58, R = 16, T = 34, B = 46, pw = W - L - R, ph = H - T - B;
+            const PX = v => L + (v - o.xmin) / (o.xmax - o.xmin) * pw, PY = v => T + ph - (v - o.ymin) / (o.ymax - o.ymin) * ph;
+            x.clearRect(0, 0, W, H); x.fillStyle = '#0b0b0b'; x.fillRect(0, 0, W, H); x.font = '12px sans-serif';
+            const sx = niceStep(o.xmax - o.xmin), sy = niceStep(o.ymax - o.ymin), dx = Math.max(0, Math.ceil(-Math.log10(sx) - 1e-9)), dy = Math.max(0, Math.ceil(-Math.log10(sy) - 1e-9));
+            for (let v = 0; v <= o.xmax + 1e-9; v += sx) { x.strokeStyle = '#1d1d1d'; x.beginPath(); x.moveTo(PX(v), T); x.lineTo(PX(v), T + ph); x.stroke(); x.fillStyle = '#999'; x.textAlign = 'center'; x.fillText(v.toFixed(dx), PX(v), T + ph + 16); }
+            for (let v = 0; v <= o.ymax + 1e-9; v += sy) { x.strokeStyle = '#1d1d1d'; x.beginPath(); x.moveTo(L, PY(v)); x.lineTo(L + pw, PY(v)); x.stroke(); x.fillStyle = '#999'; x.textAlign = 'right'; x.fillText(v.toFixed(dy), L - 6, PY(v) + 4); }
+            x.strokeStyle = '#666'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(L, T); x.lineTo(L, T + ph); x.lineTo(L + pw, T + ph); x.stroke();
+            x.fillStyle = '#ddd'; x.font = 'bold 14px sans-serif'; x.textAlign = 'left'; x.fillText(o.title, L, 18);
+            x.font = '12px sans-serif'; x.fillStyle = '#999'; x.textAlign = 'center'; x.fillText(o.xlabel, L + pw / 2, H - 8);
+            x.save(); x.translate(14, T + ph / 2); x.rotate(-Math.PI / 2); x.fillText(o.ylabel, 0, 0); x.restore();
+            (o.lines || []).forEach(l => { x.save(); x.strokeStyle = l.color; x.lineWidth = 1.8; x.setLineDash([6, 5]); x.beginPath(); l.pts.forEach((p, i) => i ? x.lineTo(PX(p.x), PY(p.y)) : x.moveTo(PX(p.x), PY(p.y))); x.stroke(); x.restore(); });
+            (o.dots || []).forEach(d => { x.fillStyle = d.color; x.beginPath(); x.arc(PX(d.x), PY(d.y), 5, 0, 7); x.fill(); });
+        }
+
+        function refresh() {
+            if (!X.on) return;
+            const A = X.type === 'A', d = data(), a = th1(), r = reading(a);
+            $('xRecC').style.display = A ? 'none' : ''; $('xBr').style.display = A ? 'none' : '';
+            $('xReadout').innerHTML = `入射角 θ₁ ＝ <b style="color:#ffcc00">${a.toFixed(0)}°</b>　　折射角 θ₂（量角器）＝ <b style="color:#00ffff">${r === null ? '— 全反射，沒有折射光' : r.toFixed(1) + '°'}</b>`;
+            $('xBody').innerHTML = d.map((p, i) => { const s1 = Math.sin(rad(p.t1)), s2 = Math.sin(rad(p.t2)); return `<tr><td>${i + 1}</td><td>${p.t1.toFixed(0)}</td><td>${p.t2.toFixed(1)}</td><td>${s1.toFixed(3)}</td><td>${s2.toFixed(3)}</td><td>${s2 > 0 ? (s1 / s2).toFixed(3) : '—'}</td></tr>`; }).join('');
+            const pts = d.map(p => ({ x: Math.sin(rad(p.t2)), y: Math.sin(rad(p.t1)) }));
+            const sxx = pts.reduce((s, p) => s + p.x * p.x, 0), sxy = pts.reduce((s, p) => s + p.x * p.y, 0), slope = sxx > 0 ? sxy / sxx : null;
+            const xmax = A ? 1 : 1.05, ymax = Math.max(1, ...pts.map(p => p.y * 1.1));
+            const lines = slope ? [{ color: 'rgba(0,212,255,.8)', pts: [{ x: 0, y: 0 }, { x: xmax, y: Math.min(slope * xmax, ymax) }] }] : [];
+            plot($('xPlot'), { title: 'sin θ₁ 與 sin θ₂ 的關係（虛線：通過原點的最佳直線）', xlabel: 'sin θ₂', ylabel: 'sin θ₁', xmin: 0, xmax, ymin: 0, ymax: Math.min(ymax, 2.6), lines, dots: pts.map(p => ({ ...p, color: '#ffcc00' })) });
+            const hid = window.hiddenN !== 0, trueTxt = v => hid ? '（真實折射率已隱藏，按「揭曉折射率」對答案）' : `真實值：n = ${X.n.toFixed(2)}`;
+            if (slope === null) $('xFit').innerHTML = '按「記錄 (θ₁, θ₂)」或「自動掃描」收集數據。';
+            else if (A) $('xFit').innerHTML = `斜率 ＝ <b>${slope.toFixed(3)}</b> ＝ n₂ → 未知介質折射率 <b>n ≈ ${slope.toFixed(2)}</b>。${trueTxt()}`;
+            else $('xFit').innerHTML = `斜率 ＝ ${slope.toFixed(3)} ＝ 1/n₁ → <b>n₁ ≈ ${(1 / slope).toFixed(2)}</b>。${trueTxt()}`;
+            if (A) $('xCrit').innerHTML = '';
+            else if (!X.critB.length) $('xCrit').innerHTML = '臨界角尚未記錄。';
+            else { const m = X.critB.reduce((s, c) => s + c.n, 0) / X.critB.length; $('xCrit').innerHTML = X.critB.map((c, i) => `臨界角 #${i + 1}：θc ≈ ${c.thc.toFixed(1)}° → n = 1 ÷ sinθc = ${c.n.toFixed(3)}`).join('<br>') + `<br><b>平均 n₁ ≈ ${m.toFixed(2)}</b>。` + (hid ? '' : `真實值 n = ${X.n.toFixed(2)}，臨界角 ${deg(Math.asin(1 / X.n)).toFixed(1)}°`); }
+        }
+
+        $('tabDemo').addEventListener('click', () => setMode(false));
+        $('tabExp').addEventListener('click', () => setMode(true));
+        $('xType').addEventListener('change', e => { X.type = e.target.value; applyMedium(); refresh(); });
+        $('xMed').addEventListener('change', () => { X.unknown = false; applyMedium(); resetData(); refresh(); });
+        $('xNew').addEventListener('click', () => { $('xMed').value = 'unknown'; X.unknown = false; applyMedium(); resetData(); refresh(); });
+        $('xReveal').addEventListener('click', () => { window.hiddenN = 0; refresh(); });
+        $('xRec').addEventListener('click', record); $('xRecC').addEventListener('click', recordCritical); $('xAuto').addEventListener('click', autoScan);
+        $('xClear').addEventListener('click', () => { if (X.type === 'A') X.dataA = []; else { X.dataB = []; X.critB = []; } refresh(); });
+        setInterval(refresh, 150);
+        window.__rx = { X, t2of, isTIR, reading, recordCritical, record, autoScan, refresh };
+    })();
     </script>
 </body>
 </html>
