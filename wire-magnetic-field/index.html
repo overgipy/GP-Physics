@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>直導線的磁場：電流磁場與地磁水平分量 - 李捷物理實驗室</title>
+    <style>
+        :root {
+            --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432;
+            --text-main: #f0f3f8; --text-muted: #9aa8bd;
+            --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676;
+            /* 磁場配色：地磁水平分量＝青、導線電流磁場＝橘、合磁場＝黃 */
+            --bh: #35d6ff; --bw: #ff9f43; --bt: #ffe14d; --red: #ff4d6d;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px;
+            display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6;
+        }
+        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; }
+        .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
+        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; }
+        h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; }
+        .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
+        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
+        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
+        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+        .mode-btn { flex: 1 1 260px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 10px 12px; font-size: .95rem; cursor: pointer; text-align: left; }
+        .mode-btn b { display: block; color: var(--cyan); }
+        .mode-btn.active { border-color: var(--cyan); background: #12303a; }
+        .mode-desc { font-size: .92rem; color: var(--text-muted); margin-bottom: 12px; }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; }
+        .control-group.off { opacity: .45; }
+        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; }
+        .control-label b { font-family: monospace; font-size: 1.05rem; }
+        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
+        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
+        input[type=range]:disabled { cursor: not-allowed; }
+        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
+        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; }
+        .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; }
+        button.btn.secondary { background: #3a465b; color: #fff; }
+        button.btn.green { background: var(--green); color: #00210f; }
+        button.btn:disabled { opacity: .4; cursor: not-allowed; }
+        button.btn:not(:disabled):hover { filter: brightness(1.12); }
+        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; }
+        canvas { display: block; width: 100%; height: auto; }
+        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+        .lg-bh::before { background: var(--bh); } .lg-bw::before { background: var(--bw); } .lg-bt::before { background: var(--bt); } .lg-n::before { background: var(--red); }
+        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #111622; font-size: 1rem; }
+        .status b { color: var(--yellow); }
+        .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 10px; }
+        .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; }
+        .meter-title { font-size: .82rem; color: var(--text-muted); }
+        .meter-value { font-size: 1.3rem; font-weight: bold; font-family: monospace; }
+        .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
+        .c-bh { color: var(--bh); } .c-bw { color: var(--bw); } .c-bt { color: var(--bt); } .c-red { color: var(--red); } .c-y { color: var(--yellow); }
+        table { width: 100%; border-collapse: collapse; font-size: .88rem; font-family: monospace; }
+        th, td { border-bottom: 1px solid #263044; padding: 5px 6px; text-align: right; }
+        th { color: var(--text-muted); font-weight: normal; }
+        .table-scroll { max-height: 300px; overflow-y: auto; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
+        .fit-text b { color: var(--yellow); }
+        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+        summary { cursor: pointer; font-weight: bold; color: var(--cyan); }
+        details ol, details ul { margin: 8px 0 2px; padding-left: 22px; }
+        details li { margin-bottom: 4px; }
+        .assume { font-size: .88rem; color: var(--text-muted); }
+        footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
+    </style>
+</head>
+<body>
+
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>🧭 直導線的磁場</h1>
+    <p class="subtitle">電流磁場與地磁水平分量的比值　｜　tan θ = B<sub>導線</sub> ÷ B<sub>地磁水平</sub></p>
+</header>
+
+<div class="container">
+
+    <div class="card">
+        <div class="card-title">實驗設定</div>
+        <div class="mode-bar">
+            <button class="mode-btn active" data-mode="A"><b>實驗 A：改變電流 I</b>固定距離 r，作 tanθ–I 圖與 θ–I 圖</button>
+            <button class="mode-btn" data-mode="B"><b>實驗 B：改變距離 r</b>固定電流 I，作 tanθ–1/r 圖</button>
+        </div>
+        <div class="mode-desc" id="modeDesc"></div>
+
+        <div class="controls-grid">
+            <div class="control-group" id="grpI">
+                <div class="control-label">導線電流 I <b class="c-bw"><span id="lblI">3.0</span> A</b></div>
+                <input type="range" id="slI" min="0" max="10" step="0.1" value="3">
+            </div>
+            <div class="control-group" id="grpR">
+                <div class="control-label">導線到羅盤的距離 r <b class="c-bw"><span id="lblR">3.0</span> cm</b></div>
+                <input type="range" id="slR" min="1" max="8" step="0.5" value="3">
+                <div class="sub-note">r 是導線到指針中心的距離（含羅盤高度）</div>
+            </div>
+            <div class="control-group">
+                <div class="control-label">電流方向</div>
+                <select id="selDir"><option value="1">向北（導線在羅盤上方）</option><option value="-1">向南（導線在羅盤上方）</option></select>
+                <div class="sub-note">電流反向，指針偏轉方向也會反向</div>
+            </div>
+            <div class="control-group" id="grpBH">
+                <div class="control-label">地磁水平分量 B<sub>H</sub> <b class="c-bh"><span id="lblBH">35.0</span> μT</b></div>
+                <input type="range" id="slBH" min="20" max="50" step="0.5" value="35">
+                <div class="sub-note">台灣地區約 3×10⁻⁵ T 的量級（示意值）；1 μT ＝ 10⁻⁶ T</div>
+            </div>
+            <div class="control-group">
+                <div class="control-label">播放速度</div>
+                <select id="selSpeed"><option value="1">1 倍</option><option value="2" selected>2 倍</option><option value="4">4 倍</option></select>
+            </div>
+        </div>
+        <div class="check-row">
+            <label><input type="checkbox" id="chkVec" checked> 顯示磁場向量圖</label>
+            <label><input type="checkbox" id="chkTheory" checked> 圖中顯示理論曲線（未知地點時，揭曉後才顯示）</label>
+            <label><input type="checkbox" id="chkNoise"> 加入讀數誤差（量角器 ±1°）</label>
+        </div>
+        <div class="btn-row">
+            <button class="btn green" id="btnRecord">＋ 記錄這次數據</button>
+            <button class="btn secondary" id="btnAuto">⚡ 自動掃描</button>
+            <button class="btn secondary" id="btnClear">清除數據</button>
+            <button class="btn secondary" id="btnUnknown">🎲 未知地點（隱藏 B<sub>H</sub>）</button>
+            <button class="btn secondary" id="btnReveal" disabled>揭曉 B<sub>H</sub></button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span>實驗裝置（俯視圖：上方為北）</span><span id="runState" style="font-size:.85rem;color:var(--text-muted);">等待穩定</span></div>
+        <div class="canvas-wrap"><canvas id="scene" width="760" height="440"></canvas></div>
+        <div class="legend"><span class="lg-n">羅盤指針（紅端為 N 極）</span><span class="lg-bh">地磁水平分量 B<sub>H</sub></span><span class="lg-bw">導線磁場 B</span><span class="lg-bt">合磁場</span></div>
+        <div class="status" id="status"></div>
+    </div>
+
+    <div class="card" id="vecCard">
+        <div class="card-title">磁場向量與位置示意</div>
+        <div class="two-col">
+            <div class="graph-box"><canvas id="vec" width="420" height="340"></canvas></div>
+            <div class="graph-box"><canvas id="side" width="420" height="340"></canvas></div>
+        </div>
+        <div class="sub-note">左：導線磁場（橘，向西或向東）與地磁水平分量（青，向北）互相垂直，合磁場（黃）決定指針方向，tanθ ＝ B導線 ÷ B地磁。右：從南方往北看的剖面，導線電流向北（離開觀察者，⊗），磁場線順時針繞導線，羅盤所在位置的磁場向西。</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">即時數據</div>
+        <div class="dashboard" id="dash"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title" id="graphTitle">實驗圖形</div>
+        <div class="two-col">
+            <div class="graph-box"><canvas id="g1" width="480" height="340"></canvas></div>
+            <div class="graph-box"><canvas id="g2" width="480" height="340"></canvas></div>
+        </div>
+        <div class="fit-text" id="fitText"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">量測數據</div>
+        <div class="table-scroll"><table><thead><tr><th>#</th><th>I (A)</th><th>r (cm)</th><th>θ (°)</th><th>tanθ</th><th>1/r (m⁻¹)</th><th>B導線 (μT)</th></tr></thead><tbody id="dataBody"></tbody></table></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open>
+            <summary>核心公式（符號與單位）</summary>
+            <ul>
+                <li>長直導線的磁場：<b>B導線 = μ₀ I ÷ (2π r)</b>　μ₀ = 4π×10⁻⁷ T·m/A、I：電流 (A)、r：到導線的距離 (m)，所以 B導線 ＝ 2×10⁻⁷ × I ÷ r (T)。</li>
+                <li>方向：右手大拇指指向電流方向，四指環繞的方向就是磁場方向（右手定則）。</li>
+                <li>導線沿南北方向放在羅盤上方（與靜止的指針平行）：導線磁場與地磁水平分量 B<sub>H</sub> 互相垂直，所以指針偏轉角 θ 滿足 <b>tanθ = B導線 ÷ B<sub>H</sub> = μ₀ I ÷ (2π r B<sub>H</sub>)</b>（切線定律）。</li>
+                <li><b>tanθ–I 圖</b>是通過原點的直線，斜率 ＝ μ₀ ÷ (2π r B<sub>H</sub>)，所以 <b>B<sub>H</sub> ＝ μ₀ ÷ (2π r × 斜率)</b>。</li>
+                <li><b>θ–I 圖</b>是 θ ＝ arctan(kI) 的曲線（不是直線）：電流越大，偏轉越慢趨近 90°。</li>
+                <li>tanθ ＝ 1 時（θ ＝ 45°）表示導線磁場與地磁水平分量一樣大：I<sub>45</sub> ＝ 2π r B<sub>H</sub> ÷ μ₀。</li>
+            </ul>
+            <p class="assume">理想化假設：導線為無限長直導線、細到可忽略粗細；羅盤指針很小，視為在一個點；地磁水平分量在實驗範圍內是均勻的；附近沒有其他磁鐵或鐵磁性物質；導線與靜止的指針平行（南北向）。指針為有阻尼的擺動，需等指針穩定後再讀數。</p>
+        </details>
+        <details>
+            <summary>建議講解順序</summary>
+            <ol>
+                <li>電流為 0：指針指向北，這是地磁水平分量 B<sub>H</sub> 的方向。</li>
+                <li>通電：指針偏轉。問學生：指針指向「導線磁場」還是「地磁」？（都不是，是合磁場的方向。）</li>
+                <li>看向量圖：兩個磁場互相垂直，tanθ ＝ B導線 ÷ B<sub>H</sub>，直接就是比值。</li>
+                <li><b>實驗 A：</b>改變電流，作 tanθ–I 圖（直線）與 θ–I 圖（曲線），比較兩種圖的差別。</li>
+                <li>由 tanθ–I 的斜率求 B<sub>H</sub>：用「🎲 未知地點」讓學生當實驗員，最後揭曉對答案。</li>
+                <li><b>實驗 B：</b>固定電流，改變距離，作 tanθ–1/r 圖，驗證 B導線 ∝ 1/r。</li>
+            </ol>
+        </details>
+        <details>
+            <summary>可以問學生的問題</summary>
+            <ul>
+                <li>電流加倍，偏轉角 θ 會加倍嗎？tanθ 呢？</li>
+                <li>為什麼 θ 不可能到 90°？要多大的電流？</li>
+                <li>電流反向，指針偏轉的方向和大小會怎麼變？</li>
+                <li>導線放在羅盤下方而不是上方，結果怎麼變？（偏轉方向相反，大小相同）</li>
+                <li>如果導線與指針沒有對齊，只在電流為 0 時指向北，實驗會有什麼誤差？</li>
+            </ul>
+        </details>
+        <details>
+            <summary>常見迷思</summary>
+            <ul>
+                <li><b>「指針會指向導線的磁場方向」</b>：指針指向的是地磁與導線磁場的向量和，不是只有導線的磁場。</li>
+                <li><b>「θ 與電流成正比」</b>：只有 <b>tanθ</b> 與電流成正比；θ 小時才近似成正比（θ &lt; 15° 時 tanθ ≈ θ）。</li>
+                <li><b>「導線磁場方向沿著導線」</b>：磁場是環繞導線的圓，與導線垂直。</li>
+                <li>讀 θ 時，要等指針靜止；指針剛到位時還在擺動，讀數會偏大或偏小。</li>
+            </ul>
+        </details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script>
+(() => {
+    'use strict';
+    const MU0 = 4 * Math.PI * 1e-7;
+    const el = id => document.getElementById(id);
+    const sc = el('scene'), c = sc.getContext('2d');
+    const rad = d => d * Math.PI / 180, deg = r => r * 180 / Math.PI;
+    const S = {
+        mode: 'A', I: 3, r: 3, dir: 1, BH: 35, hidden: false, speed: 2,
+        phi: 0, om: 0,                        // 指針角度（向西為正）與角速度
+        data: { A: [], B: [] }, settledT: 0
+    };
+
+    // ===================== 物理 =====================
+    // 導線在羅盤處的磁場 (μT)：B = μ0 I /(2π r) = 2×10⁻⁷ I / r  → 以 μT 表示 = 0.2 I / r(m)
+    const Bwire = (I, rcm) => 0.2 * I / (rcm / 100);
+    const thetaEq = (I, rcm, dir, BH) => dir * Math.atan(Bwire(I, rcm) / BH);        // 向西為正（電流向北）
+    const K0 = Math.pow(2 * Math.PI / 1.4, 2);       // 只有地磁時，指針的角頻率² （週期約 1.4 s）
+    const ZETA = 0.28;
+
+    function params() {
+        const Bw = Bwire(S.I, S.r), th = thetaEq(S.I, S.r, S.dir, S.BH);
+        return { Bw, th, Bt: Math.hypot(Bw, S.BH), ratio: Bw / S.BH };
+    }
+    function stepNeedle(dt) {
+        const p = params(), k = K0 * p.Bt / S.BH, cdamp = 2 * ZETA * Math.sqrt(K0);
+        const acc = -k * Math.sin(S.phi - p.th) - cdamp * S.om;
+        S.om += acc * dt; S.phi += S.om * dt;
+    }
+    const settled = () => { const p = params(); return Math.abs(S.phi - p.th) < rad(0.3) && Math.abs(S.om) < rad(1.0); };
+
+    // ===================== 繪圖工具 =====================
+    function arrow(ctx, x1, y1, x2, y2, color, w = 3, head = 10, dash = null) {
+        const len = Math.hypot(x2 - x1, y2 - y1); if (len < 2) return;
+        const a = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(head, len * .6);
+        ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round'; if (dash) ctx.setLineDash(dash);
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(a) * hl * .6, y2 - Math.sin(a) * hl * .6); ctx.stroke(); ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - hl * Math.cos(a - .45), y2 - hl * Math.sin(a - .45)); ctx.lineTo(x2 - hl * Math.cos(a + .45), y2 - hl * Math.sin(a + .45)); ctx.closePath(); ctx.fill(); ctx.restore();
+    }
+    function txt(ctx, s, x, y, color, size = 14, align = 'left') { ctx.save(); ctx.font = `bold ${size}px sans-serif`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y); ctx.restore(); }
+
+    // ---------- 俯視圖 ----------
+    const CX = 380, CY = 225, RC = 175;
+    function drawScene() {
+        const p = params();
+        c.clearRect(0, 0, 760, 440); c.fillStyle = '#080a0f'; c.fillRect(0, 0, 760, 440);
+        // 桌面
+        c.fillStyle = '#10151f'; c.fillRect(30, 10, 700, 420);
+        // 導線（南北向，在羅盤上方）
+        c.strokeStyle = '#c98a3d'; c.lineWidth = 9; c.lineCap = 'round'; c.beginPath(); c.moveTo(CX, 14); c.lineTo(CX, 436); c.stroke();
+        c.strokeStyle = '#ffd08a'; c.lineWidth = 3; c.beginPath(); c.moveTo(CX, 14); c.lineTo(CX, 436); c.stroke();
+        // 羅盤
+        c.fillStyle = 'rgba(20,28,40,.92)'; c.strokeStyle = '#8fa3c4'; c.lineWidth = 3; c.beginPath(); c.arc(CX, CY, RC, 0, 7); c.fill(); c.stroke();
+        for (let d = 0; d < 360; d += 5) {
+            const major = d % 30 === 0, a = rad(d), r1 = RC - (major ? 16 : 8);
+            c.strokeStyle = major ? '#8a99ad' : '#4a5870'; c.lineWidth = major ? 2 : 1;
+            c.beginPath(); c.moveTo(CX + r1 * Math.sin(a), CY - r1 * Math.cos(a)); c.lineTo(CX + RC * Math.sin(a), CY - RC * Math.cos(a)); c.stroke();
+        }
+        [['N', 0], ['E', 90], ['S', 180], ['W', 270]].forEach(([t, d]) => txt(c, t, CX + (RC - 32) * Math.sin(rad(d)), CY - (RC - 32) * Math.cos(rad(d)), t === 'N' ? '#ff6b81' : '#c3d0e4', 20, 'center'));
+        // 偏轉角弧線與標記（θ）
+        if (Math.abs(S.phi) > rad(2)) {
+            c.strokeStyle = '#ffe14d'; c.lineWidth = 2.5; c.beginPath();
+            const a0 = -Math.PI / 2, a1 = -Math.PI / 2 - S.phi; S.phi > 0 ? c.arc(CX, CY, 70, a1, a0) : c.arc(CX, CY, 70, a0, a1); c.stroke();
+            txt(c, `θ ≈ ${Math.abs(deg(S.phi)).toFixed(0)}°`, CX + (S.phi > 0 ? -1 : 1) * 62, CY - 100, '#ffe14d', 17, 'center');
+        }
+        // 指針（向西為正：逆時針旋轉）
+        c.save(); c.translate(CX, CY); c.rotate(-S.phi);
+        c.fillStyle = '#ff4d6d'; c.beginPath(); c.moveTo(0, -128); c.lineTo(11, 0); c.lineTo(-11, 0); c.closePath(); c.fill();
+        c.fillStyle = '#e8eef8'; c.beginPath(); c.moveTo(0, 128); c.lineTo(11, 0); c.lineTo(-11, 0); c.closePath(); c.fill();
+        c.restore();
+        c.fillStyle = '#222'; c.beginPath(); c.arc(CX, CY, 6, 0, 7); c.fill();
+        // 電流方向箭頭
+        const up = S.dir === 1;
+        arrow(c, CX + 50, up ? 395 : 55, CX + 50, up ? 335 : 115, '#ffb45e', 5, 14);
+        txt(c, `電流 I = ${S.I.toFixed(1)} A（向${up ? '北' : '南'}）`, CX + 62, 365, '#ffb45e', 15);
+        txt(c, '導線（在羅盤上方）', CX + 62, 45, '#ffd08a', 14);
+        txt(c, `r = ${S.r.toFixed(1)} cm`, CX + 62, 395, '#9aa8bd', 14);
+        if (!S.hidden) txt(c, `B_H = ${S.BH.toFixed(1)} μT`, 40, 30, '#35d6ff', 16); else txt(c, 'B_H = ？', 40, 30, '#35d6ff', 16);
+        txt(c, `B導線 = ${p.Bw.toFixed(1)} μT`, 40, 56, '#ff9f43', 16);
+    }
+
+    // ---------- 向量圖 ----------
+    function drawVec() {
+        const cv = el('vec'), x = cv.getContext('2d'), p = params(); x.clearRect(0, 0, 420, 340); x.fillStyle = '#0d121b'; x.fillRect(0, 0, 420, 340);
+        txt(x, '磁場向量（俯視，上為北）', 12, 18, '#c3d0e4', 14);
+        const ox = 210, oy = 290, mx = Math.max(S.BH, p.Bw, p.Bt), k = Math.min(5, 230 / mx);
+        const bh = S.BH * k, bw = p.Bw * k * S.dir;
+        x.strokeStyle = '#27324a'; x.lineWidth = 1; x.beginPath(); x.moveTo(ox, 30); x.lineTo(ox, 320); x.moveTo(20, oy); x.lineTo(400, oy); x.stroke();
+        txt(x, '北', ox + 10, 36, '#ff6b81', 14); txt(x, '西', 20, oy - 12, '#9aa8bd', 13); txt(x, '東', 392, oy - 12, '#9aa8bd', 13);
+        // 矩形（平行四邊形）虛線
+        x.save(); x.strokeStyle = 'rgba(255,255,255,.3)'; x.setLineDash([5, 5]); x.beginPath(); x.moveTo(ox - bw, oy); x.lineTo(ox - bw, oy - bh); x.lineTo(ox, oy - bh); x.stroke(); x.restore();
+        arrow(x, ox, oy, ox, oy - bh, '#35d6ff', 4); txt(x, S.hidden ? 'B_H = ？' : `B_H = ${S.BH.toFixed(1)} μT`, ox + 8, oy - bh / 2, '#35d6ff', 13);
+        if (p.Bw > 0.01) { arrow(x, ox, oy, ox - bw, oy, '#ff9f43', 4); txt(x, `B導線 = ${p.Bw.toFixed(1)} μT`, ox - bw / 2, oy + 16, '#ff9f43', 13, 'center'); }
+        arrow(x, ox, oy, ox - bw, oy - bh, '#ffe14d', 4); txt(x, `合磁場 ${S.hidden ? '' : p.Bt.toFixed(1) + ' μT'}`, ox - bw / 2 + 8 * (S.dir), oy - bh / 2 - 16, '#ffe14d', 13, 'center');
+        if (Math.abs(p.th) > rad(1)) { x.strokeStyle = '#ffe14d'; x.lineWidth = 2; x.beginPath(); const a0 = -Math.PI / 2, a1 = -Math.PI / 2 - p.th; p.th > 0 ? x.arc(ox, oy, 55, a1, a0) : x.arc(ox, oy, 55, a0, a1); x.stroke(); txt(x, 'θ', ox - Math.sign(p.th) * 32, oy - 72, '#ffe14d', 15, 'center'); }
+        txt(x, S.hidden ? 'tanθ = B導線 ÷ B_H' : `tanθ = ${p.Bw.toFixed(1)} ÷ ${S.BH.toFixed(1)} = ${p.ratio.toFixed(3)}`, 12, 322, '#ffe14d', 14);
+    }
+    function drawSide() {
+        const cv = el('side'), x = cv.getContext('2d'), p = params(); x.clearRect(0, 0, 420, 340); x.fillStyle = '#0d121b'; x.fillRect(0, 0, 420, 340);
+        txt(x, '剖面圖（從南往北看）', 12, 18, '#c3d0e4', 14);
+        const wx = 210, tableY = 300, sc2 = 28, wy = tableY - 14 - S.r * sc2 * 0.9;       // 導線位置：羅盤上方 r（示意比例）
+        const up = S.dir === 1;
+        x.fillStyle = '#222b3a'; x.fillRect(40, tableY, 340, 8);
+        x.fillStyle = '#34405a'; x.fillRect(wx - 55, tableY - 14, 110, 14); x.strokeStyle = '#8fa3c4'; x.strokeRect(wx - 55, tableY - 14, 110, 14); txt(x, '羅盤', wx + 62, tableY - 7, '#9aa8bd', 12);
+        // 磁場線（圓）
+        [0.5, 1, 1.6].forEach((m, i) => {
+            const R = Math.max(14, S.r * sc2 * 0.9 * m * (i === 1 ? 1 : 1)); x.strokeStyle = 'rgba(255,159,67,.45)'; x.lineWidth = 1.5; x.beginPath(); x.arc(wx, wy, R, 0, 7); x.stroke();
+            // 順時針（電流向北＝離開觀察者；dir=1 時順時針；反向則逆時針）
+            for (const a0 of [0.8, 3.9]) { const a = a0 * (up ? 1 : -1) + (up ? 0 : Math.PI); const px = wx + R * Math.cos(a), py = wy + R * Math.sin(a), tx = (up ? -1 : 1) * Math.sin(a), ty = (up ? 1 : -1) * Math.cos(a); arrow(x, px - tx * 7, py - ty * 7, px + tx * 7, py + ty * 7, '#ff9f43', 2, 7); }
+        });
+        // 導線（⊗ 向北＝離開觀察者；⊙ 向南）
+        x.fillStyle = '#c98a3d'; x.beginPath(); x.arc(wx, wy, 11, 0, 7); x.fill(); x.strokeStyle = '#1a1005'; x.lineWidth = 2.5;
+        if (up) { x.beginPath(); x.moveTo(wx - 6, wy - 6); x.lineTo(wx + 6, wy + 6); x.moveTo(wx + 6, wy - 6); x.lineTo(wx - 6, wy + 6); x.stroke(); } else { x.fillStyle = '#1a1005'; x.beginPath(); x.arc(wx, wy, 3.5, 0, 7); x.fill(); }
+        txt(x, up ? '電流向北（⊗ 離開紙面）' : '電流向南（⊙ 朝向觀察者）', wx + 20, wy - 14, '#ffb45e', 13);
+        // r 標記
+        x.strokeStyle = '#9aa8bd'; x.lineWidth = 1; x.setLineDash([4, 4]); x.beginPath(); x.moveTo(wx - 85, wy); x.lineTo(wx - 85, tableY - 7); x.stroke(); x.setLineDash([]);
+        txt(x, `r = ${S.r.toFixed(1)} cm`, wx - 92, (wy + tableY) / 2 - 4, '#9aa8bd', 13, 'right');
+        // 羅盤處的導線磁場方向（導線在上方：向北電流 → 向西）
+        const bl = Math.min(100, 20 + p.Bw * 1.2);
+        if (p.Bw > 0.01) { arrow(x, wx, tableY - 24, wx - S.dir * bl, tableY - 24, '#ff9f43', 4); txt(x, `羅盤處 B導線 向${up ? '西' : '東'}`, wx - S.dir * bl / 2, tableY - 40, '#ff9f43', 13, 'center'); }
+    }
+
+    // ===================== 圖表 =====================
+    function niceStep(r) { const t = r / 5, q = Math.pow(10, Math.floor(Math.log10(t))), n = t / q; return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * q; }
+    function plot(cv, o) {
+        const x = cv.getContext('2d'), W = cv.width, H = cv.height, L = 58, R = 16, T = 34, B = 46, pw = W - L - R, ph = H - T - B;
+        const PX = v => L + (v - o.xmin) / (o.xmax - o.xmin) * pw, PY = v => T + ph - (v - o.ymin) / (o.ymax - o.ymin) * ph;
+        x.clearRect(0, 0, W, H); x.fillStyle = '#0d121b'; x.fillRect(0, 0, W, H); x.font = '12px sans-serif';
+        const sx = niceStep(o.xmax - o.xmin), sy = niceStep(o.ymax - o.ymin), dx = Math.max(0, Math.ceil(-Math.log10(sx) - 1e-9)), dy = Math.max(0, Math.ceil(-Math.log10(sy) - 1e-9));
+        for (let v = Math.ceil(o.xmin / sx) * sx; v <= o.xmax + 1e-9; v += sx) { x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(PX(v), T); x.lineTo(PX(v), T + ph); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(v.toFixed(dx), PX(v), T + ph + 16); }
+        for (let v = Math.ceil(o.ymin / sy) * sy; v <= o.ymax + 1e-9; v += sy) { x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(L, PY(v)); x.lineTo(L + pw, PY(v)); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'right'; x.fillText(v.toFixed(dy), L - 6, PY(v) + 4); }
+        x.strokeStyle = '#5b6a82'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(L, T); x.lineTo(L, T + ph); x.lineTo(L + pw, T + ph); x.stroke();
+        (o.hlines || []).forEach(h => { x.save(); x.strokeStyle = h.color; x.setLineDash([5, 4]); x.lineWidth = 1.3; x.beginPath(); x.moveTo(L, PY(h.y)); x.lineTo(L + pw, PY(h.y)); x.stroke(); x.restore(); x.fillStyle = h.color; x.font = '12px sans-serif'; x.textAlign = 'right'; x.fillText(h.label, L + pw - 4, PY(h.y) - 4); });
+        (o.curves || []).forEach(cu => { x.save(); x.strokeStyle = cu.color; x.lineWidth = cu.w || 2; if (cu.dash) x.setLineDash(cu.dash); x.beginPath(); cu.pts.forEach((p, i) => i ? x.lineTo(PX(p.x), PY(p.y)) : x.moveTo(PX(p.x), PY(p.y))); x.stroke(); x.restore(); });
+        (o.dots || []).forEach(d => { x.fillStyle = d.color; x.beginPath(); x.arc(PX(d.x), PY(d.y), 5, 0, 7); x.fill(); x.strokeStyle = '#0d121b'; x.lineWidth = 1; x.stroke(); });
+        x.fillStyle = '#c3d0e4'; x.font = 'bold 14px sans-serif'; x.textAlign = 'left'; x.fillText(o.title, L, 18);
+        x.font = '12px sans-serif'; x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(o.xlabel, L + pw / 2, H - 8);
+        x.save(); x.translate(14, T + ph / 2); x.rotate(-Math.PI / 2); x.fillText(o.ylabel, 0, 0); x.restore();
+        (o.labels || []).forEach((l, i) => { x.fillStyle = l.color; x.font = 'bold 12px sans-serif'; x.textAlign = 'right'; x.fillText(l.text, L + pw - 8, T + 14 + i * 16); });
+    }
+    // 通過原點的最小平方法：y = s·x
+    const fit0 = pts => { const sxx = pts.reduce((s, p) => s + p.x * p.x, 0), sxy = pts.reduce((s, p) => s + p.x * p.y, 0); return sxx > 0 ? sxy / sxx : null; };
+
+    function renderGraphs() {
+        const D = S.data[S.mode], A = S.mode === 'A';
+        const showTheory = el('chkTheory').checked && !S.hidden;
+        const rr = D.length ? D[0].r : S.r, II = D.length ? D[0].I : S.I;
+        const rows = D.map(d => ({ I: d.I, r: d.r, th: d.th, tan: Math.tan(rad(d.th)) }));
+        el('graphTitle').textContent = A ? '實驗 A 圖形：tanθ–I 圖與 θ–I 圖' : '實驗 B 圖形：tanθ–1/r 圖與 θ–r 圖';
+        // 斜率（通過原點）
+        const xv = A ? rows.map(d => d.I) : rows.map(d => 100 / d.r);
+        const pts1 = rows.map((d, i) => ({ x: xv[i], y: d.tan })), s = fit0(pts1);
+        const xmax1 = A ? 10 : Math.max(100 / 1, ...xv) * 1.05;
+        const ymax1 = Math.max(1.2, ...rows.map(d => d.tan * 1.15));
+        const th = (Ival, rcm) => deg(Math.atan(Bwire(Ival, rcm) / S.BH));
+        // 圖 1：tanθ 對 I（或 1/r）
+        const c1 = [];
+        if (s !== null) c1.push({ color: 'rgba(0,212,255,.9)', dash: [6, 5], pts: [{ x: 0, y: 0 }, { x: xmax1, y: s * xmax1 }] });
+        if (showTheory) { const k = A ? 0.2 / (rr / 100) / S.BH : 0.2 * II / S.BH; c1.push({ color: 'rgba(0,230,118,.7)', w: 1.6, pts: [{ x: 0, y: 0 }, { x: xmax1, y: k * xmax1 }] }); }
+        plot(el('g1'), { title: A ? 'tanθ 對 電流 I（虛線：實驗擬合）' : 'tanθ 對 1/r（虛線：實驗擬合）', xlabel: A ? '電流 I (A)' : '1/r (m⁻¹)', ylabel: 'tan θ', xmin: 0, xmax: xmax1, ymin: 0, ymax: ymax1, curves: c1, dots: pts1.map(p => ({ ...p, color: '#ffcc00' })),
+            labels: [...(showTheory ? [{ color: '#00e676', text: '綠線：理論' }] : [])], hlines: [{ y: 1, color: 'rgba(255,255,255,.35)', label: 'tanθ = 1（θ = 45°）' }] });
+        // 圖 2：θ 對 I（或 r）
+        const c2 = [], pts2 = rows.map(d => ({ x: A ? d.I : d.r, y: d.th }));
+        const xmax2 = A ? 10 : 8;
+        if (s !== null) { const cp = []; for (let v = A ? 0 : 1; v <= xmax2 + 1e-9; v += xmax2 / 120) cp.push({ x: v, y: deg(Math.atan(A ? s * v : s * 100 / v)) }); c2.push({ color: 'rgba(0,212,255,.9)', dash: [6, 5], pts: cp }); }
+        if (showTheory) { const cp = []; for (let v = A ? 0 : 1; v <= xmax2 + 1e-9; v += xmax2 / 120) cp.push({ x: v, y: A ? th(v, rr) : th(II, v) }); c2.push({ color: 'rgba(0,230,118,.7)', w: 1.6, pts: cp }); }
+        plot(el('g2'), { title: A ? 'θ 對 電流 I（曲線：θ = arctan(kI)）' : 'θ 對 距離 r', xlabel: A ? '電流 I (A)' : '距離 r (cm)', ylabel: '偏轉角 θ (°)', xmin: A ? 0 : 0, xmax: xmax2, ymin: 0, ymax: 90, curves: c2, dots: pts2.map(p => ({ ...p, color: '#ffcc00' })),
+            hlines: [{ y: 45, color: 'rgba(255,255,255,.35)', label: '45°' }, { y: 90, color: 'rgba(255,100,100,.4)', label: '90°（無法到達）' }] });
+        // 擬合結果
+        let t = '';
+        if (!rows.length) t = A ? '按「記錄這次數據」（先改電流 I），或「自動掃描」收集 θ–I 數據。' : '按「記錄這次數據」（先改距離 r），或「自動掃描」收集 θ–r 數據。';
+        else if (s === null || rows.length < 2) t = '至少需要 2 筆數據才能擬合直線。';
+        else {
+            if (A) {
+                const BHest = 0.2 / ((rr / 100) * s);       // μT：tanθ = (0.2 I / r) / B_H → s = 0.2 /(r B_H)
+                t = `tanθ–I 圖斜率 s ＝ <b>${s.toFixed(4)}</b> A⁻¹（r ＝ ${rr.toFixed(1)} cm）→ <b>B<sub>H</sub> ＝ μ₀ ÷ (2π r s) ≈ ${BHest.toFixed(1)} μT</b><br>tanθ ＝ 1（θ ＝ 45°）時 I<sub>45</sub> ＝ 1 ÷ s ≈ <b>${(1 / s).toFixed(2)} A</b>（此時導線磁場 ＝ 地磁水平分量）`;
+                t += S.hidden ? '<br>（真實 B<sub>H</sub> 已隱藏，按「揭曉」對答案）' : `<br>真實值：B<sub>H</sub> ＝ ${S.BH.toFixed(1)} μT，I<sub>45</sub> ＝ ${(S.BH * rr / 100 / 0.2).toFixed(2)} A`;
+            } else {
+                const BHest = 0.2 * II / (s / 100 * 100) / 100;     // s：tanθ 對 1/r(m⁻¹) 的斜率 → tanθ = 0.2 I (1/r) / B_H
+                const BH2 = 0.2 * II / s;
+                t = `tanθ–(1/r) 圖斜率 ＝ <b>${s.toFixed(5)}</b> m（I ＝ ${II.toFixed(1)} A）→ <b>B<sub>H</sub> ＝ μ₀ I ÷ (2π × 斜率) ≈ ${BH2.toFixed(1)} μT</b><br>直線通過原點，表示導線磁場與 1/r 成正比（B ∝ 1/r）。`;
+                t += S.hidden ? '<br>（真實 B<sub>H</sub> 已隱藏，按「揭曉」對答案）' : `<br>真實值：B<sub>H</sub> ＝ ${S.BH.toFixed(1)} μT`;
+            }
+        }
+        el('fitText').innerHTML = t;
+        el('dataBody').innerHTML = rows.map((d, i) => `<tr><td>${i + 1}</td><td>${d.I.toFixed(1)}</td><td>${d.r.toFixed(1)}</td><td>${d.th.toFixed(0)}</td><td>${d.tan.toFixed(3)}</td><td>${(100 / d.r).toFixed(1)}</td><td>${Bwire(d.I, d.r).toFixed(1)}</td></tr>`).join('');
+    }
+
+    // ===================== 數據與狀態 =====================
+    function renderDash() {
+        const p = params(), hid = S.hidden, m = (t, v, u, cl = '') => `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value ${cl}">${v}<span class="unit">${u}</span></div></div>`;
+        el('dash').innerHTML = m('電流 I', S.I.toFixed(1), 'A', 'c-bw') + m('距離 r', S.r.toFixed(1), 'cm', 'c-bw') + m('導線磁場 B導線', p.Bw.toFixed(2), 'μT', 'c-bw') + m('地磁水平分量 B_H', hid ? '？' : S.BH.toFixed(1), 'μT', 'c-bh') +
+            m('比值 B導線 ÷ B_H = tanθ', hid ? '？' : p.ratio.toFixed(3), '', 'c-bt') + m('指針偏轉角（即時）', Math.abs(deg(S.phi)).toFixed(1), '°', 'c-red') + m('理論偏轉角 θ', hid ? '？' : Math.abs(deg(p.th)).toFixed(1), '°', 'c-bt');
+        const st = settled();
+        el('status').innerHTML = S.I === 0 ? '電流為 0：指針指向地磁北方（θ ＝ 0°）。' : (st ? `<b>指針已穩定</b>，量角器讀數 θ ≈ <b>${Math.abs(deg(S.phi)).toFixed(0)}°</b>（偏向${p.th > 0 ? '西' : '東'}）。可以按「記錄這次數據」。` : '指針擺動中，請等它穩定再記錄…');
+        el('runState').textContent = st ? '已穩定' : '擺動中';
+    }
+
+    function record() {
+        if (!settled()) { alert('指針還在擺動，請等它穩定（不再來回晃動）再記錄。'); return; }
+        const p = params(), noise = el('chkNoise').checked ? (Math.random() + Math.random() - 1) : 0;
+        const th = Math.max(0, Math.round(Math.abs(deg(p.th)) + noise));      // 量角器讀數取整數度（1°）
+        S.data[S.mode].push({ I: S.I, r: S.r, th }); if (S.data[S.mode].length > 30) S.data[S.mode].shift();
+        renderGraphs();
+    }
+    function autoScan() {
+        const noise = () => el('chkNoise').checked ? (Math.random() + Math.random() - 1) : 0, add = (I, r) => { const th = Math.max(0, Math.round(Math.abs(deg(Math.atan(Bwire(I, r) / S.BH))) + noise())); S.data[S.mode].push({ I, r, th }); };
+        if (S.mode === 'A') [1, 2, 3, 4, 5, 6, 7, 8].forEach(I => add(I, S.r)); else [1.5, 2, 3, 4, 5, 6, 8].forEach(r => add(S.I, r));
+        renderGraphs();
+    }
+
+    // ===================== 介面事件 =====================
+    const MODE_DESC = { A: '實驗 A：固定導線到羅盤的距離 r，改變電流 I，記錄偏轉角 θ。作 tanθ–I 圖（直線）與 θ–I 圖（曲線），由斜率求地磁水平分量 B_H。', B: '實驗 B：固定電流 I，改變距離 r，記錄偏轉角 θ。作 tanθ–1/r 圖，驗證導線磁場與 1/r 成正比。' };
+    function syncUI() {
+        el('lblI').textContent = S.I.toFixed(1); el('lblR').textContent = S.r.toFixed(1); el('lblBH').textContent = S.hidden ? '？' : S.BH.toFixed(1);
+        el('modeDesc').textContent = MODE_DESC[S.mode]; document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === S.mode));
+        el('btnReveal').disabled = !S.hidden; el('slBH').disabled = S.hidden; el('grpBH').classList.toggle('off', S.hidden);
+        renderDash(); renderGraphs();
+    }
+    document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.mode; if (S.mode === 'B' && S.I === 0) { S.I = 3; el('slI').value = 3; } syncUI(); }));
+    el('slI').addEventListener('input', e => { S.I = +e.target.value; syncUI(); });
+    el('slR').addEventListener('input', e => { S.r = +e.target.value; syncUI(); });
+    el('slBH').addEventListener('input', e => { S.BH = +e.target.value; S.data = { A: [], B: [] }; syncUI(); });
+    el('selDir').addEventListener('change', e => { S.dir = +e.target.value; syncUI(); });
+    el('selSpeed').addEventListener('change', e => { S.speed = +e.target.value; });
+    el('chkTheory').addEventListener('change', renderGraphs); el('chkVec').addEventListener('change', () => { el('vecCard').style.display = el('chkVec').checked ? '' : 'none'; });
+    el('btnRecord').addEventListener('click', record); el('btnAuto').addEventListener('click', autoScan);
+    el('btnClear').addEventListener('click', () => { S.data[S.mode] = []; renderGraphs(); });
+    el('btnUnknown').addEventListener('click', () => { S.BH = Math.round((25 + Math.random() * 20) * 2) / 2; el('slBH').value = S.BH; S.hidden = true; S.data = { A: [], B: [] }; syncUI(); });
+    el('btnReveal').addEventListener('click', () => { S.hidden = false; syncUI(); });
+
+    // ===================== 動畫迴圈 =====================
+    let last = null, acc = 0;
+    function frame(ts) {
+        if (last === null) last = ts;
+        let dt = Math.min((ts - last) / 1000, 0.05) * S.speed; last = ts;
+        while (dt > 1e-9) { const h = Math.min(0.002, dt); stepNeedle(h); dt -= h; }
+        drawScene(); drawVec(); drawSide(); renderDash();
+        requestAnimationFrame(frame);
+    }
+    window.__wm = { S, params, thetaEq, Bwire, settled, record, autoScan, stepNeedle, syncUI };
+    syncUI(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
