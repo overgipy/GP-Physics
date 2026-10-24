@@ -48,6 +48,8 @@
         .meter-title { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
         .meter-value { font-size: 1.2rem; font-weight: bold; font-family: monospace; }
         .unit { font-size: 0.75rem; color: #55657d; margin-left: 2px; }
+        .cyan-text { color: var(--cyan); }
+        .pink-text { color: var(--pink); }
         .dir-tag { font-size: 0.75rem; color: #888; font-weight: normal; margin-top: 4px; display: block; }
 
         .transfer-bar-container { background: #111622; padding: 15px; border-radius: 8px; border: 1px solid #1f2736; text-align: center;}
@@ -134,6 +136,17 @@
                 </div>
             </div>
 
+            <div class="data-section">
+                <div class="data-section-title" style="border-color: var(--yellow);">擺錘繩張力 T （T = mg·cosθ + m·L·ω²，單位 N）</div>
+                <div class="dashboard-grid">
+                    <div class="meter"><div class="meter-title">即時張力 T</div><div class="meter-value"><span id="dat_T">0.00</span><span class="unit">N</span></div></div>
+                    <div class="meter"><div class="meter-title">釋放點張力（最小）</div><div class="meter-value"><span id="dat_Tmin">0.00</span><span class="unit">N</span></div></div>
+                    <div class="meter"><div class="meter-title">碰前最低點張力（最大）</div><div class="meter-value"><span id="dat_T0">0.00</span><span class="unit">N</span></div></div>
+                    <div class="meter"><div class="meter-title">碰後最低點張力</div><div class="meter-value"><span id="dat_T1">0.00</span><span class="unit">N</span></div></div>
+                    <div class="meter"><div class="meter-title">碰後最大擺角 θ′</div><div class="meter-value"><span id="dat_thmax">0.0</span><span class="unit">°</span></div></div>
+                </div>
+            </div>
+
             <div class="transfer-bar-container">
                 <div style="display:flex; justify-content:space-between; color:#fff; font-weight:bold;">
                     <span>動能轉移比例 (Transfer Efficiency)</span>
@@ -157,6 +170,10 @@
         const g = 9.8;
         const L_meter = 1.0; 
         const L_px = 180;    
+        const PX_PER_M = L_px / L_meter;   // 畫面比例尺：1 公尺 = 180 像素（擺長與木塊位移共用同一個比例）
+        const STEP = 0.005;                // 物理積分步長 (s)，動畫依實際時間前進，與螢幕更新率無關
+        let loopId = 0;                    // 用來取消舊的動畫迴圈
+        let lastTs = null, accumulator = 0;
         const pivotX = 550; 
         const pivotY = 30;  
         
@@ -194,6 +211,7 @@
             document.getElementById('val_theta').innerText = sl_theta.value + "°";
             document.getElementById('val_ratio').innerText = (M / m).toFixed(2);
             
+            loopId++;                       // 取消正在跑的動畫迴圈
             theta = initialTheta;
             omega = 0;
             phase = 0;
@@ -202,8 +220,16 @@
             blockX = pivotX - bobRadius - blockWidth/2;
             
             resetDashboard();
+            // 釋放前靜止：T = mg·cosθ₀（最小）；擺到最低點時 T = mg + m·v₀²/L = mg(3 − 2cosθ₀)（最大）
+            let v0 = Math.sqrt(2 * g * L_meter * (1 - Math.cos(initialTheta)));
+            document.getElementById('dat_T').innerText = tensionNow().toFixed(2);
+            document.getElementById('dat_Tmin').innerText = (m * g * Math.cos(initialTheta)).toFixed(2);
+            document.getElementById('dat_T0').innerText = (m * g + m * v0 * v0 / L_meter).toFixed(2);
             draw();
         }
+
+        // 擺錘繩張力：沿繩方向 T − mg·cosθ = m·L·ω²（向心力）
+        function tensionNow() { return m * (g * Math.cos(theta) + L_meter * omega * omega); }
 
         function play() {
             if (phase === 0) {
@@ -215,14 +241,26 @@
                 let K0 = 0.5 * m * v0_impact * v0_impact;
                 document.getElementById('dat_K0').innerText = K0.toFixed(2);
 
-                requestAnimationFrame(loop);
+                lastTs = null; accumulator = 0;
+                const id = ++loopId;
+                requestAnimationFrame(ts => loop(ts, id));
             }
         }
 
-        // 核心物理引擎 (完美力學能守恆)
-        function loop() {
-            const dt = 0.02; // 時間步長
+        // 核心物理引擎：依「實際經過的時間」積分，投影在 60 Hz 或 144 Hz 螢幕上速度都一樣
+        function loop(ts, id) {
+            if (id !== loopId) return;                    // 已被重置或重新開始，舊迴圈自行結束
+            if (lastTs === null) lastTs = ts;
+            accumulator += Math.min((ts - lastTs) / 1000, 0.05);   // 切換分頁後不要一次跳太多
+            lastTs = ts;
+            while (accumulator >= STEP) { stepPhysics(STEP); accumulator -= STEP; }
 
+            draw();
+            if (phase > 0) document.getElementById('dat_T').innerText = tensionNow().toFixed(2);
+            if (phase > 0) requestAnimationFrame(t => loop(t, id));
+        }
+
+        function stepPhysics(dt) {
             if (phase === 1) {
                 // 碰撞前擺盪
                 let alpha = -(g / L_meter) * Math.sin(theta);
@@ -249,12 +287,9 @@
                 omega += alpha * dt;
                 theta += omega * dt;
                 
-                // 木塊在無摩擦力平面等速滑動 (視覺放大係數 60)
-                blockX -= v_M_after * dt * 60; 
+                // 木塊在光滑水平面上等速滑動，位移用與擺長相同的比例尺 (1 m = 180 px)
+                blockX -= v_M_after * dt * PX_PER_M; 
             }
-            
-            draw();
-            if (phase > 0) requestAnimationFrame(loop);
         }
 
         function draw() {
@@ -292,7 +327,7 @@
 
         function resetDashboard() {
             // 安全重置，只修改單純的文字內容
-            const ids = ['dat_v0', 'dat_K0', 'dat_vm', 'dat_Km', 'dat_loss_P', 'dat_loss_K', 'dat_vM', 'dat_KM', 'dat_gain_P', 'dat_gain_K'];
+            const ids = ['dat_v0', 'dat_K0', 'dat_vm', 'dat_Km', 'dat_loss_P', 'dat_loss_K', 'dat_vM', 'dat_KM', 'dat_gain_P', 'dat_gain_K', 'dat_T', 'dat_Tmin', 'dat_T0', 'dat_T1', 'dat_thmax'];
             ids.forEach(id => {
                 let el = document.getElementById(id);
                 if(el) el.innerText = "0.00";
@@ -336,6 +371,12 @@
             
             document.getElementById('dat_efficiency').innerText = `${efficiency.toFixed(1)} %`;
             document.getElementById('progress_bar').style.width = `${efficiency}%`;
+
+            // 碰後最低點張力 T₁ = mg + m·v_m′²/L；碰後擺錘上升的最大角度：cosθ′ = 1 − v_m′²/(2gL)
+            document.getElementById('dat_T1').innerText = (m * g + m * v_m_after * v_m_after / L_meter).toFixed(2);
+            let cosMax = 1 - (v_m_after * v_m_after) / (2 * g * L_meter);
+            let thMax = Math.acos(Math.max(-1, Math.min(1, cosMax))) * 180 / Math.PI;
+            document.getElementById('dat_thmax').innerText = thMax.toFixed(1);
         }
 
         // 綁定事件

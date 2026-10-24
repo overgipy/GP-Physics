@@ -57,6 +57,7 @@
     <div class="nav"><a href="../index.html">← 返回實驗室入口</a></div>
     <h2>🔷 幾何孔徑繞射模擬</h2>
     <p>使用 2D FFT 演算法計算夫朗和斐繞射圖樣</p>
+    <p style="font-size:0.85em; opacity:0.75;">亮度採 log(1+|F|) 顯示，讓亮紋與暗紋細節都看得到；實際光強與 |F|² 成正比，主亮區會比畫面看起來更集中。</p>
 
     <div class="container">
         <div class="controls">
@@ -70,7 +71,7 @@
             </div>
             <div class="slider-group">
                 <div class="label">孔徑大小 <span id="val_size" class="val">10</span></div>
-                <input type="range" id="inp_size" min="5" max="30" value="10">
+                <input type="range" id="inp_size" min="5" max="24" value="10">
             </div>
             <div id="status" class="loading"></div>
         </div>
@@ -199,7 +200,7 @@
             ctxIn.beginPath();
             const centerX = SIM_SIZE / 2;
             const centerY = SIM_SIZE / 2;
-            const r = size * (SIM_SIZE / 100) * 2; // 調整大小比例
+            const r = size * (SIM_SIZE / 100) * 2; // 調整大小比例（size ≤ 24 時 r ≤ 61.4 px，孔徑不會被 64 px 的畫布半寬裁切）
             
             for (let i = 0; i <= n; i++) {
                 const theta = (i * 2 * Math.PI / n) - (Math.PI / 2) + (rotation * Math.PI / 180);

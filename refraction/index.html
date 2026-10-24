@@ -98,6 +98,9 @@
         let sl_angle, sl_n1, sl_n2;
         let canvasW, canvasH;
         let isDragging = false;
+        // 雷射筆在法線的哪一側：+1 = 左側（原本的預設），-1 = 右側。
+        // 滑桿只記錄入射角的大小 (0~85°)，左右側由這個變數記住。
+        let laserSide = 1;
 
         function setup() {
             canvasW = min(windowWidth - 20, 600);
@@ -120,20 +123,19 @@
         function draw() {
             background(10);
             
-            let theta1_deg = float(sl_angle.value());
             let n1 = float(sl_n1.value());
             let n2 = float(sl_n2.value());
-            
-            if (isDragging) {
-                let dx = mouseX - width/2;
-                let dy = mouseY - height/2;
-                if (mouseY < height/2) {
-                    let angleRad = atan2(dx, -dy); 
-                    theta1_deg = degrees(angleRad);
-                    if (theta1_deg < -85) theta1_deg = -85;
-                    if (theta1_deg > 85) theta1_deg = 85;
-                    sl_angle.value(abs(theta1_deg));
-                }
+
+            // 入射角（帶正負號，正 = 雷射筆在左側）
+            let theta1_deg = laserSide * float(sl_angle.value());
+
+            // 拖動雷射筆：滑鼠（或手指）在介面上方時，依滑鼠位置換算入射角
+            if (isDragging && mouseY < height/2) {
+                let a = degrees(atan2(mouseX - width/2, height/2 - mouseY)); // 滑鼠在右側 → a > 0
+                let mag = Math.min(85, Math.round(abs(a)));                  // 入射角大小，限制 0~85°
+                laserSide = (a > 0) ? -1 : 1;                                // 滑鼠在右 → 雷射筆在右側
+                sl_angle.value(mag);
+                theta1_deg = laserSide * mag;
             }
 
             // 轉為弧度運算
@@ -315,8 +317,10 @@
             strokeWeight(w + 6); stroke(red(c), green(c), blue(c), 40); line(x1, y1, x2, y2);
         }
         
-        function startDrag() { return false; } // 禁止反白
+        function startDrag() { isDragging = true; return false; } // 開始拖動；return false 同時禁止反白與頁面捲動
         function endDrag() { isDragging = false; }
+        function mouseReleased() { isDragging = false; } // 在畫布外放開滑鼠也要停止拖動
+        function touchEnded() { isDragging = false; }
         
         function windowResized() {
             canvasW = min(windowWidth - 20, 600);

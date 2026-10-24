@@ -82,6 +82,9 @@
     <script>
         let wL_s, sW_s;
         let canvasW, canvasH;
+        // 預先計算的場：每個像素的複數振幅（相量）。只有波長、縫寬、畫布大小改變時才重算。
+        let fieldA = null, fieldB = null, fieldKey = '';
+        let sourceCount = 0;
         // 降低渲染比例以提升手機效能 (0.5 = 降低一半解析度但保持平滑，1.0 = 原生解析度)
         // 如果手機還是卡，可以改為 0.5
         const renderScale = 1.0; 
@@ -124,45 +127,24 @@
             }
 
             // --- 核心：像素級水波渲染 ---
-            loadPixels();
-            
-            // 為了效能，預先計算一些常數
+            // 場是單頻的：每個像素的振幅 = A·cos(t) − B·sin(t)，其中 (A, B) 只跟位置有關。
+            // 所以 (A, B) 只在參數改變時用惠更斯原理算一次，每格動畫只需做乘法。
             let wallX = canvasW * 0.25;
             let waveH = canvasH; // 水波區域高度
             let halfH = waveH / 2;
             let halfW = w / 2;
-            let k = TWO_PI / lambda; // 波數
-            
-            // 定義縫內的點波源 (減少數量以提升效能，但使用權重補償)
-            let numSources = 5; 
-            let sourceY = [];
-            for(let i=0; i<numSources; i++) {
-                // 在縫寬 w 內均勻分布點波源
-                sourceY.push((halfH - halfW) + (w / (numSources+1)) * (i+1));
-            }
 
+            let key = lambda + '|' + w + '|' + canvasW + '|' + canvasH;
+            if (key !== fieldKey) { buildField(lambda, w); fieldKey = key; }
+
+            let cosT = Math.cos(time), sinT = Math.sin(time);
+
+            loadPixels();
             for (let y = 0; y < waveH; y++) {
                 for (let x = 0; x < canvasW; x++) {
                     let idx = (x + y * width) * 4;
-                    let amp = 0;
-
-                    if (x < wallX) {
-                        // 左側：平面波
-                        amp = Math.sin(x * k - time);
-                    } else {
-                        // 右側：惠更斯疊加
-                        let dx = x - wallX;
-                        let sum = 0;
-                        for(let i=0; i<numSources; i++) {
-                            let dy = y - sourceY[i];
-                            // 使用近似距離公式優化 sqrt (選用) 或直接用 sqrt
-                            let r = Math.sqrt(dx*dx + dy*dy);
-                            // 距離衰減因子 (讓波紋看起來更有立體感)
-                            let decay = 10.0 / (Math.sqrt(r) + 0.1); 
-                            sum += Math.sin(r * k - time) * decay;
-                        }
-                        amp = sum / (numSources * 0.6); // 正規化振幅
-                    }
+                    let fi = y * canvasW + x;
+                    let amp = fieldA[fi] * cosT - fieldB[fi] * sinT;
 
                     // --- 視覺增強：色彩映射 ---
                     // 將振幅 (-1 ~ 1) 轉換為高對比顏色
@@ -239,6 +221,59 @@
             textSize(12);
             textAlign(LEFT);
             text("相對強度 (I)", 10, canvasH + 20);
+            textAlign(RIGHT);
+            text("橫軸＝繞射角 θ：−72° ～ +72°（遠場近似）", canvasW - 10, canvasH + 20);
+            textAlign(CENTER);
+            text("0°", canvasW / 2, canvasH + 76);
+            textAlign(LEFT);
+        }
+
+        // 以惠更斯原理計算整個水波區的相量場 (A, B)
+        // 縫內的點波源間距取 λ/4：間距若大於 λ，離散的點波源會像光柵一樣產生「假的」側向亮帶，
+        // 與下方的連續縫理論曲線不符。λ/4 的間距不會有假亮帶，且與連續縫的誤差約 2% 以內。
+        function buildField(lambda, w) {
+            const W = canvasW, H = canvasH;
+            const wallX = Math.floor(W * 0.25);
+            const k = TWO_PI / lambda;
+            const cy = (H - 1) / 2;                 // 對稱軸（讓上下半部可以鏡射，運算量減半）
+            const n = Math.max(8, Math.ceil(w / (lambda / 4)));
+            sourceCount = n;
+            const ys = new Float32Array(n);
+            for (let i = 0; i < n; i++) ys[i] = cy - w / 2 + (i + 0.5) * (w / n);
+
+            fieldA = new Float32Array(W * H);
+            fieldB = new Float32Array(W * H);
+            const norm = 1 / (n * 0.6);             // 與舊版相同的亮度正規化（對來源數取平均）
+            const halfRows = Math.ceil(H / 2);
+
+            for (let y = 0; y < halfRows; y++) {
+                for (let x = 0; x < W; x++) {
+                    let a, b;
+                    if (x < wallX) {
+                        // 左側：入射平面波 sin(kx − t) = sin(kx)cos t − cos(kx) sin t
+                        a = Math.sin(x * k);
+                        b = Math.cos(x * k);
+                    } else {
+                        const dx = x - wallX;
+                        let sumS = 0, sumC = 0;
+                        for (let i = 0; i < n; i++) {
+                            const dy = y - ys[i];
+                            const r = Math.sqrt(dx * dx + dy * dy);
+                            const decay = 10.0 / (Math.sqrt(r) + 0.1);   // 二維波振幅 ∝ 1/√r
+                            const ph = r * k;
+                            sumS += decay * Math.sin(ph);
+                            sumC += decay * Math.cos(ph);
+                        }
+                        a = sumS * norm;
+                        b = sumC * norm;
+                    }
+                    fieldA[y * W + x] = a;
+                    fieldB[y * W + x] = b;
+                    const ym = H - 1 - y;                // 鏡射到下半部
+                    fieldA[ym * W + x] = a;
+                    fieldB[ym * W + x] = b;
+                }
+            }
         }
 
         function windowResized() {
