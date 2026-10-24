@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>兩線圈的電磁感應：開關與 I₁–t 圖 - 李捷物理實驗室</title>
+    <style>
+        :root { --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432; --text-main: #f0f3f8; --text-muted: #9aa8bd; --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676;
+            --i1: #ffb020; --i2: #ff7ad9; --flux: #35d6ff; --ind: #d28bff; --vel: #4d8dff; }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6; }
+        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; } .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
+        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; } h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; } .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
+        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
+        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
+        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+        .mode-btn { flex: 1 1 220px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 10px 12px; font-size: .92rem; cursor: pointer; text-align: left; } .mode-btn b { display: block; color: var(--cyan); } .mode-btn.active { border-color: var(--cyan); background: #12303a; }
+        .mode-desc { font-size: .92rem; color: var(--text-muted); margin-bottom: 12px; }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; } .control-group.off { display: none; }
+        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; } .control-label b { font-family: monospace; font-size: 1.05rem; }
+        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
+        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
+        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
+        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; } .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; } button.btn.secondary { background: #3a465b; color: #fff; } button.btn.green { background: var(--green); color: #00210f; } button.btn.red { background: #ff6b81; color: #2a0008; } button.btn.orange { background: #ff9f43; color: #2a1500; }
+        button.btn:disabled { opacity: .4; cursor: not-allowed; } button.btn:not(:disabled):hover { filter: brightness(1.12); }
+        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; } canvas { display: block; width: 100%; height: auto; touch-action: pan-y; }
+        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; } .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #111622; font-size: 1rem; } .status b { color: var(--yellow); }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; } .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; } .meter-title { font-size: .82rem; color: var(--text-muted); } .meter-value { font-size: 1.25rem; font-weight: bold; font-family: monospace; } .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
+        .opt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px; margin-bottom: 10px; }
+        .opt { background: var(--bg-control); border: 2px solid #2c3749; border-radius: 8px; padding: 8px 10px; cursor: pointer; font-size: .95rem; color: var(--text-main); text-align: left; } .opt:hover { border-color: #4a6a9a; } .opt.sel { border-color: var(--yellow); background: #2b2a14; } .opt.ok { border-color: var(--green); } .opt.bad { border-color: #ff6b81; }
+        .opt b { color: var(--cyan); margin-right: 6px; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; } .fit-text b { color: var(--yellow); }
+        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; } summary { cursor: pointer; font-weight: bold; color: var(--cyan); } details ol, details ul { margin: 8px 0 2px; padding-left: 22px; } details li { margin-bottom: 4px; }
+        .assume { font-size: .88rem; color: var(--text-muted); } footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>🔌 兩線圈的電磁感應</h1>
+    <p class="subtitle">一次線圈電流 I₁ 改變 → 二次線圈磁通量改變 → 感應電流 I₂　｜　I₂ = −(M ÷ R₂)·dI₁/dt</p>
+</header>
+<div class="container">
+    <div class="card">
+        <div class="card-title">操作模式</div>
+        <div class="mode-bar">
+            <button class="mode-btn active" data-mode="sw"><b>① 開關與滑動變阻器</b>閉合、打開、調電阻：看磁通量如何改變（章節練習）</button>
+            <button class="mode-btn" data-mode="curve"><b>② I₁–t 圖 → I₂–t 圖</b>範例 10：先判斷方向，再判斷量值變化</button>
+            <button class="mode-btn" data-mode="side"><b>③ 並排線圈（範例 7）</b>電流與位置，哪些做法能使右線圈得到順時針電流？</button>
+        </div>
+        <div class="mode-desc" id="modeDesc"></div>
+        <div class="controls-grid">
+            <div class="control-group" id="grpSw"><div class="control-label"><span>開關</span><b id="lblSw" style="color:var(--yellow)">打開</b></div><div class="btn-row"><button class="btn green" id="btnClose">閉合開關</button><button class="btn red" id="btnOpen">打開開關</button></div></div>
+            <div class="control-group" id="grpR1"><div class="control-label"><span>可變電阻 R₁（向左滑動＝電阻變小）</span><b style="color:var(--i1)"><span id="lblR1">6.0</span> Ω</b></div><input type="range" id="slR1" min="3" max="12" step="0.5" value="6"><div class="sub-note">電池 6.0 V，電流穩定值 I₁ = V ÷ R₁</div></div>
+            <div class="control-group" id="grpPol"><div class="control-label"><span>電池接法（電流方向）</span></div><select id="selPol"><option value="1">電流逆時針（由上往下看）</option><option value="-1">電流順時針（由上往下看）</option></select></div>
+            <div class="control-group" id="grpTau"><div class="control-label"><span>時間常數 τ（電流變化的快慢）</span><b style="color:#c3d0e4"><span id="lblTau">0.40</span> s</b></div><input type="range" id="slTau" min="0.1" max="1" step="0.05" value="0.4"><div class="sub-note">電路中電感使電流不能瞬間改變：I₁ 以 τ 趨近穩定值</div></div>
+            <div class="control-group" id="grpH"><div class="control-label"><span>兩線圈間距 h</span><b style="color:var(--flux)"><span id="lblH">3.0</span> cm</b></div><input type="range" id="slH" min="1" max="8" step="0.5" value="3"><div class="sub-note">越近，互感 M 越大，感應電流越大</div></div>
+            <div class="control-group" id="grpPre"><div class="control-label"><span>I₁–t 圖形</span></div><select id="selPre"><option value="ex10">範例 10 的曲線</option><option value="ramp">線性增加後固定</option><option value="sine">正弦電流（交流）</option><option value="const">固定電流</option></select></div>
+            <div class="control-group" id="grpOpt3"><div class="control-label"><span>左側線圈：電流</span></div><select id="selCur"><option value="const">固定電流</option><option value="inc">電流逐漸增加</option><option value="dec">電流逐漸減小</option><option value="zero">沒有電流</option></select></div>
+            <div class="control-group" id="grpDir3"><div class="control-label"><span>左側線圈：電流方向（由上往下看）</span></div><select id="selDir3"><option value="-1">順時針</option><option value="1">逆時針</option></select></div>
+            <div class="control-group" id="grpMov3"><div class="control-label"><span>左側線圈：位置</span></div><select id="selMov"><option value="0">不動</option><option value="-1">向左移動（遠離右線圈）</option><option value="1">向右移動（靠近右線圈）</option><option value="osc">左右來回擺動</option></select></div>
+            <div class="control-group"><div class="control-label"><span>播放速度</span></div><select id="selSlow"><option value="0.25">0.25 倍</option><option value="0.5">0.5 倍</option><option value="1" selected>1 倍</option><option value="2">2 倍</option></select></div>
+        </div>
+        <div class="check-row"><label id="rowAns"><input type="checkbox" id="chkAns"> 顯示 I₂–t 解答曲線</label><label id="rowDraw"><input type="checkbox" id="chkDraw"> 用滑鼠／手指在右下圖手繪我的預測</label><label><input type="checkbox" id="chkLoop" checked> 自動連續播放</label></div>
+        <div class="btn-row"><button class="btn green" id="btnPlay">▶ 播放</button><button class="btn secondary" id="btnPause">⏸ 暫停</button><button class="btn secondary" id="btnReset">↺ 重設</button><button class="btn secondary" id="btnClearDraw" style="display:none">清除手繪</button></div>
+    </div>
+
+    <div class="card" id="optCard" style="display:none">
+        <div class="card-title">範例 7：如何使右側線圈產生順時針的感應電流？（由上往下看，應選 2 項）</div>
+        <div class="opt-grid" id="optGrid"></div>
+        <div class="btn-row"><button class="btn orange" id="btnJudge">逐項驗證：全部跑一次</button></div>
+        <div class="fit-text" id="judgeText">先自己判斷，再逐項點選，看動畫與結果是否與你想的相同。</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span id="sceneTitle">實驗裝置</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div>
+        <div class="canvas-wrap"><canvas id="scene" width="760" height="420"></canvas></div>
+        <div class="legend"><span style="--c:var(--i1)">一次線圈電流 I₁</span><span style="--c:var(--i2)">二次線圈感應電流 I₂</span><span style="--c:var(--flux)">磁場／磁力線</span><span style="--c:var(--ind)">感應磁場 B′</span></div>
+        <div class="status" id="status"></div>
+    </div>
+
+    <div class="card"><div class="card-title">即時數據</div><div class="dashboard" id="dash"></div></div>
+
+    <div class="card">
+        <div class="card-title"><span id="gTitle">同步圖（上：I₁–t，中：Φ₂–t，下：I₂–t）</span><span style="font-size:.85rem;color:var(--text-muted)">逆時針（由上往下看）為正</span></div>
+        <div class="graph-box"><canvas id="g1" width="760" height="190"></canvas></div>
+        <div class="graph-box" style="margin-top:8px"><canvas id="g2" width="760" height="190"></canvas></div>
+        <div class="graph-box" style="margin-top:8px"><canvas id="g3" width="760" height="230"></canvas></div>
+        <div class="fit-text" id="zeroText"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary>
+            <ul>
+                <li>互感：二次線圈的磁通量鏈 <b>Λ₂ = M I₁</b>（M：互感，單位 H；與兩線圈的圈數、大小、距離有關，距離越近 M 越大）。</li>
+                <li>法拉第定律：<b>ε₂ = −dΛ₂/dt = −M·dI₁/dt</b>（線圈位置不動時）；感應電流 <b>I₂ = ε₂ ÷ R₂</b>。<b>I₂ 看的是 I₁ 的「變化率」（I₁–t 圖的斜率），不是 I₁ 的大小。</b></li>
+                <li>若線圈也移動，<b>ε₂ = −(M·dI₁/dt + I₁·dM/dt)</b>：M 隨距離改變，也會使磁通量改變。</li>
+                <li>方向（冷次三步）：① 磁通量增加或減少 → ② 感應磁場與原磁場「反向（增加時）」或「同向（減少時）」→ ③ 右手螺旋定則判斷 I₂。</li>
+                <li>範例 10 的答案：I₂ 為 0 發生在 <b>dI₁/dt = 0</b>，即 I₁–t 圖斜率為 0（極大值與極小值）的時刻。</li>
+                <li>並排（共平面）的兩個線圈：左線圈的磁場在右線圈處，方向與「線圈內部」<b>相反</b>（磁力線在外部折回），所以逆時針的左線圈使右線圈有向下的磁通量。</li>
+            </ul>
+            <p class="assume">理想化假設：兩線圈各 N₁ = 200 匝、N₂ = 100 匝、半徑 5.0 cm，二次線圈電阻 R₂ = 0.50 Ω；互感 M 以紐曼公式（M = μ₀/4π ∮∮ dl₁·dl₂/r）數值積分計算，不是示意數字。忽略二次線圈的自感（I₂ 的磁場對一次線圈的影響）；模式①中的 I₁ 以時間常數 τ 趨近穩定值，忽略斷開瞬間的火花；模式③中左線圈的電流由外部電源提供，不受右線圈影響。</p>
+        </details>
+        <details><summary>建議講解順序</summary>
+            <ol>
+                <li>模式①：閉合開關，I₁ 由 0 逐漸增加，只有「增加的這段時間」有 I₂；穩定後 I₂ = 0。</li>
+                <li>用三步判斷法：磁通量增加 → B′ 反向 → I₂ 與 I₁ <b>反向</b>。再按「打開開關」：磁通量減少 → I₂ 與 I₁ <b>同向</b>。</li>
+                <li>調 R₁（滑動變阻器）：電阻變小，I₁ 增加，與閉合開關效果相同。</li>
+                <li>模式②：先看 I₁–t 圖，問學生：I₂ 何時為 0？何時最大？再請學生手繪 I₂–t，最後顯示解答。</li>
+                <li>強調：I₂–t 圖就是 −(I₁–t 圖的斜率)，與 I₁ 的大小無關。</li>
+                <li>模式③：逐項驗證範例 7 的選項，注意並排線圈的磁場方向在外部是反向的。</li>
+            </ol>
+        </details>
+        <details><summary>可以問學生的問題</summary>
+            <ul>
+                <li>I₁ 很大但穩定不變，I₂ 是多少？為什麼？</li>
+                <li>I₁–t 圖在極大值附近，I₂ 是多少？I₁ 通過 0 的時候呢？</li>
+                <li>斜率最大的位置，I₂ 的絕對值是不是最大？它的正負由什麼決定？</li>
+                <li>兩線圈靠得更近，I₂ 的大小與方向怎麼變？（大小變大，方向不變）</li>
+                <li>範例 7 為什麼左線圈「往右移」不一定使右線圈得到順時針？（要看左線圈的電流方向）</li>
+            </ul>
+        </details>
+        <details><summary>常見迷思</summary>
+            <ul>
+                <li><b>「I₁ 越大，I₂ 越大」</b>：看的是 I₁ 的<b>變化率</b>；I₁ 穩定時 I₂ = 0。</li>
+                <li><b>「感應電流與原電流永遠反向」</b>：只有原電流（磁通量）<b>增加</b>時反向；<b>減少</b>時同向。</li>
+                <li><b>「開關閉合後，I₂ 一直存在」</b>：電流穩定後，磁通量不再變化，I₂ 回到 0。</li>
+                <li><b>「並排線圈和上下線圈的磁場方向一樣」</b>：並排時右線圈在左線圈的「外面」，磁力線方向與內部相反。</li>
+            </ul>
+        </details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script>
+(() => {
+    'use strict';
+    const MU0 = 4 * Math.PI * 1e-7, A = 0.05, N1 = 200, N2 = 100, R2 = 0.5, N12 = N1 * N2;
+    const el = id => document.getElementById(id), c = el('scene').getContext('2d');
+    // ===================== 互感（紐曼公式，數值積分） =====================
+    function neumann(dx, h) {                                                                   // 兩個半徑 A 的圓線圈：第二個圓心 (dx, 0, h)，同向（逆時針）
+        const n = 96; let s = 0;
+        for (let i = 0; i < n; i++) { const a = (i + .5) / n * 2 * Math.PI, x1 = A * Math.cos(a), y1 = A * Math.sin(a); for (let j = 0; j < n; j++) { const b = (j + .5) / n * 2 * Math.PI, x2 = dx + A * Math.cos(b), y2 = A * Math.sin(b), r = Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + h * h); s += Math.cos(a - b) / r; } }
+        return MU0 / (4 * Math.PI) * A * A * s * (2 * Math.PI / n) ** 2;
+    }
+    const tabC = [], tabP = [];                                                                 // 同軸（距離 h）、並排共平面（圓心距 d）
+    for (let h = 0.005; h <= 0.2001; h += 0.0025) tabC.push([h, neumann(0, h)]);
+    for (let d = 0.11; d <= 0.6001; d += 0.005) tabP.push([d, neumann(d, 0)]);
+    function interp(tab, x) { if (x <= tab[0][0]) return tab[0][1]; if (x >= tab[tab.length - 1][0]) return tab[tab.length - 1][1]; const st = tab[1][0] - tab[0][0], i = Math.min(tab.length - 2, Math.floor((x - tab[0][0]) / st)), f = (x - tab[i][0]) / st; return tab[i][1] * (1 - f) + tab[i + 1][1] * f; }
+    const Mc = h => N12 * interp(tabC, h), Mp = d => N12 * interp(tabP, d);
+
+    const S = { mode: 'sw', t: 0, playing: true, slow: 1, hist: [],
+        sw: 0, R1: 6, pol: 1, tau: 0.4, h: 0.03, I1: 0, V: 6,
+        pre: 'ex10', draw: [], drawing: false,
+        cur: 'const', dir3: -1, mov: 0, T3: 4, optSel: null, results: {} };
+    // ===================== I₁(t) 的各種來源 =====================
+    const NODES = [[0, 0], [1, 0.01], [2, 0.02], [3, 0.05], [4, 0.12], [5, 0.45], [6, 1.1], [7, 1.75], [8, 2.0], [9, 1.35], [10, 0], [11, -0.9], [12, -1.5], [13, -1.2], [14, -0.65], [15, -0.3], [16, -0.12], [17, -0.04], [18, -0.01], [19, 0]];
+    const SLP = NODES.map((p, i) => i === 0 || i === NODES.length - 1 ? 0 : (p[0] === 8 || p[0] === 12) ? 0 : (NODES[i + 1][1] - NODES[i - 1][1]) / (NODES[i + 1][0] - NODES[i - 1][0]));
+    function ex10(t) { if (t <= 0 || t >= 19) return 0; const i = Math.min(Math.floor(t), 18), u = t - i, y0 = NODES[i][1], y1 = NODES[i + 1][1], m0 = SLP[i], m1 = SLP[i + 1], u2 = u * u, u3 = u2 * u; return (2 * u3 - 3 * u2 + 1) * y0 + (u3 - 2 * u2 + u) * m0 + (-2 * u3 + 3 * u2) * y1 + (u3 - u2) * m1; }
+    const PRE = { ex10, ramp: t => Math.min(2, 0.4 * Math.max(0, t)), sine: t => 2 * Math.sin(2 * Math.PI * t / 8), const: () => 1.5 };
+    const T2 = 19;
+    const d1 = (f, t) => (f(t + 1e-4) - f(t - 1e-4)) / 2e-4;
+    // 模式③：左線圈電流與位置（圓心距 d，初值 0.2 m）
+    const D0 = 0.22;
+    function cur3(t) { const u = t / S.T3; if (S.cur === 'zero') return 0; const s = S.dir3; return s * (S.cur === 'const' ? 1 : S.cur === 'inc' ? 0.5 + 1.5 * u : 2 - 1.5 * u); }
+    function pos3(t) { if (S.mov === 'osc') return D0 + 0.06 * Math.sin(2 * Math.PI * t / 2); return D0 - (+S.mov) * 0.02 * t; }
+    // ===================== 狀態量 =====================
+    function state(t) {                                                                           // 回傳 I1、Φ（每匝）、I2、dI1/dt、方向等
+        let I1, dI1, M, dM = 0, vel = 0;
+        if (S.mode === 'sw') { I1 = S.I1; dI1 = (S.pol * S.V * S.sw / S.R1 - S.I1) / S.tau; M = Mc(S.h); }
+        else if (S.mode === 'curve') { const f = PRE[S.pre]; I1 = f(t); dI1 = d1(f, t); M = Mc(S.h); }
+        else { I1 = cur3(t); dI1 = d1(cur3, t); const d = pos3(t); M = Mp(d); dM = (Mp(d + 1e-3) - Mp(d - 1e-3)) / 2e-3; vel = d1(pos3, t); }
+        const lam = M * I1, eps2 = -(M * dI1 + I1 * dM * vel), I2 = eps2 / R2;
+        return { I1, dI1, M, lam, Phi: lam / N2, eps2, I2, dlam: M * dI1 + I1 * dM * vel };
+    }
+    function resetRun() { S.t = 0; S.hist = []; S.playing = true; if (S.mode === 'sw') { S.I1 = 0; S.sw = 0; } syncUI(); }
+    function stepSim(dt) {
+        if (S.mode === 'sw') { S.I1 += (S.pol * S.V * S.sw / S.R1 - S.I1) / S.tau * dt; }
+        S.t += dt;
+        const q = state(S.t); if (!S.hist.length || S.t - S.hist[S.hist.length - 1].t >= 0.02) { S.hist.push({ t: S.t, I1: q.I1, Phi: q.Phi, I2: q.I2 }); if (S.hist.length > 4000) S.hist.shift(); }
+        const end = S.mode === 'curve' ? T2 : S.mode === 'side' ? S.T3 : Infinity;
+        if (S.t >= end) { S.playing = false; S.t = end; if (el('chkLoop').checked && S.mode !== 'sw') setTimeout(() => { S.t = 0; S.hist = []; S.playing = true; }, 700); }
+    }
+    // ===================== 繪圖工具 =====================
+    function arrow(ctx, x1, y1, x2, y2, color, w = 3, head = 10) { const len = Math.hypot(x2 - x1, y2 - y1); if (len < 2) return; const a = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(head, len * .6); ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(a) * hl * .6, y2 - Math.sin(a) * hl * .6); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - hl * Math.cos(a - .45), y2 - hl * Math.sin(a - .45)); ctx.lineTo(x2 - hl * Math.cos(a + .45), y2 - hl * Math.sin(a + .45)); ctx.closePath(); ctx.fill(); ctx.restore(); }
+    function txt(ctx, s, x, y, color, size = 14, align = 'left') { ctx.save(); ctx.font = `bold ${size}px sans-serif`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y); ctx.restore(); }
+    const tnow = () => Date.now() / 1000;
+    // 俯視小圖：逆時針為正
+    function ringTop(cx, cy, r, I, color, label, scale = 1) {
+        c.strokeStyle = Math.abs(I) > 1e-4 ? color : '#4a4a55'; c.lineWidth = 6; c.beginPath(); c.arc(cx, cy, r, 0, 7); c.stroke();
+        if (Math.abs(I) > 1e-4) { const g = Math.min(1, Math.abs(I) / scale), ph = tnow() * (0.2 + 0.8 * g) * (I > 0 ? -1 : 1); for (let k = 0; k < 4; k++) { const th = (ph + k / 4) * 2 * Math.PI, x = cx + r * Math.cos(th), y = cy + r * Math.sin(th), tg = th + (I > 0 ? -Math.PI / 2 : Math.PI / 2); c.save(); c.translate(x, y); c.rotate(tg); c.fillStyle = '#fff3c4'; c.beginPath(); c.moveTo(8, 0); c.lineTo(-6, -6); c.lineTo(-6, 6); c.closePath(); c.fill(); c.restore(); } }
+        txt(c, label, cx, cy - r - 14, color, 14, 'center'); txt(c, Math.abs(I) < 1e-4 ? '0' : (I > 0 ? '逆時針' : '順時針'), cx, cy, Math.abs(I) < 1e-4 ? '#6a7a92' : color, 15, 'center');
+    }
+    // 側視（立體）線圈
+    function coilSide(cx, cy, I, color, label, scale = 1, nT = 4) {
+        const rx = 78, ry = 22, sp = 8; c.lineCap = 'round';
+        for (let k = 0; k < nT; k++) { const y = cy + (k - (nT - 1) / 2) * sp; c.strokeStyle = '#6b4f26'; c.lineWidth = 3; c.beginPath(); c.ellipse(cx, y, rx, ry, 0, Math.PI, 2 * Math.PI); c.stroke(); }
+        const act = Math.abs(I) > 1e-4, glow = Math.min(1, Math.abs(I) / scale);
+        for (let k = 0; k < nT; k++) { const y = cy + (k - (nT - 1) / 2) * sp; c.strokeStyle = act ? color : '#c98a3d'; c.globalAlpha = act ? 0.55 + 0.45 * glow : 1; c.lineWidth = 5; c.beginPath(); c.ellipse(cx, y, rx, ry, 0, 0, Math.PI); c.stroke(); c.globalAlpha = 1; }
+        if (act) { const ph = tnow() * (0.25 + 0.9 * glow) * Math.sign(I); for (let k = 0; k < nT; k++) { const y = cy + (k - (nT - 1) / 2) * sp; for (let i = 0; i < 3; i++) { let u = (((ph + i / 3) % 1) + 1) % 1; const a = Math.PI * (1 - u) + 0 * u; const ang = Math.PI - Math.PI * u, x1 = cx + rx * Math.cos(ang), y1 = y + ry * Math.sin(ang); const ang2 = ang - 0.04, x2 = cx + rx * Math.cos(ang2), y2 = y + ry * Math.sin(ang2); c.save(); c.translate(x1, y1); c.rotate(Math.atan2(y2 - y1, x2 - x1)); c.fillStyle = '#fff3c4'; c.beginPath(); c.moveTo(7, 0); c.lineTo(-5, -5); c.lineTo(-5, 5); c.closePath(); c.fill(); c.restore(); } } }
+        txt(c, label, cx - rx - 18, cy, color, 15, 'right');
+    }
+    // 偶極磁力線（側視，磁矩向上為 I>0）
+    function fieldSide(cx, cy, I, scale) { if (Math.abs(I) < 1e-4) return; const g = Math.min(1, Math.abs(I) / scale), sg = Math.sign(I); c.strokeStyle = `rgba(53,214,255,${0.2 + 0.5 * g})`; c.lineWidth = 1.5; [50, 85, 130, 190].forEach(L => { for (const s of [-1, 1]) { c.beginPath(); for (let th = 0.08; th < Math.PI - 0.08; th += 0.05) { const r = L * Math.sin(th) ** 2, x = cx + s * r * Math.sin(th), y = cy - r * Math.cos(th); th < 0.09 ? c.moveTo(x, y) : c.lineTo(x, y); } c.stroke(); const th = Math.PI / 2, r = L, ax = cx + s * r, ay = cy; if (ax > 15 && ax < 745) { arrow(c, ax, ay - sg * 10, ax, ay + sg * 10, 'rgba(53,214,255,.8)', 2, 8); } } }); }
+
+    // ===================== 場景 =====================
+    function drawScene() {
+        c.clearRect(0, 0, 760, 420); c.fillStyle = '#080a0f'; c.fillRect(0, 0, 760, 420);
+        const q = state(S.t); if (S.mode === 'side') return drawSideScene(q);
+        const I1s = S.mode === 'sw' ? 1.5 : 2, I2s = Math.max(0.004, 0.0035), gap = 40 + S.h * 100 * 14 / 1, cy1 = 140, cy2 = Math.min(375, cy1 + gap), cx = 380;
+        const Ihat = Math.max(Math.abs(q.I2), 1e-9);
+        fieldSide(cx, cy1, q.I1, I1s);
+        coilSide(cx, cy1, q.I1, '#ffb020', 'I₁（一次線圈）', I1s, 4); coilSide(cx, cy2, q.I2 * 1 /* sign */, '#ff7ad9', 'I₂（二次線圈）', 0.004, 4);
+        // 軸線上標示
+        const sameSign = q.I2 > 1e-5 ? 1 : q.I2 < -1e-5 ? -1 : 0;
+        if (sameSign) { arrow(c, cx, cy2 + sameSign * 32, cx, cy2 - sameSign * 32, '#d28bff', 5, 14); txt(c, 'B′', cx + 14, cy2 - sameSign * 38, '#d28bff', 16); }
+        if (Math.abs(q.I1) > 1e-4) { arrow(c, cx, cy1 + Math.sign(q.I1) * 26, cx, cy1 - Math.sign(q.I1) * 26, 'rgba(255,176,32,.9)', 4, 12); }
+        // 間距標示
+        c.strokeStyle = '#9aa8bd'; c.setLineDash([4, 4]); c.lineWidth = 1; c.beginPath(); c.moveTo(cx + 96, cy1); c.lineTo(cx + 96, cy2); c.stroke(); c.setLineDash([]); txt(c, `h = ${(S.h * 100).toFixed(1)} cm`, cx + 102, (cy1 + cy2) / 2, '#9aa8bd', 13);
+        // 電流計
+        const gx = cx + 138, gy = Math.max(cy2 + 18, 215); c.fillStyle = '#10151f'; c.strokeStyle = '#8fa3c4'; c.lineWidth = 3; c.beginPath(); c.arc(gx, gy, 34, Math.PI, 0); c.lineTo(gx + 34, gy + 10); c.lineTo(gx - 34, gy + 10); c.closePath(); c.fill(); c.stroke();
+        const ang = Math.max(-1, Math.min(1, q.I2 / 0.004)) * 1.1 - Math.PI / 2; c.strokeStyle = '#ff7ad9'; c.lineWidth = 3; c.beginPath(); c.moveTo(gx, gy); c.lineTo(gx + 29 * Math.cos(ang), gy + 29 * Math.sin(ang)); c.stroke(); txt(c, 'A', gx, gy - 12, '#8fa3c4', 14, 'center'); txt(c, '電流計', gx, gy + 26, '#9aa8bd', 12, 'center');
+        c.strokeStyle = '#8fa3c4'; c.lineWidth = 2; c.beginPath(); c.moveTo(cx + 80, cy2 + 6); c.lineTo(gx - 34, gy + 4); c.stroke();
+        if (S.mode === 'sw') circuit(cx - 330, cy1, q); else { c.strokeStyle = '#3a465b'; c.setLineDash([5, 5]); c.strokeRect(24, cy1 - 36, 120, 72); c.setLineDash([]); txt(c, '可程式電流源', 84, cy1 - 12, '#9aa8bd', 13, 'center'); txt(c, `I₁ = ${q.I1.toFixed(2)} A`, 84, cy1 + 12, '#ffb020', 15, 'center'); }
+        // 俯視小圖
+        c.fillStyle = '#0d121b'; c.fillRect(560, 10, 190, 400); c.strokeStyle = '#26324a'; c.strokeRect(560, 10, 190, 400); txt(c, '俯視（由上往下看）', 655, 28, '#9aa8bd', 13, 'center');
+        ringTop(655, 105, 38, q.I1, '#ffb020', 'I₁', I1s); ringTop(655, 235, 38, q.I2, '#ff7ad9', 'I₂', 0.004);
+        steps(q, 'up');
+    }
+    function circuit(x0, y0, q) {      // 電池、開關、可變電阻（簡圖）
+        const x1 = x0 + 10, x2 = x0 + 150; c.strokeStyle = '#8fa3c4'; c.lineWidth = 3; c.beginPath(); c.moveTo(x1 + 120, y0 - 30); c.lineTo(x1 + 120, y0 - 72); c.lineTo(x1 - 4, y0 - 72); c.lineTo(x1 - 4, y0 + 56); c.lineTo(x1 + 120, y0 + 56); c.lineTo(x1 + 120, y0 + 30); c.stroke();
+        txt(c, S.pol > 0 ? '電流逆時針' : '電流順時針', x1 + 140, y0 + 60, '#ffb020', 12);
+        // 電池
+        c.strokeStyle = '#ffe14d'; c.lineWidth = 4; c.beginPath(); c.moveTo(x1 - 14, y0 + 8); c.lineTo(x1 + 8, y0 + 8); c.stroke(); c.lineWidth = 8; c.beginPath(); c.moveTo(x1 - 7, y0 + 22); c.lineTo(x1 + 1, y0 + 22); c.stroke(); txt(c, '6 V', x1 + 22, y0 + 18, '#ffe14d', 12);
+        // 開關
+        const sx = x1 + 30, sy = y0 - 72; c.fillStyle = '#8fa3c4'; c.beginPath(); c.arc(sx, sy, 4, 0, 7); c.arc(sx + 50, sy, 4, 0, 7); c.fill(); c.strokeStyle = S.sw ? '#00e676' : '#ff6b81'; c.lineWidth = 4; c.beginPath(); c.moveTo(sx, sy); c.lineTo(S.sw ? sx + 50 : sx + 44, S.sw ? sy : sy - 24); c.stroke(); txt(c, '開關', sx + 25, sy - 38, '#c3d0e4', 12, 'center');
+        // 可變電阻
+        const rx = x1 + 120, ry = y0 + 56 - 0; c.strokeStyle = '#c3d0e4'; c.lineWidth = 3; c.strokeRect(rx - 78, ry - 8, 70, 16); const pos = (S.R1 - 3) / 9; c.fillStyle = '#ffb020'; c.beginPath(); c.moveTo(rx - 78 + 70 * (1 - pos), ry - 20); c.lineTo(rx - 78 + 70 * (1 - pos) - 7, ry - 30); c.lineTo(rx - 78 + 70 * (1 - pos) + 7, ry - 30); c.closePath(); c.fill(); txt(c, `R₁ = ${S.R1.toFixed(1)} Ω`, rx - 43, ry + 24, '#c3d0e4', 12, 'center');
+    }
+    function steps(q, flux) {                                                                       // 三步判斷（flux: 'up' 同軸、'out' 並排）
+        c.fillStyle = '#0d121b'; c.fillRect(10, 330, 540, 82); c.strokeStyle = '#26324a'; c.strokeRect(10, 330, 540, 82);
+        const mv = Math.abs(q.dlam) > 1e-9, up = q.lam >= 0, inc = q.dlam * q.lam > 0;
+        const dirTxt = q.I2 > 0 ? '逆時針' : '順時針';
+        const l1 = mv ? `① 穿過二次線圈向${up ? '上' : '下'}的磁通量 ${inc ? '增加' : '減少'}` : '① 磁通量沒有變化', l2 = mv ? `② 感應磁場與原磁場${inc ? '反向' : '同向'}（阻礙變化）→ B′ 向${(inc ? !up : up) ? '上' : '下'}` : '② 沒有變化 → 沒有感應磁場', l3 = mv ? `③ 右手螺旋定則 → 由上往下看，I₂ 為${dirTxt}` : '③ I₂ = 0';
+        txt(c, l1, 22, 349, '#35d6ff', 14); txt(c, l2, 22, 371, '#d28bff', 14); txt(c, l3, 22, 393, '#ff7ad9', 14);
+    }
+    function drawSideScene(q) {
+        const sc = 2.4, xR = 520, base = 250, xL = xR - pos3(S.t) * 1000 * 0.9 * 0 - (pos3(S.t) - 0.0) * 1000 * 0.9 * 1;      // 以 1 m = 900 px 縮放
+        const dpx = pos3(S.t) * 900 * 0.55, xLc = xR - dpx, rpx = A * 900 * 0.55 * 1.0 * 2.2;
+        c.fillStyle = '#10151f'; c.fillRect(10, 40, 740, 280); c.strokeStyle = '#26324a'; c.strokeRect(10, 40, 740, 280); txt(c, '桌面（俯視，兩線圈放在水平桌面上）', 24, 56, '#9aa8bd', 13);
+        // 左線圈磁場在桌面的 B_z（偶極近似的圖示）：⊙ 出紙面（向上）、⊗ 入紙面（向下）
+        const I1 = q.I1, mom = I1; for (let gx = 40; gx < 740; gx += 36) for (let gy = 78; gy < 310; gy += 36) {
+            const dx = (gx - xLc) / (900 * 0.55), dy = (gy - base) / (900 * 0.55), r2 = Math.hypot(dx, dy); if (r2 < A * 1.2) continue; const bz = mom * (A * A) * (2 * Math.min(1, (A * 1.2) / r2) ** 0 * 1) / (4 * r2 ** 3) * A * 0.0 + (1 / Math.pow(r2 / A, 3)) * mom * -0.5;      // 外部：與內部相反，∝ 1/r³
+            const mag = Math.min(1, Math.abs(bz) * 4); if (mag < 0.04) continue; c.strokeStyle = `rgba(53,214,255,${0.15 + 0.6 * mag})`; c.fillStyle = c.strokeStyle; c.lineWidth = 1.5; const rr = 4 + 5 * mag;
+            if (bz > 0) { c.beginPath(); c.arc(gx, gy, rr, 0, 7); c.stroke(); c.beginPath(); c.arc(gx, gy, 1.6, 0, 7); c.fill(); } else { c.beginPath(); c.moveTo(gx - rr * .7, gy - rr * .7); c.lineTo(gx + rr * .7, gy + rr * .7); c.moveTo(gx + rr * .7, gy - rr * .7); c.lineTo(gx - rr * .7, gy + rr * .7); c.stroke(); } }
+        // 左右線圈
+        const ringTopAt = (x, y, I, col, lab, scale) => { c.save(); const keep = c; ringAt(x, y, rpx, I, col, lab, scale); c.restore(); };
+        ringAt(xLc, base, rpx, I1, '#ffb020', 'I₁ 左線圈', 2); ringAt(xR, base, rpx, q.I2, '#ff7ad9', 'I₂ 右線圈', 0.004);
+        // 右線圈內的感應磁場
+        const sg = q.I2 > 1e-5 ? 1 : q.I2 < -1e-5 ? -1 : 0; if (sg) { c.fillStyle = '#d28bff'; c.strokeStyle = '#d28bff'; c.lineWidth = 3; if (sg > 0) { c.beginPath(); c.arc(xR, base + 0, 14, 0, 7); c.stroke(); c.beginPath(); c.arc(xR, base, 4, 0, 7); c.fill(); } else { c.beginPath(); c.moveTo(xR - 10, base - 10); c.lineTo(xR + 10, base + 10); c.moveTo(xR + 10, base - 10); c.lineTo(xR - 10, base + 10); c.stroke(); } txt(c, `B′ ${sg > 0 ? '⊙ 出' : '⊗ 入'}紙面`, xR, base + rpx + 22, '#d28bff', 13, 'center'); }
+        // 距離與移動方向
+        txt(c, `圓心距 d = ${(pos3(S.t) * 100).toFixed(1)} cm`, (xLc + xR) / 2, 100, '#9aa8bd', 13, 'center');
+        const vv = d1(pos3, S.t); if (Math.abs(vv) > 1e-3) { const dirx = vv > 0 ? 1 : -1; arrow(c, xLc, base - rpx - 40, xLc + dirx * 50, base - rpx - 40, '#4d8dff', 4, 12); txt(c, 'v', xLc + dirx * 60, base - rpx - 40, '#4d8dff', 14); }
+        // 電流計
+        const gx = 650, gy = 262; c.fillStyle = '#10151f'; c.strokeStyle = '#8fa3c4'; c.lineWidth = 3; c.beginPath(); c.arc(gx, gy, 32, Math.PI, 0); c.lineTo(gx + 32, gy + 10); c.lineTo(gx - 32, gy + 10); c.closePath(); c.fill(); c.stroke(); const ang = Math.max(-1, Math.min(1, q.I2 / 0.004)) * 1.1 - Math.PI / 2; c.strokeStyle = '#ff7ad9'; c.lineWidth = 3; c.beginPath(); c.moveTo(gx, gy); c.lineTo(gx + 27 * Math.cos(ang), gy + 27 * Math.sin(ang)); c.stroke(); txt(c, 'A', gx, gy - 10, '#8fa3c4', 13, 'center');
+        steps(q, 'out');
+        c.fillStyle = '#0d121b'; c.fillRect(560, 330, 190, 82); c.strokeStyle = '#26324a'; c.strokeRect(560, 330, 190, 82); txt(c, S.results.cur ? '' : '', 655, 350, '#fff', 12, 'center');
+        txt(c, `右線圈目標：順時針`, 655, 349, '#ff7ad9', 13, 'center'); txt(c, `現在：${Math.abs(q.I2) < 1e-5 ? '無電流' : q.I2 > 0 ? '逆時針' : '順時針'}`, 655, 375, Math.abs(q.I2) < 1e-5 ? '#6a7a92' : q.I2 < 0 ? '#00e676' : '#ff6b81', 15, 'center'); txt(c, '（由上往下看）', 655, 396, '#9aa8bd', 12, 'center');
+    }
+    function ringAt(x, y, r, I, col, lab, scale) {
+        c.strokeStyle = Math.abs(I) > 1e-5 ? col : '#5a5a66'; c.lineWidth = 7; c.beginPath(); c.arc(x, y, r, 0, 7); c.stroke();
+        if (Math.abs(I) > 1e-5) { const g = Math.min(1, Math.abs(I) / scale), ph = tnow() * (0.2 + 0.8 * g) * (I > 0 ? -1 : 1); for (let k = 0; k < 4; k++) { const th = (ph + k / 4) * 2 * Math.PI, px = x + r * Math.cos(th), py = y + r * Math.sin(th), tg = th + (I > 0 ? -Math.PI / 2 : Math.PI / 2); c.save(); c.translate(px, py); c.rotate(tg); c.fillStyle = '#fff3c4'; c.beginPath(); c.moveTo(9, 0); c.lineTo(-6, -7); c.lineTo(-6, 7); c.closePath(); c.fill(); c.restore(); } }
+        txt(c, lab, x, y - r - 16, col, 14, 'center'); txt(c, Math.abs(I) < 1e-5 ? '0' : (I > 0 ? '逆' : '順'), x, y, Math.abs(I) < 1e-5 ? '#6a7a92' : col, 18, 'center');
+    }
+
+    // ===================== 圖表 =====================
+    function series(cv, o) {
+        const x = cv.getContext('2d'), W = cv.width, H = cv.height, L = 62, Rm = 14, T = 28, B = 34, pw = W - L - Rm, ph = H - T - B;
+        const fixed = S.mode === 'curve', x0 = fixed ? 0 : Math.max(0, S.t - 8), x1 = fixed ? T2 : Math.max(8, S.t);
+        let amp = o.amp; if (!amp) { amp = 1e-9; S.hist.forEach(h => { amp = Math.max(amp, Math.abs(h[o.key]) * 1.2); }); amp = Math.max(amp, o.min); }
+        const PX = v => L + (v - x0) / (x1 - x0) * pw, PY = v => T + ph / 2 - v / amp * ph / 2;
+        x.clearRect(0, 0, W, H); x.fillStyle = '#0d121b'; x.fillRect(0, 0, W, H); x.font = '12px sans-serif';
+        const nice = r => { const t = r / 4, q = Math.pow(10, Math.floor(Math.log10(t))), n = t / q; return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * q; }, sy = nice(amp * 2), dp = Math.max(0, Math.ceil(-Math.log10(sy) - 1e-9));
+        for (let v = -Math.floor(amp / sy) * sy; v <= amp + 1e-9; v += sy) { x.strokeStyle = Math.abs(v) < sy / 1e3 ? '#5b6a82' : '#1b2433'; x.beginPath(); x.moveTo(L, PY(v)); x.lineTo(L + pw, PY(v)); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'right'; x.fillText((v * o.k).toFixed(dp > 2 ? 1 : dp), L - 6, PY(v) + 4); }
+        const sx = fixed ? 1 : 1; for (let v = Math.ceil(x0); v <= x1; v += sx) { x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(PX(v), T); x.lineTo(PX(v), T + ph); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(v, PX(v), T + ph + 14); }
+        x.save(); x.beginPath(); x.rect(L, T, pw, ph); x.clip();
+        const line = (arr, col, w = 2.6, dash) => { x.strokeStyle = col; x.lineWidth = w; if (dash) x.setLineDash(dash); x.beginPath(); arr.forEach((p, i) => i ? x.lineTo(PX(p[0]), PY(p[1])) : x.moveTo(PX(p[0]), PY(p[1]))); x.stroke(); x.setLineDash([]); };
+        if (o.extra) o.extra(x, PX, PY);
+        line(S.hist.filter(h => h.t >= x0 - 0.1).map(h => [h.t, h[o.key]]), o.color);
+        x.strokeStyle = 'rgba(255,255,255,.45)'; x.setLineDash([4, 4]); x.beginPath(); x.moveTo(PX(S.t), T); x.lineTo(PX(S.t), T + ph); x.stroke(); x.setLineDash([]); x.restore();
+        x.fillStyle = '#c3d0e4'; x.font = 'bold 13px sans-serif'; x.textAlign = 'left'; x.fillText(o.title, L, 16); x.font = '12px sans-serif'; x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText('時間 t (s)', L + pw / 2, H - 4);
+        x.save(); x.translate(13, T + ph / 2); x.rotate(-Math.PI / 2); x.fillText(o.yl, 0, 0); x.restore();
+        return { PX, PY, L, T, pw, ph, x0, x1, amp };
+    }
+    let g3geom = null;
+    function drawGraphs() {
+        series(el('g1'), { title: 'I₁–t 圖（一次線圈電流）', yl: 'I₁ (A)', key: 'I1', color: '#ffb020', k: 1, min: 0.5, amp: S.mode === 'curve' ? 2.4 : S.mode === 'sw' ? 1.5 : 2.4 });
+        series(el('g2'), { title: 'Φ–t 圖（穿過二次線圈每匝的磁通量）', yl: 'Φ (μWb)', key: 'Phi', color: '#35d6ff', k: 1e6, min: 1e-6 });
+        const ans = el('chkAns').checked || S.mode !== 'curve';
+        g3geom = series(el('g3'), { title: S.mode === 'curve' ? 'I₂–t 圖（二次線圈感應電流）' + (el('chkAns').checked ? '' : '：請先預測') : 'I₂–t 圖（二次線圈感應電流）', yl: 'I₂ (mA)', key: 'I2', color: '#ff7ad9', k: 1e3, min: 1e-3, amp: S.mode === 'curve' ? S.curveAmp : undefined,
+            extra: (x, PX, PY) => { if (S.mode === 'curve' && S.draw.length > 1) { x.strokeStyle = '#00e676'; x.lineWidth = 2.6; x.beginPath(); S.draw.forEach((p, i) => i ? x.lineTo(PX(p[0]), PY(p[1])) : x.moveTo(PX(p[0]), PY(p[1]))); x.stroke(); } if (S.mode === 'curve' && ans) { x.strokeStyle = 'rgba(255,122,217,.35)'; x.lineWidth = 6; x.beginPath(); for (let t = 0; t <= T2; t += 0.1) { const y = state(t).I2; t ? x.lineTo(PX(t), PY(y)) : x.moveTo(PX(t), PY(y)); } x.stroke(); } } });
+        // 曲線模式：I2 曲線隱藏（未勾選解答時只顯示手繪，仍顯示即時游標處的值）
+    }
+    function curveInfo() {
+        let mx = 0; for (let t = 0; t <= T2; t += 0.05) mx = Math.max(mx, Math.abs(state(t).I2)); S.curveAmp = mx * 1.2 || 1e-3;
+        const zs = []; let prev = state(0.0).I2, prevT = 0; for (let t = 0.02; t <= T2; t += 0.02) { const v = state(t).I2; if (prev * v < 0 || Math.abs(v) < 1e-9) zs.push(+((prevT + t) / 2).toFixed(2)); prev = v; prevT = t; } return zs;
+    }
+
+    // ===================== 儀表與說明 =====================
+    function renderDash() {
+        const q = state(S.t), m = (t, v, u, col = '#c3d0e4') => `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value" style="color:${col}">${v}<span class="unit">${u}</span></div></div>`;
+        const dir = x => Math.abs(x) < 1e-9 ? '—' : x > 0 ? '逆時針' : '順時針';
+        el('dash').innerHTML = m('I₁（一次線圈）', q.I1.toFixed(3), 'A', '#ffb020') + m('dI₁/dt（I₁–t 圖斜率）', q.dI1.toFixed(3), 'A/s', '#ffb020') + m('互感 M', (q.M * 1e3).toFixed(3), 'mH', '#35d6ff') + m('磁通量 Φ₂（每匝）', (q.Phi * 1e6).toFixed(2), 'μWb', '#35d6ff') + m('感應電動勢 ε₂', (q.eps2 * 1e3).toFixed(3), 'mV', '#ff7ad9') + m('感應電流 I₂', (q.I2 * 1e3).toFixed(3), 'mA', '#ff7ad9') + m('I₂ 方向（由上往下）', dir(q.I2), '', '#ff7ad9');
+        const mv = Math.abs(q.dlam) > 1e-9; let msg;
+        if (S.mode === 'sw') msg = S.sw ? (mv ? '開關閉合：I₁ 逐漸增加，磁通量增加，<b>I₂ 與 I₁ 反向</b>；I₁ 趨近穩定值後，磁通量不再變化，I₂ → 0。' : '電流已穩定：磁通量不變，<b>I₂ = 0</b>。') : (mv ? '開關打開：I₁ 逐漸減小，磁通量減少，<b>I₂ 與 I₁ 同向</b>（阻止磁通量減少）。' : '電路是斷路：I₁ = 0，I₂ = 0。');
+        else if (S.mode === 'curve') msg = Math.abs(q.dI1) < 0.005 ? '現在 I₁–t 圖的<b>斜率為 0</b>（極大值、極小值或平的部分）→ <b>I₂ = 0</b>。' : `I₁–t 圖斜率${q.dI1 > 0 ? '為正' : '為負'}：I₂ ${q.dI1 > 0 ? '與 I₁ 增加的方向相反（順時針）' : '與 I₁ 減少的方向相同（逆時針）'}。`;
+        else msg = '右線圈在左線圈的<b>外面</b>：左線圈磁場在右線圈處與其內部<b>方向相反</b>。磁通量大小與方向由「左線圈電流」與「兩線圈距離」共同決定。';
+        el('status').innerHTML = msg; el('runState').textContent = S.playing ? '播放中' : (S.mode === 'sw' ? '' : '已完成');
+    }
+    const DESC = { sw: '一次線圈接電池、開關與可變電阻，二次線圈接電流計。閉合、打開開關，或滑動變阻器，觀察 I₂ 何時出現、方向為何。', curve: '一次線圈的電流依 I₁–t 圖變化，請先預測二次線圈的 I₂–t 圖（可手繪），再顯示解答。重點：I₂ 看的是 I₁ 的變化率。', side: '兩個相同的線圈並排放在水平桌面。左線圈的電流與位置如何改變，才能使右線圈產生順時針（由上往下看）的感應電流？' };
+    const OPTS = [
+        { k: 'A', t: '輸入順時針、量值漸增的電流', cur: 'inc', dir3: -1, mov: '0' }, { k: 'B', t: '輸入逆時針、量值漸減的電流', cur: 'dec', dir3: 1, mov: '0' },
+        { k: 'C', t: '輸入順時針、量值固定的電流，並將左側線圈往左移動', cur: 'const', dir3: -1, mov: '-1' }, { k: 'D', t: '輸入逆時針、量值固定的電流，並將左側線圈往右移動', cur: 'const', dir3: 1, mov: '1' },
+        { k: 'E', t: '未輸入電流，並將左側線圈左右來回擺動', cur: 'zero', dir3: 1, mov: 'osc' }];
+    function evalOpt(o) { const save = [S.cur, S.dir3, S.mov]; S.cur = o.cur; S.dir3 = o.dir3; S.mov = o.mov; let sum = 0, mx = 0, n = 0; for (let t = 0.05; t < S.T3 - 0.05; t += 0.05) { const i2 = state(t).I2; sum += i2; mx = Math.max(mx, Math.abs(i2)); n++; } const mean = sum / n; [S.cur, S.dir3, S.mov] = save; return mx < 1e-6 ? 0 : (mean < 0 ? -1 : 1) * (Math.abs(mean) > 0.25 * mx ? 1 : 0.0001); }
+    function buildOpts() { el('optGrid').innerHTML = OPTS.map(o => `<button class="opt" data-k="${o.k}"><b>(${o.k})</b>${o.t}</button>`).join(''); el('optGrid').querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => pickOpt(b.dataset.k))); }
+    function pickOpt(k) { const o = OPTS.find(x => x.k === k); S.cur = o.cur; S.dir3 = o.dir3; S.mov = o.mov; el('selCur').value = o.cur; el('selDir3').value = o.dir3; el('selMov').value = o.mov; document.querySelectorAll('.opt').forEach(b => b.classList.toggle('sel', b.dataset.k === k)); S.optSel = k; resetRun(); const v = evalOpt(o); el('judgeText').innerHTML = `(${k})：右線圈的感應電流為 <b>${v === 0 ? '0（沒有電流）' : v < 0 ? '順時針 ✔ 符合' : '逆時針 ✘ 不符合'}</b>${v < 0 ? '。' : '。'}`; }
+    function judgeAll() { const out = OPTS.map(o => { const v = evalOpt(o); return { k: o.k, v, ok: v < 0 }; }); document.querySelectorAll('.opt').forEach(b => { const r = out.find(x => x.k === b.dataset.k); b.classList.toggle('ok', r.ok); b.classList.toggle('bad', !r.ok); }); el('judgeText').innerHTML = out.map(r => `(${r.k}) ${r.v === 0 ? '無電流' : r.v < 0 ? '順時針 ✔' : '逆時針 ✘'}`).join('　｜　') + `<br>→ 應選：<b>${out.filter(r => r.ok).map(r => r.k).join('、')}</b>。（左線圈在右線圈的外部，磁場方向與內部相反）`; }
+
+    function syncUI() {
+        el('modeDesc').textContent = DESC[S.mode]; document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === S.mode));
+        const sw = S.mode === 'sw', cu = S.mode === 'curve', sd = S.mode === 'side', show = (id, on) => el(id).classList.toggle('off', !on);
+        show('grpSw', sw); show('grpR1', sw); show('grpPol', sw); show('grpTau', sw); show('grpH', sw || cu); show('grpPre', cu); show('grpOpt3', sd); show('grpDir3', sd); show('grpMov3', sd);
+        el('rowAns').style.display = cu ? '' : 'none'; el('rowDraw').style.display = cu ? '' : 'none'; el('btnClearDraw').style.display = cu ? '' : 'none'; el('optCard').style.display = sd ? '' : 'none';
+        el('lblSw').textContent = S.sw ? '閉合' : '打開'; el('lblSw').style.color = S.sw ? '#00e676' : '#ff6b81'; el('lblR1').textContent = S.R1.toFixed(1); el('lblTau').textContent = S.tau.toFixed(2); el('lblH').textContent = (S.h * 100).toFixed(1);
+        el('sceneTitle').textContent = sd ? '實驗裝置（俯視：兩線圈並排在水平桌面）' : '實驗裝置（側視：一次線圈在上、二次線圈在下）';
+        el('gTitle').textContent = '同步圖（上：I₁–t，中：Φ₂–t，下：I₂–t）'; if (cu) { el('zeroText').innerHTML = ''; } else el('zeroText').innerHTML = '';
+        if (cu) { const zs = curveInfo(); if (el('chkAns').checked) el('zeroText').innerHTML = `I₂ ＝ 0 的時刻（dI₁/dt ＝ 0，在 3～17 s 之間）：<b>${zs.filter(t => t >= 3 && t <= 17).map(t => '約 ' + Math.round(t) + ' s').join('、')}</b>（I₁ 的極大值與極小值）。I₂–t 圖就是 −(I₁–t 圖的斜率)。`; else el('zeroText').innerHTML = '先想想：I₂ 何時為 0？何時最大？正負由什麼決定？'; }
+    }
+    // ===================== 事件 =====================
+    document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.mode; if (S.mode === 'side') { pickOptInit(); } S.draw = []; resetRun(); }));
+    function pickOptInit() { if (!S.optSel) { document.querySelectorAll('.opt').forEach(b => b.classList.remove('sel')); S.cur = 'const'; S.dir3 = -1; S.mov = 0; } }
+    el('btnClose').addEventListener('click', () => { S.sw = 1; S.playing = true; syncUI(); }); el('btnOpen').addEventListener('click', () => { S.sw = 0; S.playing = true; syncUI(); });
+    el('slR1').addEventListener('input', e => { S.R1 = +e.target.value; syncUI(); }); el('slTau').addEventListener('input', e => { S.tau = +e.target.value; syncUI(); }); el('slH').addEventListener('input', e => { S.h = +e.target.value / 100; S.hist = []; if (S.mode === 'curve') S.t = 0; syncUI(); });
+    el('selPol').addEventListener('change', e => { S.pol = +e.target.value; S.I1 = 0; syncUI(); }); el('selPre').addEventListener('change', e => { S.pre = e.target.value; S.draw = []; resetRun(); });
+    el('selCur').addEventListener('change', e => { S.cur = e.target.value; document.querySelectorAll('.opt').forEach(b => b.classList.remove('sel')); resetRun(); }); el('selDir3').addEventListener('change', e => { S.dir3 = +e.target.value; document.querySelectorAll('.opt').forEach(b => b.classList.remove('sel')); resetRun(); }); el('selMov').addEventListener('change', e => { S.mov = e.target.value === 'osc' ? 'osc' : +e.target.value; document.querySelectorAll('.opt').forEach(b => b.classList.remove('sel')); resetRun(); });
+    el('selSlow').addEventListener('change', e => { S.slow = +e.target.value; }); el('chkAns').addEventListener('change', syncUI);
+    el('btnPlay').addEventListener('click', () => { if (S.mode !== 'sw' && S.t >= (S.mode === 'curve' ? T2 : S.T3) - 1e-6) resetRun(); S.playing = true; }); el('btnPause').addEventListener('click', () => { S.playing = false; }); el('btnReset').addEventListener('click', resetRun); el('btnClearDraw').addEventListener('click', () => { S.draw = []; });
+    el('btnJudge').addEventListener('click', judgeAll);
+    const g3 = el('g3'); const toData = e => { const r = g3.getBoundingClientRect(), px = (e.clientX - r.left) * g3.width / r.width, py = (e.clientY - r.top) * g3.height / r.height; if (!g3geom) return null; const g = g3geom; return [g.x0 + (px - g.L) / g.pw * (g.x1 - g.x0), (g.T + g.ph / 2 - py) / (g.ph / 2) * g.amp]; };
+    g3.addEventListener('pointerdown', e => { if (!el('chkDraw').checked || S.mode !== 'curve') return; S.drawing = true; g3.setPointerCapture(e.pointerId); const p = toData(e); if (p) S.draw.push(p); });
+    g3.addEventListener('pointermove', e => { if (!S.drawing) return; const p = toData(e); if (p && p[0] >= 0 && p[0] <= T2) S.draw.push(p); }); g3.addEventListener('pointerup', () => { S.drawing = false; });
+    // ===================== 迴圈 =====================
+    let last = null, fn = 0;
+    function frame(ts) {
+        if (last === null) last = ts; let dt = Math.min((ts - last) / 1000, 0.05) * S.slow; last = ts;
+        if (S.playing) while (dt > 1e-9) { const h = Math.min(0.002, dt); stepSim(h); dt -= h; }
+        drawScene(); if (!(fn++ % 2)) { drawGraphs(); renderDash(); } requestAnimationFrame(frame);
+    }
+    window.__tc = { S, state, Mc, Mp, tabC, tabP, neumann, evalOpt, OPTS, judgeAll, curveInfo, resetRun, stepSim, ex10 };
+    buildOpts(); curveInfo(); syncUI(); resetRun(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
