@@ -101,6 +101,33 @@
         .meter-title { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
         .meter-value { font-size: 1.3rem; font-weight: bold; font-family: monospace; }
         .unit { font-size: 0.75rem; color: #55657d; margin-left: 2px; }
+
+        /* 分頁與實驗模式 */
+        .tabs { display: flex; gap: 8px; }
+        .tab-btn { flex: 1; background: var(--bg-card); color: #ddd; border: 2px solid #2c3749; border-radius: 10px; padding: 10px; font-size: .95rem; cursor: pointer; font-weight: normal; }
+        .tab-btn.active { border-color: var(--cyan); background: #0c2a33; color: #fff; font-weight: bold; }
+        .exp-only { display: none; }
+        body.exp-mode .exp-only { display: block; }
+        body.exp-mode .exp-only.flex { display: flex; }
+        body.exp-mode #grpmB.mb-hidden { display: none; }
+        .xrow { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        button.sec { background: #3a465b; color: #fff; }
+        button.grn { background: var(--green); color: #00210f; }
+        button:disabled { opacity: .4; cursor: not-allowed; }
+        .xnote { font-size: .82rem; color: var(--text-muted); margin-top: 8px; line-height: 1.6; }
+        .xnote label { cursor: pointer; }
+        .xsum { margin-top: 10px; font-size: .95rem; color: #cfd8e6; line-height: 1.7; }
+        .xsum b { color: var(--yellow); }
+        .t-scroll { overflow-x: auto; }
+        table.xt { width: 100%; border-collapse: collapse; font-size: .82rem; font-family: monospace; white-space: nowrap; }
+        table.xt th, table.xt td { border-bottom: 1px solid #263044; padding: 5px 7px; text-align: right; }
+        table.xt th { color: var(--text-muted); font-weight: normal; }
+        .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+        .gbox { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 4px; }
+        .gbox canvas { max-height: none; }
+        details.xd { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; font-size: .92rem; line-height: 1.7; }
+        details.xd summary { cursor: pointer; font-weight: bold; color: var(--cyan); }
+        details.xd ul, details.xd ol { margin: 8px 0 2px; padding-left: 22px; }
     </style>
 </head>
 <body>
@@ -113,6 +140,10 @@
     </header>
 
     <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" id="tabDemo">展示模式</button>
+            <button class="tab-btn" id="tabExp">🔬 實驗模式：驗證守恆、求未知質量</button>
+        </div>
         <div class="card">
             <div class="card-title">實驗參數設定與時間控制</div>
             <div class="controls-grid">
@@ -124,7 +155,7 @@
                     <div class="control-label">球 A 初速 <b class="cyan-text"><span id="lbl_vA">3.0</span> m/s</b></div>
                     <input type="range" id="param_vA" min="0.0" max="6.0" value="3.0" step="0.5">
                 </div>
-                <div class="control-group">
+                <div class="control-group" id="grpmB">
                     <div class="control-label">球 B 質量 <b class="pink-text"><span id="lbl_mB">1.0</span> kg</b></div>
                     <input type="range" id="param_mB" min="0.5" max="4.0" value="1.0" step="0.1">
                 </div>
@@ -197,6 +228,83 @@
                     <div class="meter-value" id="dat_Us" style="color:#ff9100;">0.00<span class="unit">J</span></div>
                 </div>
             </div>
+        </div>
+
+        <!-- ============ 實驗模式 ============ -->
+        <div class="card exp-only">
+            <div class="card-title">實驗操作</div>
+            <div class="note" style="margin-top:0;">
+                <b>做法：</b>用上面的滑桿設定兩球的質量與初速，按「記錄這次實驗」，記下碰撞<b>前</b>與碰撞<b>後</b>的速度（模擬光電計時器）。改變條件重複多次，檢查動量與動能是否守恆、恢復係數 e 是否等於 1。<br>
+                也可以勾選「球 B 質量未知」，由動量守恆求出 B 的質量。
+            </div>
+            <div class="xrow">
+                <button id="xRec">＋ 記錄這次實驗</button>
+                <button class="sec" id="xAuto">⚡ 自動掃描 7 組</button>
+                <button class="sec" id="xClear">清除</button>
+            </div>
+            <div class="xnote">
+                <label><input type="checkbox" id="xUnknown"> 球 B 質量未知（隱藏，由實驗求出）</label>　
+                <button class="sec" id="xNew" style="padding:4px 10px;min-width:0;font-size:.8rem;">換一個未知質量</button>
+                <button class="sec" id="xReveal" style="padding:4px 10px;min-width:0;font-size:.8rem;">揭曉</button><br>
+                <label><input type="checkbox" id="xNoise"> 加入速度讀數誤差（約 ±0.03 m/s）</label>　｜　請等兩球分開之後（或把時間軸拖到碰撞後）再記錄「碰撞後」的速度。
+            </div>
+            <div class="xsum" id="xCurrent"></div>
+        </div>
+
+        <div class="card exp-only">
+            <div class="card-title">記錄表（向右為正）</div>
+            <div class="t-scroll"><table class="xt"><thead><tr>
+                <th>#</th><th>mA</th><th>mB</th><th>vA</th><th>vB</th><th>vA′</th><th>vB′</th>
+                <th>p前</th><th>p後</th><th>K前</th><th>K後</th><th>e</th><th>mB 估計</th>
+            </tr></thead><tbody id="xBody"></tbody></table></div>
+            <div class="xnote">單位：質量 kg、速度 m/s、動量 p kg·m/s、動能 K J；p ＝ mAvA ＋ mBvB；K ＝ ½mAvA² ＋ ½mBvB²；<b>e ＝ (vB′ − vA′) ÷ (vA − vB)</b>（恢復係數，完全彈性碰撞 e = 1）；mB 估計 ＝ mA(vA − vA′) ÷ (vB′ − vB)。</div>
+            <div class="xsum" id="xSum"></div>
+        </div>
+
+        <div class="card exp-only">
+            <div class="card-title">守恆驗證圖（點越靠近虛線 y = x，越守恆）</div>
+            <div class="two">
+                <div class="gbox"><canvas id="xGp" width="420" height="340"></canvas></div>
+                <div class="gbox"><canvas id="xGk" width="420" height="340"></canvas></div>
+            </div>
+        </div>
+
+        <div class="card exp-only">
+            <div class="card-title">公式與教學提示</div>
+            <details class="xd" open><summary>核心公式（符號與單位）</summary>
+                <ul>
+                    <li>動量守恆：<b>mA vA + mB vB = mA vA′ + mB vB′</b>　m：質量 (kg)、v：速度 (m/s)，′ 表碰撞後；速度向右為正。</li>
+                    <li>動能守恆（完全彈性碰撞）：<b>½mA vA² + ½mB vB² = ½mA vA′² + ½mB vB′²</b>（J）。</li>
+                    <li>解得：<b>vA′ = [(mA − mB)vA + 2mB vB] ÷ (mA + mB)</b>，<b>vB′ = [(mB − mA)vB + 2mA vA] ÷ (mA + mB)</b>。</li>
+                    <li>恢復係數 <b>e = (vB′ − vA′) ÷ (vA − vB) = 1</b>：碰撞後的相對速度大小，等於碰撞前。</li>
+                    <li>由動量守恆求未知質量：<b>mB = mA(vA − vA′) ÷ (vB′ − vB)</b>。</li>
+                </ul>
+                <div class="xnote">理想化假設：水平光滑、無摩擦與空氣阻力；碰撞以彈簧接觸力模擬，碰撞時間刻意拉長以便觀察，但不影響碰撞前後的速度。</div>
+            </details>
+            <details class="xd"><summary>建議講解順序</summary>
+                <ol>
+                    <li>先用預設值按「記錄」：看 p前 與 p後、K前 與 K後，是否相等？（誤差只來自讀數）</li>
+                    <li>改變質量比與初速，再記錄幾組；打開「讀數誤差」，說明實驗中的守恆只能在誤差範圍內成立。</li>
+                    <li>看 e：每一組都是 1，與質量、速度無關。</li>
+                    <li>特殊情形：mA = mB（交換速度）、mA ≫ mB（A 幾乎不受影響，B 被彈走）、B 靜止時的碰撞。</li>
+                    <li>勾選「球 B 質量未知」，用 mB = mA(vA − vA′) ÷ (vB′ − vB) 求質量，最後「揭曉」對答案。</li>
+                </ol>
+            </details>
+            <details class="xd"><summary>可以問學生的問題</summary>
+                <ul>
+                    <li>碰撞期間（兩球壓縮最大的瞬間），動能守恆嗎？（不守恆，一部分暫存成彈性位能；碰撞前後才相等）</li>
+                    <li>為什麼動量在碰撞「全程」都守恆？</li>
+                    <li>若 mA ＝ mB，碰撞後兩球的速度怎麼變？</li>
+                    <li>實驗中 K前 ≠ K後 一點點，是碰撞不彈性，還是量測誤差？怎麼判斷？</li>
+                </ul>
+            </details>
+            <details class="xd"><summary>常見迷思</summary>
+                <ul>
+                    <li><b>「動能一定守恆」</b>：只有彈性碰撞才守恆；一般碰撞只有動量守恆。</li>
+                    <li><b>「質量大的球速度一定不變」</b>：只有當它比另一球大非常多才近似成立。</li>
+                    <li><b>「碰撞時動能不見了」</b>：它暫時變成彈性位能，之後又回來。</li>
+                </ul>
+            </details>
         </div>
     </div>
 
@@ -340,7 +448,7 @@
                     datasets: [
                         { label: 'A球速度', data: dataA, borderColor: '#00d4ff', borderWidth: 2, pointRadius: 0, tension: 0.1 },
                         { label: 'B球速度', data: dataB, borderColor: '#ff2e63', borderWidth: 2, pointRadius: 0, tension: 0.1 },
-                        { label: '質心速度', data: dataVc, borderColor: 'rgba(255, 204, 0, 0.5)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false },
+                        { label: '質心速度', data: dataVc, borderColor: 'rgba(255, 204, 0, 0.5)', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, hidden: !!window.hiddenMB },
                         { label: '時間軸', data: [], borderColor: '#ffffff', borderWidth: 1, pointRadius: 0, fill: false }
                     ]
                 },
@@ -367,10 +475,11 @@
 
             document.getElementById('dat_vA').innerHTML = `${data.vA.toFixed(2)}<span class="unit">m/s</span>`;
             document.getElementById('dat_vB').innerHTML = `${data.vB.toFixed(2)}<span class="unit">m/s</span>`;
-            document.getElementById('dat_vc').innerHTML = `${data.vc.toFixed(2)}<span class="unit">m/s</span>`;
-            document.getElementById('dat_Kc').innerHTML = `${data.Kc.toFixed(2)}<span class="unit">J</span>`;
-            document.getElementById('dat_Kint').innerHTML = `${data.Kint.toFixed(2)}<span class="unit">J</span>`;
-            document.getElementById('dat_Us').innerHTML = `${data.Us.toFixed(2)}<span class="unit">J</span>`;
+            const hm = v => window.hiddenMB ? '？' : v.toFixed(2);
+            document.getElementById('dat_vc').innerHTML = `${hm(data.vc)}<span class="unit">m/s</span>`;
+            document.getElementById('dat_Kc').innerHTML = `${hm(data.Kc)}<span class="unit">J</span>`;
+            document.getElementById('dat_Kint').innerHTML = `${hm(data.Kint)}<span class="unit">J</span>`;
+            document.getElementById('dat_Us').innerHTML = `${hm(data.Us)}<span class="unit">J</span>`;
 
             if (!willCollide) {
                 colIndicator.innerText = "兩球不會相撞（A 的速度需大於 B）";
@@ -459,7 +568,7 @@
         function refreshExperiment() {
             lblmA.innerText = parseFloat(pmA.value).toFixed(1);
             lblvA.innerText = parseFloat(pvA.value).toFixed(1);
-            lblmB.innerText = parseFloat(pmB.value).toFixed(1);
+            lblmB.innerText = window.hiddenMB ? '？' : parseFloat(pmB.value).toFixed(1);
             lblvB.innerText = parseFloat(pvB.value).toFixed(1);
             runPhysicsSimulation();
             timeSlider.max = TOTAL_STEPS - 1;
@@ -480,6 +589,116 @@
         [pmA, pvA, pmB, pvB].forEach(slider => { slider.addEventListener('input', refreshExperiment); });
 
         refreshExperiment(); requestAnimationFrame(tick);
+    </script>
+
+    <script>
+    (() => {
+        const $ = id => document.getElementById(id);
+        const X = { on: false, rows: [], trueMB: null };
+        const f = (v, d = 2) => v.toFixed(d);
+        const noise = a => $('xNoise').checked ? (Math.random() + Math.random() - 1) * a : 0;
+        const setSlider = (el, v) => { el.value = v; };
+        window.hiddenMB = false;
+
+        function after(mA, mB, vA, vB) { return [((mA - mB) * vA + 2 * mB * vB) / (mA + mB), ((mB - mA) * vB + 2 * mA * vA) / (mA + mB)]; }
+        function trueMB() { return parseFloat(pmB.value); }
+
+        function setMode(on) {
+            X.on = on; document.body.classList.toggle('exp-mode', on);
+            $('tabDemo').classList.toggle('active', !on); $('tabExp').classList.toggle('active', on);
+            if (!on) { window.hiddenMB = false; $('grpmB').classList.remove('mb-hidden'); $('xUnknown').checked = false; refreshExperiment(); }
+            refresh();
+        }
+        function applyUnknown(newOne) {
+            const on = $('xUnknown').checked;
+            if (on && (newOne || !window.hiddenMB)) setSlider(pmB, Math.round((0.5 + Math.random() * 3.5) * 10) / 10);
+            window.hiddenMB = on; $('grpmB').classList.toggle('mb-hidden', on);
+            X.rows = []; refreshExperiment(); refresh();
+        }
+
+        // 目前畫面是否已在碰撞之後（球已分開）
+        function postCollision() {
+            if (!willCollide) return false;
+            let hit = false;
+            for (let i = 0; i <= currentIndex; i++) { if (simulationHistory[i].overlap > 0) { hit = true; } else if (hit) return true; }
+            return false;
+        }
+        function addRow(mA, mB, vA, vB, vA2, vB2) {
+            const p1 = mA * vA + mB * vB, p2 = mA * vA2 + mB * vB2, K1 = 0.5 * mA * vA * vA + 0.5 * mB * vB * vB, K2 = 0.5 * mA * vA2 * vA2 + 0.5 * mB * vB2 * vB2;
+            const e = Math.abs(vA - vB) > 1e-9 ? (vB2 - vA2) / (vA - vB) : NaN;
+            const mBe = Math.abs(vB2 - vB) > 0.02 ? mA * (vA - vA2) / (vB2 - vB) : NaN;
+            X.rows.push({ mA, mB, vA, vB, vA2, vB2, p1, p2, K1, K2, e, mBe }); if (X.rows.length > 30) X.rows.shift();
+        }
+        function record() {
+            if (!willCollide) { alert('這組條件兩球不會相撞（需要 A 的速度大於 B）。請把 A 的初速調大，或 B 往左。'); return; }
+            if (!postCollision()) { alert('請等兩球碰撞完、分開之後，再按「記錄」。\n（可以把時間軸拖到碰撞後，或等動畫播放過去。）'); return; }
+            const mA = parseFloat(pmA.value), mB = trueMB(), d0 = simulationHistory[0], d1 = simulationHistory[currentIndex];
+            addRow(mA, mB, d0.vA + noise(0.03), d0.vB + noise(0.03), d1.vA + noise(0.03), d1.vB + noise(0.03)); refresh();
+        }
+        function autoScan() {
+            const mB = trueMB(), mA0 = parseFloat(pmA.value);
+            [[1, 3, -2], [2, 3, -2], [3, 2, -1], [2, 4, 0], [1, 5, -3], [4, 2, -2], [1.5, 3, -1]].forEach(([mA, vA, vB]) => {
+                const [a2, b2] = after(mA, mB, vA, vB); addRow(mA, mB, vA + noise(0.03), vB + noise(0.03), a2 + noise(0.03), b2 + noise(0.03));
+            }); refresh();
+        }
+
+        // ---------- 圖 ----------
+        function niceStep(r) { const t = r / 5, p = Math.pow(10, Math.floor(Math.log10(t))), n = t / p; return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * p; }
+        function plot(cv, title, xl, yl, pts) {
+            const x = cv.getContext('2d'), W = cv.width, H = cv.height, L = 58, R = 16, T = 34, B = 46, pw = W - L - R, ph = H - T - B;
+            const vals = pts.flatMap(p => [p.x, p.y]); const lo = Math.min(0, ...vals), hi = Math.max(1, ...vals) * 1.1, span = hi - lo;
+            const sc = v => v, PX = v => L + (v - lo) / span * pw, PY = v => T + ph - (v - lo) / span * ph;
+            x.clearRect(0, 0, W, H); x.fillStyle = '#080a0f'; x.fillRect(0, 0, W, H); x.font = '12px sans-serif';
+            const st = niceStep(span), dd = Math.max(0, Math.ceil(-Math.log10(st) - 1e-9));
+            for (let v = Math.ceil(lo / st) * st; v <= hi + 1e-9; v += st) {
+                x.strokeStyle = '#1a2230'; x.beginPath(); x.moveTo(PX(v), T); x.lineTo(PX(v), T + ph); x.moveTo(L, PY(v)); x.lineTo(L + pw, PY(v)); x.stroke();
+                x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(v.toFixed(dd), PX(v), T + ph + 16); x.textAlign = 'right'; x.fillText(v.toFixed(dd), L - 6, PY(v) + 4);
+            }
+            x.strokeStyle = '#5b6a82'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(L, T); x.lineTo(L, T + ph); x.lineTo(L + pw, T + ph); x.stroke();
+            x.save(); x.strokeStyle = 'rgba(255,204,0,.7)'; x.setLineDash([6, 5]); x.beginPath(); x.moveTo(PX(lo), PY(lo)); x.lineTo(PX(hi), PY(hi)); x.stroke(); x.restore();
+            pts.forEach(p => { x.fillStyle = '#00d4ff'; x.beginPath(); x.arc(PX(p.x), PY(p.y), 5, 0, 7); x.fill(); x.strokeStyle = '#080a0f'; x.stroke(); });
+            x.fillStyle = '#f0f3f8'; x.font = 'bold 14px sans-serif'; x.textAlign = 'left'; x.fillText(title, L, 18);
+            x.font = '12px sans-serif'; x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(xl, L + pw / 2, H - 8);
+            x.save(); x.translate(14, T + ph / 2); x.rotate(-Math.PI / 2); x.fillText(yl, 0, 0); x.restore();
+        }
+
+        function refresh() {
+            if (!X.on) return;
+            const hid = window.hiddenMB;
+            $('xBody').innerHTML = X.rows.map((r, i) => `<tr><td>${i + 1}</td><td>${f(r.mA, 1)}</td><td>${hid ? '？' : f(r.mB, 1)}</td><td>${f(r.vA)}</td><td>${f(r.vB)}</td><td>${f(r.vA2)}</td><td>${f(r.vB2)}</td><td>${hid ? '—' : f(r.p1)}</td><td>${hid ? '—' : f(r.p2)}</td><td>${hid ? '—' : f(r.K1)}</td><td>${hid ? '—' : f(r.K2)}</td><td>${isNaN(r.e) ? '—' : f(r.e, 3)}</td><td>${isNaN(r.mBe) ? '—' : f(r.mBe, 2)}</td></tr>`).join('');
+            const R = X.rows, n = R.length;
+            const ok = R.filter(r => !hid);
+            let sum = '';
+            if (!n) sum = '按「記錄這次實驗」或「自動掃描」開始收集數據。';
+            else {
+                const es = R.filter(r => !isNaN(r.e)).map(r => r.e), em = es.reduce((a, b) => a + b, 0) / (es.length || 1);
+                sum += `共 ${n} 組。恢復係數平均 <b>e ≈ ${f(em, 3)}</b>（完全彈性碰撞為 1）。`;
+                if (!hid) {
+                    const dp = R.map(r => Math.abs(r.p2 - r.p1) / Math.max(Math.abs(r.p1), 1e-9) * 100), dk = R.map(r => Math.abs(r.K2 - r.K1) / Math.max(r.K1, 1e-9) * 100);
+                    sum += `<br>動量：平均偏差 <b>${f(dp.reduce((a, b) => a + b, 0) / n, 2)} %</b>；動能：平均偏差 <b>${f(dk.reduce((a, b) => a + b, 0) / n, 2)} %</b>（誤差來自速度讀數）。`;
+                } else sum += '<br>（B 的質量未知，無法直接比較 p、K；請用「mB 估計」欄位求平均質量。）';
+                const ms = R.filter(r => !isNaN(r.mBe)).map(r => r.mBe);
+                if (ms.length) { const mm = ms.reduce((a, b) => a + b, 0) / ms.length; sum += `<br>mB 估計平均 ＝ <b>${f(mm, 2)} kg</b>（${ms.length} 組）。` + (hid ? '（真實值已隱藏，按「揭曉」對答案）' : `真實值：mB = ${f(R[n - 1].mB, 1)} kg`); }
+            }
+            $('xSum').innerHTML = sum;
+            const goodPts = R.filter(() => !hid);
+            plot($('xGp'), '動量：p後 對 p前', 'p前 (kg·m/s)', 'p後 (kg·m/s)', goodPts.map(r => ({ x: r.p1, y: r.p2 })));
+            plot($('xGk'), '動能：K後 對 K前', 'K前 (J)', 'K後 (J)', goodPts.map(r => ({ x: r.K1, y: r.K2 })));
+            const mA = parseFloat(pmA.value), mB = trueMB(), vA = parseFloat(pvA.value), vB = parseFloat(pvB.value);
+            $('xCurrent').innerHTML = `目前設定：mA = ${f(mA, 1)} kg，${hid ? 'mB = ？' : 'mB = ' + f(mB, 1) + ' kg'}，vA = ${f(vA, 1)}，vB = ${f(vB, 1)} m/s。` + (!willCollide ? '　<b style="color:#ff6b6b">⚠ 兩球不會相撞</b>' : (postCollision() ? '　<b style="color:#00e676">✓ 已碰撞完，可以記錄</b>' : '　（等碰撞結束再記錄）'));
+        }
+
+        $('tabDemo').addEventListener('click', () => setMode(false));
+        $('tabExp').addEventListener('click', () => setMode(true));
+        $('xUnknown').addEventListener('change', () => applyUnknown(false));
+        $('xNew').addEventListener('click', () => { $('xUnknown').checked = true; applyUnknown(true); });
+        $('xReveal').addEventListener('click', () => { window.hiddenMB = false; $('grpmB').classList.remove('mb-hidden'); $('xUnknown').checked = false; refreshExperiment(); refresh(); });
+        $('xRec').addEventListener('click', record); $('xAuto').addEventListener('click', autoScan);
+        $('xClear').addEventListener('click', () => { X.rows = []; refresh(); });
+        [pmA, pvA, pmB, pvB].forEach(s => s.addEventListener('input', () => { if (window.hiddenMB) return; refresh(); }));
+        setInterval(refresh, 200);
+        window.__ce = { X, record, autoScan, postCollision, after };
+    })();
     </script>
 </body>
 </html>
