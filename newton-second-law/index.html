@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>牛頓第二定律實驗：滑車與砝碼 - 李捷物理實驗室</title>
+    <style>
+        :root {
+            --bg-main: #0a0c10;
+            --bg-card: #141923;
+            --bg-control: #1d2432;
+            --text-main: #f0f3f8;
+            --text-muted: #9aa8bd;
+            /* 全站統一配色：速度＝藍、力＝紅、加速度＝綠 */
+            --blue: #4da3ff;
+            --red: #ff4d6d;
+            --green: #00e676;
+            --yellow: #ffcc00;
+            --cyan: #00d4ff;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0; padding: 15px;
+            display: flex; flex-direction: column; align-items: center;
+            font-size: 16px; line-height: 1.6;
+        }
+        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; }
+        .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
+        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; }
+        h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; }
+        .subtitle { margin: 4px 0 0; font-size: 0.95rem; color: var(--text-muted); }
+
+        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
+        .card {
+            background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px;
+            padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+        .card-title {
+            font-size: 1rem; font-weight: bold; color: var(--yellow);
+            margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;
+        }
+
+        /* 模式切換 */
+        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+        .mode-btn {
+            flex: 1 1 200px; background: var(--bg-control); color: var(--text-main);
+            border: 2px solid #2c3749; border-radius: 8px; padding: 10px 12px;
+            font-size: 0.95rem; cursor: pointer; text-align: left;
+        }
+        .mode-btn b { display: block; color: var(--cyan); }
+        .mode-btn.active { border-color: var(--cyan); background: #12303a; }
+        .mode-desc { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px; min-height: 1.4em; }
+
+        /* 控制區 */
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .control-group { background: rgba(255,255,255,0.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; }
+        .control-group.hidden { display: none; }
+        .control-label { display: flex; justify-content: space-between; font-size: 0.95rem; margin-bottom: 6px; color: #c3d0e4; }
+        .control-label b { font-family: monospace; font-size: 1.05rem; }
+        .sub-note { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
+        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: 0.95rem; width: 100%; }
+
+        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: 0.95rem; }
+        .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        button.btn {
+            background: var(--cyan); color: #00131a; border: none; border-radius: 8px;
+            padding: 10px 18px; font-size: 1rem; font-weight: bold; cursor: pointer; min-width: 110px;
+        }
+        button.btn.secondary { background: #3a465b; color: #fff; }
+        button.btn.green { background: var(--green); color: #00210f; }
+        button.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        button.btn:not(:disabled):hover { filter: brightness(1.12); }
+
+        /* 場景 */
+        .canvas-wrap { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; }
+        canvas { display: block; width: 100%; height: auto; }
+        .status-line { margin-top: 8px; font-size: 0.95rem; min-height: 1.5em; color: var(--yellow); }
+
+        /* 儀表板 */
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+        .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; }
+        .meter-title { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 2px; }
+        .meter-value { font-size: 1.4rem; font-weight: bold; font-family: monospace; }
+        .unit { font-size: 0.78rem; color: #6a7a92; margin-left: 3px; }
+        .c-blue { color: var(--blue); } .c-red { color: var(--red); } .c-green { color: var(--green); } .c-yellow { color: var(--yellow); }
+        .check-box { margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+        .eq { background: #111622; border: 1px dashed #2f3b50; border-radius: 8px; padding: 8px 12px; font-family: monospace; font-size: 0.95rem; }
+        .eq .ok { color: var(--green); }
+
+        /* 圖表 */
+        .graphs { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 12px; }
+        .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 4px; }
+
+        /* 數據表 */
+        .data-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; font-family: monospace; }
+        th, td { border-bottom: 1px solid #263044; padding: 5px 6px; text-align: right; }
+        th { color: var(--text-muted); font-weight: normal; font-family: inherit; position: sticky; top: 0; background: var(--bg-card); }
+        .table-scroll { max-height: 300px; overflow-y: auto; }
+        .fit-text { margin-top: 8px; font-size: 0.92rem; color: #c3d0e4; }
+        .fit-text b { color: var(--yellow); }
+
+        /* 教學提示 */
+        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+        summary { cursor: pointer; font-weight: bold; color: var(--cyan); }
+        details ol, details ul { margin: 8px 0 2px; padding-left: 22px; }
+        details li { margin-bottom: 4px; }
+        .assume { font-size: 0.88rem; color: var(--text-muted); }
+        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.9rem; margin-top: 8px; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+        .lg-red::before { background: var(--red); } .lg-blue::before { background: var(--blue); } .lg-green::before { background: var(--green); }
+        footer { margin: 18px 0 8px; color: #667; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+
+<header>
+    <h1>🚃 牛頓第二定律實驗：滑車與砝碼</h1>
+    <p class="subtitle">F<sub>net</sub> = m·a　｜　自己動手「量」出加速度與力、質量的關係</p>
+</header>
+
+<div class="container">
+
+    <!-- 控制區 -->
+    <div class="card">
+        <div class="card-title">實驗設定</div>
+        <div class="mode-bar">
+            <button class="mode-btn active" data-mode="free"><b>自由調整</b>任意改變滑車、砝碼與摩擦</button>
+            <button class="mode-btn" data-mode="exp1"><b>實驗一：a 與 F 的關係</b>總質量固定，改變砝碼重</button>
+            <button class="mode-btn" data-mode="exp2"><b>實驗二：a 與 M 的關係</b>拉力固定，改變滑車質量</button>
+        </div>
+        <div class="mode-desc" id="modeDesc"></div>
+
+        <div class="controls-grid">
+            <div class="control-group" id="grpM">
+                <div class="control-label">滑車質量 M <b class="c-yellow"><span id="lblM">0.50</span> kg</b></div>
+                <input type="range" id="slM" min="0.2" max="2.0" step="0.05" value="0.5">
+            </div>
+            <div class="control-group hidden" id="grpTot">
+                <div class="control-label">總質量 M＋m（固定）<b class="c-yellow"><span id="lblTot">0.60</span> kg</b></div>
+                <input type="range" id="slTot" min="0.3" max="1.2" step="0.05" value="0.6">
+                <div class="sub-note">滑車質量 M ＝ 總質量 − m ＝ <span id="lblMderived">0.55</span> kg（把滑車上的砝碼搬到掛勾上）</div>
+            </div>
+            <div class="control-group" id="grpm">
+                <div class="control-label">掛勾砝碼質量 m <b class="c-red"><span id="lblm">0.05</span> kg</b></div>
+                <input type="range" id="slm" min="0.01" max="0.25" step="0.01" value="0.05">
+                <div class="sub-note">砝碼重 mg ＝ <span id="lblW">0.490</span> N</div>
+            </div>
+            <div class="control-group">
+                <div class="control-label">桌面摩擦係數 μ <b class="c-red"><span id="lblMu">0.00</span></b></div>
+                <input type="range" id="slMu" min="0" max="0.3" step="0.01" value="0">
+                <div class="sub-note">摩擦力 f ＝ μMg（先設為 0 比較容易看出規律）</div>
+            </div>
+            <div class="control-group">
+                <div class="control-label">播放速度</div>
+                <select id="selSpeed">
+                    <option value="1">1 倍（真實時間）</option>
+                    <option value="0.5">0.5 倍（慢動作）</option>
+                    <option value="0.25">0.25 倍（更慢）</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="check-row">
+            <label><input type="checkbox" id="chkVec" checked> 顯示力與運動向量</label>
+            <label><input type="checkbox" id="chkNoise"> 加入量測誤差（約 ±3%，記錄數據時使用）</label>
+        </div>
+        <div class="btn-row">
+            <button class="btn" id="btnPlay">▶ 釋放</button>
+            <button class="btn secondary" id="btnReset">↺ 重設</button>
+            <button class="btn green" id="btnRecord" disabled>＋ 記錄這次數據</button>
+            <button class="btn secondary" id="btnAuto">⚡ 自動掃描 7 組</button>
+        </div>
+    </div>
+
+    <!-- 場景 -->
+    <div class="card">
+        <div class="card-title"><span>實驗裝置</span><span id="runState" style="font-size:0.85rem;color:var(--text-muted);">準備中</span></div>
+        <div class="canvas-wrap"><canvas id="scene" width="760" height="560"></canvas></div>
+        <div class="legend">
+            <span class="lg-red">力（紅）</span><span class="lg-blue">速度（藍）</span><span class="lg-green">加速度（綠）</span>
+        </div>
+        <div class="status-line" id="statusLine"></div>
+    </div>
+
+    <!-- 即時數據 -->
+    <div class="card">
+        <div class="card-title">即時數據</div>
+        <div class="dashboard">
+            <div class="meter"><div class="meter-title">時間 t</div><div class="meter-value" id="dT">0.00<span class="unit">s</span></div></div>
+            <div class="meter"><div class="meter-title">位移 x</div><div class="meter-value c-yellow" id="dX">0.000<span class="unit">m</span></div></div>
+            <div class="meter"><div class="meter-title">速度 v</div><div class="meter-value c-blue" id="dV">0.000<span class="unit">m/s</span></div></div>
+            <div class="meter"><div class="meter-title">加速度 a</div><div class="meter-value c-green" id="dA">0.000<span class="unit">m/s²</span></div></div>
+            <div class="meter"><div class="meter-title">砝碼重 mg</div><div class="meter-value c-red" id="dW">0.000<span class="unit">N</span></div></div>
+            <div class="meter"><div class="meter-title">繩張力 T</div><div class="meter-value c-red" id="dTen">0.000<span class="unit">N</span></div></div>
+            <div class="meter"><div class="meter-title">摩擦力 f</div><div class="meter-value c-red" id="dF">0.000<span class="unit">N</span></div></div>
+            <div class="meter"><div class="meter-title">T ÷ mg</div><div class="meter-value" id="dRatio">1.000</div></div>
+        </div>
+        <div class="check-box">
+            <div class="eq" id="eq1"></div>
+            <div class="eq" id="eq2"></div>
+        </div>
+    </div>
+
+    <!-- 圖表 -->
+    <div class="card">
+        <div class="card-title">運動圖像（隨實驗同步描繪）</div>
+        <div class="graphs">
+            <div class="graph-box"><canvas id="gX" width="400" height="260"></canvas></div>
+            <div class="graph-box"><canvas id="gV" width="400" height="260"></canvas></div>
+            <div class="graph-box"><canvas id="gA" width="400" height="260"></canvas></div>
+        </div>
+        <div class="sub-note" style="margin-top:8px;">x-t 是拋物線（x = ½at²）；v-t 是通過原點的直線，<b>斜率就是 a</b>；a-t 是水平線，表示加速度固定。</div>
+    </div>
+
+    <!-- 數據與作圖 -->
+    <div class="card">
+        <div class="card-title"><span id="dataTitle">實驗數據與作圖</span><button class="btn secondary" id="btnClear" style="padding:5px 12px;min-width:0;font-size:0.85rem;">清除數據</button></div>
+        <div class="data-layout">
+            <div>
+                <div class="table-scroll">
+                    <table>
+                        <thead><tr><th>#</th><th>M(kg)</th><th>m(kg)</th><th>μ</th><th id="thX">F=mg(N)</th><th>a(m/s²)</th></tr></thead>
+                        <tbody id="dataBody"></tbody>
+                    </table>
+                </div>
+                <div class="fit-text" id="fitText">請在上方選擇「實驗一」或「實驗二」，按「記錄這次數據」或「自動掃描」收集數據。</div>
+            </div>
+            <div class="graph-box"><canvas id="gScatter" width="480" height="340"></canvas></div>
+        </div>
+    </div>
+
+    <!-- 教學提示 -->
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open>
+            <summary>核心公式（符號與單位）</summary>
+            <ul>
+                <li>整個系統（滑車＋砝碼）：<b>a = (mg − f) ÷ (M + m)</b>　　a：加速度（m/s²）、m：砝碼質量（kg）、M：滑車質量（kg）、g = 9.8 m/s²、f = μMg：摩擦力（N）</li>
+                <li>對滑車：<b>T − f = M·a</b>　對砝碼：<b>mg − T = m·a</b>　　T：繩張力（N）</li>
+                <li>由靜止出發：<b>x = ½at²</b>、<b>v = at</b>。程式用「x＝0.60 m 時所需的時間 t」反推實測加速度 <b>a = 2x ÷ t²</b>。</li>
+                <li>只有當 m 遠小於 M 時，T 才接近 mg；一般情況 <b>T = mg·M/(M+m)（無摩擦）</b>，永遠小於 mg。</li>
+            </ul>
+            <p class="assume">理想化假設：繩子輕且不可伸長、滑輪無摩擦且質量不計、忽略空氣阻力；為簡化，靜摩擦係數與動摩擦係數視為相同，所以 mg ≤ μMg 時滑車不動。</p>
+        </details>
+        <details>
+            <summary>建議講解順序</summary>
+            <ol>
+                <li><b>自由調整：</b>先讓 μ＝0、M＝0.50 kg、m＝0.05 kg，按「釋放」，觀察紙帶上的點越來越疏（速度增加），再看 v-t 圖是一條直線。</li>
+                <li>讓學生先預測「砝碼加倍，加速度會變成幾倍？」再實測；順便比較 T 與 mg 的大小。</li>
+                <li><b>實驗一（控制總質量）：</b>把滑車上的砝碼搬到掛勾上，總質量不變，a–F 圖是通過原點的直線，斜率 ＝ 1 ÷ 總質量。</li>
+                <li><b>實驗二（控制拉力）：</b>砝碼不變，改變滑車質量，a–1/(M+m) 圖是通過原點的直線，斜率 ＝ mg。</li>
+                <li>最後把 μ 調大，觀察 a–F 圖的橫軸截距：要先「克服摩擦」才開始加速。</li>
+            </ol>
+        </details>
+        <details>
+            <summary>可以問學生的問題</summary>
+            <ul>
+                <li>繩子的張力 T 比砝碼重 mg 大還是小？為什麼？（砝碼向下加速，所以 mg &gt; T）</li>
+                <li>如果 m 越來越大，a 會無限增加嗎？（不會，a 最大趨近 g）</li>
+                <li>如果 M 很大，a 趨近多少？T 趨近多少？（a → 0，T → mg）</li>
+                <li>為什麼紙帶上相鄰兩點的距離差（Δx）幾乎一樣？（Δx ＝ a·Δt²）</li>
+                <li>為什麼有摩擦時，a–F 圖不通過原點？</li>
+            </ul>
+        </details>
+        <details>
+            <summary>常見迷思</summary>
+            <ul>
+                <li><b>「繩張力＝砝碼重」</b>只有在平衡（a ＝ 0）時才成立。請對照儀表板的「T ÷ mg」。</li>
+                <li><b>「固定滑車質量，只增加砝碼，a 與 mg 成正比」</b>其實不成立，因為總質量 M＋m 也在增加。要得到正比關係，必須像「實驗一」一樣固定總質量。</li>
+                <li><b>「質量越大，加速度越小」</b>要補上「在合力固定時」這個條件。</li>
+            </ul>
+        </details>
+    </div>
+</div>
+
+<footer>© 李捷物理實驗室</footer>
+
+<script>
+(() => {
+    'use strict';
+
+    // ===================== 常數與狀態 =====================
+    const G = 9.8;                 // 重力加速度 (m/s²)
+    const S_MAX = 0.60;            // 行程：滑車從靜止出發到擋板的距離 (m)
+    const PX_PER_M = 400;          // 畫面比例：1 m = 400 px
+    const CART_X0 = 140;           // x = 0 時滑車中心的畫面位置 (px)
+    const TABLE_Y = 150;           // 桌面高度 (px)
+    const PULLEY = { x: 520, y: 130, r: 16 };
+    const HANGER_X = PULLEY.x + PULLEY.r;   // 砝碼吊線的 x
+    const HANGER_TOP0 = 184;       // 砝碼起始位置（上緣）
+    const HANGER_SIZE = 36;
+    const TAPE_DT = 0.1;           // 紙帶計數點的時間間隔 (s)
+
+    const el = id => document.getElementById(id);
+    const scene = el('scene'), sc = scene.getContext('2d');
+
+    const state = {
+        mode: 'free',
+        M: 0.5, m: 0.05, mu: 0, Mtot: 0.6,
+        timeScale: 1,
+        t: 0, running: false, finished: false,
+        data: { exp1: [], exp2: [] }
+    };
+    let ph = null;                 // 目前的物理量
+
+    // ===================== 物理 =====================
+    // 水平桌面上的滑車（質量 M）以輕繩繞過定滑輪連接砝碼（質量 m）
+    function physics(M, m, mu) {
+        const W = m * G;                       // 砝碼重
+        const fmax = mu * M * G;               // 最大摩擦力 μMg（靜摩擦＝動摩擦）
+        const moves = W > fmax + 1e-12;        // 砝碼重大於最大摩擦力，才會動
+        const a = moves ? (W - fmax) / (M + m) : 0;
+        const f = moves ? fmax : W;            // 靜止時，靜摩擦力 ＝ 繩張力 ＝ 砝碼重
+        const T = moves ? m * (G - a) : W;     // 對砝碼：mg − T = m·a
+        const tEnd = moves ? Math.sqrt(2 * S_MAX / a) : Infinity;   // x = ½at² = S_MAX
+        return { M, m, mu, W, fmax, moves, a, f, T, tEnd };
+    }
+    // 由靜止出發的等加速度運動
+    function kin(t) {
+        const tt = Math.min(t, ph.tEnd);
+        return { x: 0.5 * ph.a * tt * tt, v: ph.a * tt };
+    }
+
+    function readParams() {
+        const mode = state.mode;
+        state.mu = parseFloat(el('slMu').value);
+        state.m = parseFloat(el('slm').value);
+        if (mode === 'exp1') {
+            state.Mtot = parseFloat(el('slTot').value);
+            if (state.m > state.Mtot - 0.1) state.m = Math.round((state.Mtot - 0.1) * 100) / 100;   // 滑車至少 0.1 kg
+            state.M = Math.round((state.Mtot - state.m) * 1000) / 1000;
+        } else {
+            state.M = parseFloat(el('slM').value);
+        }
+    }
+
+    // ===================== 介面更新 =====================
+    const MODE_DESC = {
+        free: '自由調整所有參數，觀察加速度、繩張力與摩擦力如何改變。',
+        exp1: '實驗一：固定總質量 M＋m，把滑車上的砝碼一個個搬到掛勾上，只改變拉力 F ＝ mg。記錄多組數據後，看 a–F 圖。',
+        exp2: '實驗二：固定砝碼 m（拉力 F ＝ mg 不變），改變滑車質量 M。記錄多組數據後，看 a–1/(M＋m) 圖。'
+    };
+
+    function refreshUI(resetRun = true) {
+        readParams();
+        ph = physics(state.M, state.m, state.mu);
+        if (resetRun) { state.t = 0; state.running = false; state.finished = false; }
+
+        el('lblM').textContent = state.M.toFixed(2);
+        el('lblm').textContent = state.m.toFixed(2);
+        el('lblMu').textContent = state.mu.toFixed(2);
+        el('lblTot').textContent = state.Mtot.toFixed(2);
+        el('lblMderived').textContent = state.M.toFixed(2);
+        el('lblW').textContent = (state.m * G).toFixed(3);
+        if (state.mode === 'exp1') { el('slm').value = state.m; }
+
+        el('grpM').classList.toggle('hidden', state.mode === 'exp1');
+        el('grpTot').classList.toggle('hidden', state.mode !== 'exp1');
+        el('modeDesc').textContent = MODE_DESC[state.mode];
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === state.mode));
+        el('btnPlay').textContent = '▶ 釋放';
+        el('btnRecord').disabled = true;
+        el('thX').textContent = state.mode === 'exp2' ? '1/(M+m)' : 'F=mg(N)';
+        renderAll();
+        renderData();
+    }
+
+    // ===================== 繪圖工具 =====================
+    function arrow(c, x1, y1, x2, y2, color, w = 3, head = 9) {
+        const len = Math.hypot(x2 - x1, y2 - y1);
+        if (len < 1.5) return;
+        const ang = Math.atan2(y2 - y1, x2 - x1);
+        const hl = Math.min(head, len * 0.6);
+        c.save();
+        c.strokeStyle = color; c.fillStyle = color; c.lineWidth = w; c.lineCap = 'round';
+        c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2 - Math.cos(ang) * hl * 0.6, y2 - Math.sin(ang) * hl * 0.6); c.stroke();
+        c.beginPath();
+        c.moveTo(x2, y2);
+        c.lineTo(x2 - hl * Math.cos(ang - 0.45), y2 - hl * Math.sin(ang - 0.45));
+        c.lineTo(x2 - hl * Math.cos(ang + 0.45), y2 - hl * Math.sin(ang + 0.45));
+        c.closePath(); c.fill();
+        c.restore();
+    }
+    function label(c, text, x, y, color, size = 15, align = 'left') {
+        c.save(); c.font = `bold ${size}px sans-serif`; c.fillStyle = color; c.textAlign = align; c.textBaseline = 'middle';
+        c.fillText(text, x, y); c.restore();
+    }
+
+    // ===================== 場景 =====================
+    function drawScene() {
+        const c = sc, k = kin(state.t);
+        c.clearRect(0, 0, scene.width, scene.height);
+        c.fillStyle = '#080a0f'; c.fillRect(0, 0, scene.width, scene.height);
+
+        // 桌子與地板
+        const floorY = 548;
+        c.fillStyle = '#1b2230'; c.fillRect(0, floorY, scene.width, 12);
+        c.fillStyle = '#2a3344'; c.fillRect(30, TABLE_Y, PULLEY.x - 15, 16);          // 桌面
+        c.fillStyle = '#222b3a'; c.fillRect(60, TABLE_Y + 16, 10, floorY - TABLE_Y - 16); c.fillRect(PULLEY.x - 50, TABLE_Y + 16, 10, floorY - TABLE_Y - 16);
+
+        // 擋板（行程終點）
+        const stopX = CART_X0 + S_MAX * PX_PER_M + 45 + 6;
+        c.fillStyle = '#6b7690'; c.fillRect(stopX, TABLE_Y - 40, 8, 40);
+        // 起點刻度
+        c.strokeStyle = '#3a465b'; c.setLineDash([4, 4]); c.lineWidth = 1;
+        c.beginPath(); c.moveTo(CART_X0, TABLE_Y - 62); c.lineTo(CART_X0, TABLE_Y); c.stroke(); c.setLineDash([]);
+
+        // 定滑輪
+        c.fillStyle = '#2a3344'; c.fillRect(PULLEY.x - 18, TABLE_Y - 4, 22, 20);
+        c.strokeStyle = '#8a99ad'; c.lineWidth = 3;
+        c.beginPath(); c.arc(PULLEY.x, PULLEY.y, PULLEY.r, 0, Math.PI * 2); c.stroke();
+        c.fillStyle = '#8a99ad'; c.beginPath(); c.arc(PULLEY.x, PULLEY.y, 3, 0, Math.PI * 2); c.fill();
+
+        // 滑車
+        const cx = CART_X0 + k.x * PX_PER_M;
+        const bodyTop = TABLE_Y - 18 - 36, bodyBottom = TABLE_Y - 18;
+        c.fillStyle = '#34405a'; c.strokeStyle = '#8fa3c4'; c.lineWidth = 2;
+        c.beginPath(); c.rect(cx - 45, bodyTop, 90, 36); c.fill(); c.stroke();
+        for (const dx of [-26, 26]) {
+            c.fillStyle = '#10151f'; c.strokeStyle = '#8fa3c4'; c.beginPath(); c.arc(cx + dx, TABLE_Y - 9, 9, 0, Math.PI * 2); c.fill(); c.stroke();
+        }
+        label(c, 'M', cx, bodyTop + 18, '#f0f3f8', 18, 'center');
+        const attachY = bodyTop + 18;   // 繩子高度（需等於滑輪頂端）
+
+        // 繩子與砝碼（砝碼下降的距離等於滑車前進的距離）
+        const hy = HANGER_TOP0 + k.x * PX_PER_M;
+        c.strokeStyle = '#d0d6e2'; c.lineWidth = 2;
+        c.beginPath(); c.moveTo(cx + 45, attachY); c.lineTo(PULLEY.x, PULLEY.y - PULLEY.r); c.stroke();
+        c.beginPath(); c.arc(PULLEY.x, PULLEY.y, PULLEY.r, -Math.PI / 2, 0); c.stroke();
+        c.beginPath(); c.moveTo(HANGER_X, PULLEY.y); c.lineTo(HANGER_X, hy); c.stroke();
+        c.fillStyle = '#7d8aa3'; c.strokeStyle = '#c3d0e4'; c.lineWidth = 2;
+        c.beginPath(); c.rect(HANGER_X - HANGER_SIZE / 2, hy, HANGER_SIZE, HANGER_SIZE); c.fill(); c.stroke();
+        label(c, 'm', HANGER_X, hy + HANGER_SIZE / 2, '#0a0c10', 18, 'center');
+
+        // 向量
+        if (el('chkVec').checked) drawVectors(c, cx, bodyTop, attachY, hy, k);
+
+        // 位移尺標
+        c.strokeStyle = '#8a99ad'; c.lineWidth = 1;
+        const ry = TABLE_Y + 34;
+        c.beginPath(); c.moveTo(CART_X0, ry); c.lineTo(CART_X0 + S_MAX * PX_PER_M, ry); c.stroke();
+        for (let i = 0; i <= 6; i++) { const xx = CART_X0 + i * 0.1 * PX_PER_M; c.beginPath(); c.moveTo(xx, ry - 4); c.lineTo(xx, ry + 4); c.stroke(); }
+        label(c, '0', CART_X0, ry + 16, '#8a99ad', 12, 'center');
+        label(c, `${S_MAX.toFixed(1)} m`, CART_X0 + S_MAX * PX_PER_M, ry + 16, '#8a99ad', 12, 'center');
+        // 位移標記線
+        c.strokeStyle = 'rgba(255,204,0,0.8)'; c.lineWidth = 2;
+        c.beginPath(); c.moveTo(CART_X0, ry); c.lineTo(CART_X0 + k.x * PX_PER_M, ry); c.stroke();
+
+        drawNotes(c);
+        drawTape(c);
+    }
+
+    function drawVectors(c, cx, bodyTop, attachY, hy, k) {
+        // 力的箭頭長度與力成正比；最大的力固定畫成約 80 px，避免超出畫面
+        const fmaxShown = Math.max(ph.W, ph.T, ph.f, 1e-9);
+        const pxPerN = Math.min(90, 80 / fmaxShown);
+        const RED = '#ff4d6d', ORG = '#ff8a65', BLUE = '#4da3ff', GREEN = '#00e676';
+
+        // 滑車受力：繩張力 T（向右）、摩擦力 f（向左）
+        arrow(c, cx + 45, attachY, cx + 45 + ph.T * pxPerN, attachY, RED, 4);
+        label(c, `T=${ph.T.toFixed(3)} N`, cx + 45 + ph.T * pxPerN + 6, attachY - 12, RED, 14);
+        if (ph.f > 1e-9) {
+            arrow(c, cx, TABLE_Y + 8, cx - ph.f * pxPerN, TABLE_Y + 8, ORG, 4);
+            label(c, `f=${ph.f.toFixed(3)} N`, cx - ph.f * pxPerN - 6, TABLE_Y + 8, ORG, 14, 'right');
+        }
+        // 滑車：重力與正向力（等大反向，示意不依比例）
+        arrow(c, cx - 62, bodyTop + 18, cx - 62, bodyTop - 4, '#7d8aa3', 2, 7);
+        arrow(c, cx - 62, bodyTop + 18, cx - 62, bodyTop + 38, '#7d8aa3', 2, 7);
+
+        // 砝碼受力：重力 mg（向下）、繩張力 T（向上）
+        arrow(c, HANGER_X - 12, hy + HANGER_SIZE, HANGER_X - 12, hy + HANGER_SIZE + ph.W * pxPerN, RED, 4);
+        label(c, `mg=${ph.W.toFixed(3)} N`, HANGER_X - 22, hy + HANGER_SIZE + ph.W * pxPerN * 0.5 + 4, RED, 13, 'right');
+        arrow(c, HANGER_X + 12, hy, HANGER_X + 12, hy - ph.T * pxPerN, RED, 4);
+        label(c, `T`, HANGER_X + 24, hy - ph.T * pxPerN * 0.5, RED, 14);
+
+        // 速度（藍）與加速度（綠）
+        if (k.v > 1e-6) {
+            arrow(c, cx, bodyTop - 26, cx + k.v * 55, bodyTop - 26, BLUE, 4);
+            label(c, `v=${k.v.toFixed(2)} m/s`, cx + k.v * 55 + 6, bodyTop - 26, BLUE, 14);
+        }
+        if (ph.a > 1e-9) {
+            arrow(c, cx, bodyTop - 50, cx + ph.a * 35, bodyTop - 50, GREEN, 4);
+            label(c, `a=${ph.a.toFixed(2)} m/s²`, cx + ph.a * 35 + 6, bodyTop - 50, GREEN, 14);
+        }
+    }
+
+    function drawNotes(c) {
+        // 左側空白處：即時列出牛頓第二定律的兩個方程式（用目前數值）
+        const x0 = 36, y0 = 236;
+        c.save();
+        c.fillStyle = 'rgba(255,255,255,0.04)'; c.fillRect(x0 - 10, y0 - 22, 410, 120);
+        label(c, '對滑車：  T − f ＝ M·a', x0, y0, '#c3d0e4', 16);
+        label(c, `${ph.T.toFixed(3)} − ${ph.f.toFixed(3)} ＝ ${(ph.T - ph.f).toFixed(3)} N`, x0 + 16, y0 + 24, '#c3d0e4', 15);
+        label(c, '對砝碼：  mg − T ＝ m·a', x0, y0 + 54, '#c3d0e4', 16);
+        label(c, `${ph.W.toFixed(3)} − ${ph.T.toFixed(3)} ＝ ${(ph.W - ph.T).toFixed(3)} N`, x0 + 16, y0 + 78, '#c3d0e4', 15);
+        c.restore();
+    }
+
+    // 打點計時器紙帶：每隔 0.1 s 一個計數點（示意），點的位置就是當時滑車的位移
+    function drawTape(c) {
+        const tx0 = 40, ty = 440;
+        c.fillStyle = '#4a3f2c'; c.fillRect(tx0 - 10, ty - 22, 0.6 * PX_PER_M + 40 + 30, 44);
+        c.strokeStyle = '#8a7a58'; c.lineWidth = 1; c.strokeRect(tx0 - 10, ty - 22, 0.6 * PX_PER_M + 40 + 30, 44);
+        label(c, '紙帶（計數點間隔 0.1 s）', tx0 - 4, ty - 34, '#c3d0e4', 13);
+        if (!ph.moves) { label(c, '滑車不動，沒有打點', tx0 + 10, ty, '#c9b98e', 14); return; }
+        const t = Math.min(state.t, ph.tEnd);
+        let prev = null;
+        for (let i = 0; i * TAPE_DT <= t + 1e-9; i++) {
+            const x = 0.5 * ph.a * Math.pow(i * TAPE_DT, 2);
+            if (x > S_MAX + 1e-9) break;
+            const px = tx0 + x * PX_PER_M;
+            c.fillStyle = '#120f08'; c.beginPath(); c.arc(px, ty, 4, 0, Math.PI * 2); c.fill();
+            if (prev !== null && px - prev > 26) label(c, `${((x - (prev - tx0) / PX_PER_M) * 100).toFixed(1)}`, (px + prev) / 2, ty + 14, '#e8dcc0', 11, 'center');
+            prev = px;
+        }
+        label(c, '相鄰點距離（cm）', tx0 + 0.6 * PX_PER_M + 6, ty + 14, '#c9b98e', 11);
+    }
+
+    // ===================== 圖表 =====================
+    function niceStep(range) {
+        const target = range / 5, p = Math.pow(10, Math.floor(Math.log10(target)));
+        const n = target / p;
+        return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * p;
+    }
+    function drawGraph(cv, o) {
+        const c = cv.getContext('2d'), W = cv.width, H = cv.height;
+        const L = 62, R = 16, Tp = 32, B = 46;
+        const pw = W - L - R, phh = H - Tp - B;
+        const ymin = o.ymin === undefined ? 0 : o.ymin;
+        const X = x => L + x / o.xmax * pw;
+        const Y = y => Tp + phh - (y - ymin) / (o.ymax - ymin) * phh;
+        c.clearRect(0, 0, W, H); c.fillStyle = '#0d121b'; c.fillRect(0, 0, W, H);
+
+        // 格線與刻度
+        c.font = '12px sans-serif'; c.lineWidth = 1;
+        const sx = niceStep(o.xmax), sy = niceStep(o.ymax - ymin);
+        const dx = Math.max(0, Math.ceil(-Math.log10(sx) - 1e-9)), dy = Math.max(0, Math.ceil(-Math.log10(sy) - 1e-9));
+        for (let x = 0; x <= o.xmax + 1e-9; x += sx) {
+            c.strokeStyle = '#1b2433'; c.beginPath(); c.moveTo(X(x), Tp); c.lineTo(X(x), Tp + phh); c.stroke();
+            c.fillStyle = '#8a99ad'; c.textAlign = 'center'; c.fillText(x.toFixed(dx), X(x), Tp + phh + 16);
+        }
+        for (let y = Math.ceil(ymin / sy) * sy; y <= o.ymax + 1e-9; y += sy) {
+            c.strokeStyle = '#1b2433'; c.beginPath(); c.moveTo(L, Y(y)); c.lineTo(L + pw, Y(y)); c.stroke();
+            c.fillStyle = '#8a99ad'; c.textAlign = 'right'; c.fillText(y.toFixed(dy), L - 6, Y(y) + 4);
+        }
+        // 座標軸
+        c.strokeStyle = '#5b6a82'; c.lineWidth = 1.5;
+        c.beginPath(); c.moveTo(L, Tp); c.lineTo(L, Tp + phh); c.lineTo(L + pw, Tp + phh); c.stroke();
+        if (ymin < 0) { c.beginPath(); c.moveTo(L, Y(0)); c.lineTo(L + pw, Y(0)); c.stroke(); }
+        c.fillStyle = '#c3d0e4'; c.font = 'bold 14px sans-serif'; c.textAlign = 'left'; c.fillText(o.title, L, 18);
+        c.font = '12px sans-serif'; c.fillStyle = '#8a99ad'; c.textAlign = 'center'; c.fillText(o.xlabel, L + pw / 2, H - 8);
+        c.save(); c.translate(14, Tp + phh / 2); c.rotate(-Math.PI / 2); c.fillText(o.ylabel, 0, 0); c.restore();
+
+        // 曲線
+        if (o.line && o.line.length > 1) {
+            c.strokeStyle = o.color; c.lineWidth = 2.5; c.beginPath();
+            o.line.forEach((p, i) => i ? c.lineTo(X(p.x), Y(p.y)) : c.moveTo(X(p.x), Y(p.y)));
+            c.stroke();
+        }
+        if (o.refLine) {   // 虛線：理論或擬合直線
+            c.save(); c.strokeStyle = o.refColor || '#ffffff'; c.lineWidth = 1.8; c.setLineDash(o.refDash === false ? [] : [6, 5]); c.beginPath();
+            o.refLine.forEach((p, i) => i ? c.lineTo(X(p.x), Y(p.y)) : c.moveTo(X(p.x), Y(p.y))); c.stroke(); c.restore();
+        }
+        if (o.points) o.points.forEach(p => { c.fillStyle = o.color; c.beginPath(); c.arc(X(p.x), Y(p.y), 5, 0, Math.PI * 2); c.fill(); c.strokeStyle = '#0d121b'; c.lineWidth = 1; c.stroke(); });
+        if (o.dot) { c.fillStyle = '#fff'; c.beginPath(); c.arc(X(o.dot.x), Y(o.dot.y), 4.5, 0, Math.PI * 2); c.fill(); }
+        if (o.note) { c.fillStyle = o.color; c.font = 'bold 13px sans-serif'; c.textAlign = 'right'; c.fillText(o.note, L + pw - 6, Tp + 18); }
+    }
+
+    function drawMotionGraphs() {
+        const tAxis = isFinite(ph.tEnd) ? ph.tEnd * 1.05 : 2;
+        const vEnd = ph.a * (isFinite(ph.tEnd) ? ph.tEnd : 0);
+        const tNow = Math.min(state.t, isFinite(ph.tEnd) ? ph.tEnd : state.t);
+        const N = 80, pts = fn => { const a = []; for (let i = 0; i <= N; i++) { const t = tNow * i / N; a.push({ x: t, y: fn(t) }); } return a; };
+        const k = kin(state.t);
+        drawGraph(el('gX'), { title: 'x-t 圖（位移）', xlabel: '時間 t (s)', ylabel: '位移 x (m)', xmax: tAxis, ymax: S_MAX * 1.08, color: '#ffcc00',
+            line: pts(t => 0.5 * ph.a * t * t), dot: { x: tNow, y: k.x } });
+        drawGraph(el('gV'), { title: 'v-t 圖（速度）', xlabel: '時間 t (s)', ylabel: '速度 v (m/s)', xmax: tAxis, ymax: Math.max(vEnd * 1.15, 0.5), color: '#4da3ff',
+            line: pts(t => ph.a * t), dot: { x: tNow, y: k.v }, note: ph.moves && state.finished ? `斜率 = a = ${ph.a.toFixed(3)}` : '' });
+        drawGraph(el('gA'), { title: 'a-t 圖（加速度）', xlabel: '時間 t (s)', ylabel: '加速度 a (m/s²)', xmax: tAxis, ymax: Math.max(ph.a * 1.5, 1), color: '#00e676',
+            line: pts(() => ph.a), dot: { x: tNow, y: ph.a } });
+    }
+
+    // ===================== 即時數據 =====================
+    function updateMeters() {
+        const k = kin(state.t);
+        el('dT').innerHTML = `${Math.min(state.t, isFinite(ph.tEnd) ? ph.tEnd : state.t).toFixed(2)}<span class="unit">s</span>`;
+        el('dX').innerHTML = `${k.x.toFixed(3)}<span class="unit">m</span>`;
+        el('dV').innerHTML = `${k.v.toFixed(3)}<span class="unit">m/s</span>`;
+        el('dA').innerHTML = `${ph.a.toFixed(3)}<span class="unit">m/s²</span>`;
+        el('dW').innerHTML = `${ph.W.toFixed(3)}<span class="unit">N</span>`;
+        el('dTen').innerHTML = `${ph.T.toFixed(3)}<span class="unit">N</span>`;
+        el('dF').innerHTML = `${ph.f.toFixed(3)}<span class="unit">N</span>`;
+        el('dRatio').textContent = (ph.T / ph.W).toFixed(3);
+        const lhs1 = ph.T - ph.f, rhs1 = ph.M * ph.a, lhs2 = ph.W - ph.T, rhs2 = ph.m * ph.a;
+        el('eq1').innerHTML = `滑車：T − f ＝ M·a<br>${ph.T.toFixed(3)} − ${ph.f.toFixed(3)} ＝ ${lhs1.toFixed(3)} N，M·a ＝ ${rhs1.toFixed(3)} N <span class="ok">${Math.abs(lhs1 - rhs1) < 1e-9 ? '✓' : ''}</span>`;
+        el('eq2').innerHTML = `砝碼：mg − T ＝ m·a<br>${ph.W.toFixed(3)} − ${ph.T.toFixed(3)} ＝ ${lhs2.toFixed(3)} N，m·a ＝ ${rhs2.toFixed(3)} N <span class="ok">${Math.abs(lhs2 - rhs2) < 1e-9 ? '✓' : ''}</span>`;
+
+        let msg = '';
+        if (!ph.moves) msg = `砝碼重 mg ＝ ${ph.W.toFixed(3)} N 不大於最大摩擦力 μMg ＝ ${ph.fmax.toFixed(3)} N，滑車不動（靜摩擦力 f ＝ T ＝ mg）。`;
+        else if (state.finished) msg = `滑車到達擋板：用時 t ＝ ${ph.tEnd.toFixed(3)} s，由 a ＝ 2x÷t² ＝ ${(2 * S_MAX / (ph.tEnd * ph.tEnd)).toFixed(3)} m/s²。按「記錄這次數據」保存。`;
+        else if (state.running) msg = '實驗進行中…';
+        else msg = `預測：a ＝ (mg − f)÷(M+m) ＝ ${ph.a.toFixed(3)} m/s²，約 ${ph.tEnd.toFixed(2)} s 後到達擋板。按「釋放」開始。`;
+        el('statusLine').textContent = msg;
+        el('runState').textContent = !ph.moves ? '靜止' : state.finished ? '已完成' : state.running ? '進行中' : '準備中';
+    }
+
+    function renderAll() { drawScene(); drawMotionGraphs(); updateMeters(); }
+
+    // ===================== 數據記錄與作圖 =====================
+    function measuredA(p) {
+        const a = 2 * S_MAX / (p.tEnd * p.tEnd);     // 實測：a = 2x ÷ t²
+        if (!el('chkNoise').checked) return a;
+        const noise = (Math.random() + Math.random() + Math.random() - 1.5) * 0.04;   // 約 ±3%
+        return a * (1 + noise);
+    }
+    function addRecord(p) {
+        if (!p.moves || state.mode === 'free') return;
+        const key = state.mode;
+        if (state.data[key].length >= 20) state.data[key].shift();
+        const xval = key === 'exp1' ? p.W : 1 / (p.M + p.m);
+        state.data[key].push({ M: p.M, m: p.m, mu: p.mu, x: xval, a: measuredA(p) });
+    }
+
+    function linearFit(pts) {
+        const n = pts.length; if (n < 2) return null;
+        const sx = pts.reduce((s, p) => s + p.x, 0), sy = pts.reduce((s, p) => s + p.a, 0);
+        const sxx = pts.reduce((s, p) => s + p.x * p.x, 0), sxy = pts.reduce((s, p) => s + p.x * p.a, 0);
+        const den = n * sxx - sx * sx; if (Math.abs(den) < 1e-12) return null;
+        const slope = (n * sxy - sx * sy) / den;
+        return { slope, intercept: (sy - slope * sx) / n };
+    }
+
+    function renderData() {
+        const key = state.mode, body = el('dataBody'), cv = el('gScatter');
+        el('dataTitle').textContent = key === 'exp1' ? '實驗一數據：a 與 F 的關係' : key === 'exp2' ? '實驗二數據：a 與 1/(M+m) 的關係' : '實驗數據與作圖';
+        el('btnAuto').disabled = key === 'free';
+        el('btnClear').disabled = key === 'free';
+        if (key === 'free') {
+            body.innerHTML = '';
+            el('fitText').textContent = '請在上方選擇「實驗一」或「實驗二」，按「記錄這次數據」或「自動掃描」收集數據。';
+            drawGraph(cv, { title: 'a–F 圖', xlabel: 'F = mg (N)', ylabel: 'a (m/s²)', xmax: 2.5, ymax: 5, color: '#ffcc00' });
+            return;
+        }
+        const pts = state.data[key];
+        body.innerHTML = pts.map((p, i) => `<tr><td>${i + 1}</td><td>${p.M.toFixed(2)}</td><td>${p.m.toFixed(2)}</td><td>${p.mu.toFixed(2)}</td><td>${p.x.toFixed(key === 'exp1' ? 3 : 3)}</td><td>${p.a.toFixed(3)}</td></tr>`).join('');
+
+        const fit = linearFit(pts);
+        const xs = pts.map(p => p.x), as = pts.map(p => p.a);
+        let xmax, ymax, ymin = 0, title, xl;
+        if (key === 'exp1') {
+            xmax = niceStep(1) && Math.max(1.0, ...xs) * 1.15; ymax = Math.max(2, ...as) * 1.2; title = 'a–F 圖'; xl = 'F = mg  (N)';
+        } else {
+            xmax = Math.max(2, ...xs) * 1.15; ymax = Math.max(2, ...as) * 1.2; title = 'a–1/(M+m) 圖'; xl = '1/(M+m)  (1/kg)';
+        }
+        if (as.length && Math.min(...as) < 0) ymin = Math.min(...as) * 1.2;
+        const o = { title, xlabel: xl, ylabel: 'a (m/s²)', xmax, ymax, ymin, color: '#ffcc00', points: pts.map(p => ({ x: p.x, y: p.a })) };
+        if (fit) o.refLine = [{ x: 0, y: fit.intercept }, { x: xmax, y: fit.slope * xmax + fit.intercept }];
+        drawGraph(cv, o);
+
+        // 擬合說明與理論值
+        let txt = '';
+        if (!pts.length) txt = key === 'exp1' ? '請按「記錄這次數據」，再改變 m 後重複，或按「自動掃描」。' : '請按「記錄這次數據」，再改變 M 後重複，或按「自動掃描」。';
+        else if (!fit) txt = '至少要 2 筆不同的數據才能畫出擬合直線。';
+        else {
+            const frictionless = pts.every(p => p.mu === 0);
+            if (key === 'exp1') {
+                const Mtot = pts[0].M + pts[0].m, same = pts.every(p => Math.abs(p.M + p.m - Mtot) < 1e-6);
+                txt = `擬合直線（虛線）：a ＝ <b>${fit.slope.toFixed(3)}</b>·F ＋ <b>${fit.intercept.toFixed(3)}</b>。` +
+                      (same && frictionless ? `理論：斜率 ＝ 1÷(M＋m) ＝ ${(1 / Mtot).toFixed(3)} kg⁻¹，截距 ＝ 0。` :
+                       !same ? '注意：各筆的總質量 M＋m 不同，a 與 F 不會是一條直線（這就是「控制變因」的重要）。' :
+                       '有摩擦時，直線不通過原點，截距為負（要先克服摩擦才會加速）。');
+            } else {
+                const mm = pts[0].m, same = pts.every(p => p.m === mm);
+                txt = `擬合直線（虛線）：a ＝ <b>${fit.slope.toFixed(3)}</b>·[1/(M＋m)] ＋ <b>${fit.intercept.toFixed(3)}</b>。` +
+                      (same && frictionless ? `理論：斜率 ＝ mg ＝ ${(mm * G).toFixed(3)} N，截距 ＝ 0。` :
+                       !same ? '注意：各筆的砝碼質量不同，拉力 F 沒有固定。' : '有摩擦時，a 與 1/(M＋m) 不再是通過原點的直線。');
+            }
+        }
+        el('fitText').innerHTML = txt;
+    }
+
+    // 自動掃描：直接用公式算出 7 組（等於按 7 次「釋放→記錄」），方便課堂快速展示
+    function autoScan() {
+        readParams();
+        let skipped = 0;
+        const rec = p => { if (!p.moves) skipped++; addRecord(p); };
+        if (state.mode === 'exp1') {
+            const Mtot = state.Mtot;
+            [0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14].forEach(m => { if (m <= Mtot - 0.1) rec(physics(Mtot - m, m, state.mu)); });
+        } else if (state.mode === 'exp2') {
+            [0.3, 0.5, 0.7, 0.9, 1.2, 1.6, 2.0].forEach(M => rec(physics(M, state.m, state.mu)));
+        }
+        renderData();
+        if (skipped) el('fitText').innerHTML += `<br><span style="color:var(--yellow)">有 ${skipped} 組因 mg ≤ μMg，滑車不動，沒有記錄（拉不動就量不到加速度）。</span>`;
+    }
+
+    // ===================== 事件 =====================
+    function setMode(mode) {
+        state.mode = mode;
+        if (mode === 'exp1') { el('slTot').value = 0.6; el('slm').value = 0.05; }
+        if (mode === 'exp2') { el('slM').value = 0.5; el('slm').value = 0.05; }
+        refreshUI(true);
+    }
+    document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+    ['slM', 'slm', 'slTot', 'slMu'].forEach(id => el(id).addEventListener('input', () => refreshUI(true)));
+    el('selSpeed').addEventListener('change', e => { state.timeScale = parseFloat(e.target.value); });
+    el('chkVec').addEventListener('change', renderAll);
+    el('btnPlay').addEventListener('click', () => {
+        if (state.finished) { state.t = 0; state.finished = false; }
+        state.running = !state.running;
+        el('btnPlay').textContent = state.running ? '⏸ 暫停' : '▶ 繼續';
+        if (!ph.moves) { state.running = false; el('btnPlay').textContent = '▶ 釋放'; }
+        el('btnRecord').disabled = true;
+    });
+    el('btnReset').addEventListener('click', () => refreshUI(true));
+    el('btnRecord').addEventListener('click', () => {
+        if (!state.finished) return;
+        addRecord(ph); renderData(); el('btnRecord').disabled = true;
+    });
+    el('btnAuto').addEventListener('click', autoScan);
+    el('btnClear').addEventListener('click', () => { state.data[state.mode] = []; renderData(); });
+
+    // ===================== 動畫迴圈（依實際時間前進）=====================
+    let last = null;
+    function frame(ts) {
+        if (last === null) last = ts;
+        const dt = Math.min((ts - last) / 1000, 0.05); last = ts;
+        if (state.running) {
+            state.t += dt * state.timeScale;
+            if (state.t >= ph.tEnd) {
+                state.t = ph.tEnd; state.running = false; state.finished = true;
+                el('btnPlay').textContent = '▶ 再做一次';
+                el('btnRecord').disabled = state.mode === 'free';
+            }
+            renderAll();
+        }
+        requestAnimationFrame(frame);
+    }
+
+    // 提供給測試使用（不影響一般操作）
+    window.__newton = { state, get ph() { return ph; }, physics, S_MAX };
+
+    refreshUI(true);
+    requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
