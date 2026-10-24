@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>馬達與發電機：可切換模式的比較 - 李捷物理實驗室</title>
+    <style>
+        :root { --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432; --text-main: #f0f3f8; --text-muted: #9aa8bd; --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676;
+            --vel: #4d8dff; --fmag: #ff4d6d; --cur: #ffb020; --bfield: #35d6ff; --flux: #35d6ff; --mom: #d28bff; }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6; }
+        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; } .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
+        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; } h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; } .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
+        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
+        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
+        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+        .mode-btn { flex: 1 1 260px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 12px 14px; font-size: .95rem; cursor: pointer; text-align: left; } .mode-btn b { display: block; font-size: 1.1rem; color: var(--cyan); } .mode-btn.active { border-color: var(--cyan); background: #12303a; }
+        .mode-desc { font-size: .95rem; color: var(--text-muted); margin-bottom: 12px; }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; } .control-group.off { display: none; }
+        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; } .control-label b { font-family: monospace; font-size: 1.05rem; }
+        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
+        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
+        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
+        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; } .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; } button.btn.secondary { background: #3a465b; color: #fff; } button.btn.green { background: var(--green); color: #00210f; } button.btn.orange { background: #ff9f43; color: #2a1500; }
+        button.btn:disabled { opacity: .4; cursor: not-allowed; } button.btn:not(:disabled):hover { filter: brightness(1.12); }
+        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; } canvas { display: block; width: 100%; height: auto; }
+        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; } .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #111622; font-size: 1rem; } .status b { color: var(--yellow); }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; } .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; } .meter-title { font-size: .82rem; color: var(--text-muted); } .meter-value { font-size: 1.25rem; font-weight: bold; font-family: monospace; } .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
+        .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+        table.cmp { width: 100%; border-collapse: collapse; font-size: .95rem; } table.cmp th, table.cmp td { border: 1px solid #263044; padding: 8px 10px; text-align: left; vertical-align: top; } table.cmp th { background: #111a2a; color: var(--cyan); } table.cmp td:first-child { color: var(--yellow); white-space: nowrap; font-weight: bold; }
+        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; } summary { cursor: pointer; font-weight: bold; color: var(--cyan); } details ol, details ul { margin: 8px 0 2px; padding-left: 22px; } details li { margin-bottom: 4px; }
+        .assume { font-size: .88rem; color: var(--text-muted); } footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>🔄 馬達與發電機</h1>
+    <p class="subtitle">同一組線圈、同一個磁場：馬達（電能 → 力學能）與發電機（力學能 → 電能）是互為逆過程</p>
+</header>
+
+<div class="container">
+    <div class="card">
+        <div class="card-title">切換模式</div>
+        <div class="mode-bar">
+            <button class="mode-btn active" data-mode="motor"><b>⚡→⚙ 馬達模式</b>接上電池，線圈受磁力（開掌定則）旋轉</button>
+            <button class="mode-btn" data-mode="gen"><b>⚙→⚡ 發電機模式</b>外力轉動線圈，磁通量變化產生感應電流（冷次定律）</button>
+        </div>
+        <div class="mode-desc" id="modeDesc"></div>
+        <div class="controls-grid">
+            <div class="control-group"><div class="control-label"><span>線圈與外電路接法</span></div><select id="selRing"><option value="comm">換向器（半圓環）</option><option value="slip">滑環（完整圓環）</option></select><div class="sub-note" id="ringNote"></div></div>
+            <div class="control-group"><div class="control-label"><span>磁場 B</span><b style="color:var(--bfield)"><span id="lblB">0.50</span> T</b></div><input type="range" id="slB" min="0.2" max="1" step="0.05" value="0.5"></div>
+            <div class="control-group"><div class="control-label"><span>線圈匝數 N</span><b style="color:var(--cur)"><span id="lblN">50</span> 匝</b></div><input type="range" id="slN" min="20" max="100" step="10" value="50"></div>
+            <div class="control-group" id="grpV"><div class="control-label"><span>電池電壓 V</span><b style="color:#ffe14d"><span id="lblV">6.0</span> V</b></div><input type="range" id="slV" min="1" max="12" step="0.5" value="6"></div>
+            <div class="control-group" id="grpTL"><div class="control-label"><span>負載力矩 τ<sub>L</sub></span><b style="color:var(--fmag)"><span id="lblTL">0.00</span> N·m</b></div><input type="range" id="slTL" min="0" max="1.2" step="0.05" value="0"><div class="sub-note">負載越大，轉速越低、電流越大</div></div>
+            <div class="control-group" id="grpDrive"><div class="control-label"><span>驅動方式</span></div><select id="selDrive"><option value="fixed">手搖：固定轉速</option><option value="free">自由滑行（只靠慣性）</option></select></div>
+            <div class="control-group" id="grpW"><div class="control-label"><span>轉動角速度 ω</span><b style="color:var(--vel)"><span id="lblW">15</span> rad/s</b></div><input type="range" id="slW" min="3" max="40" step="1" value="15"><div class="sub-note" id="wNote"></div></div>
+            <div class="control-group" id="grpRL"><div class="control-label"><span>燈泡（負載）電阻 R<sub>L</sub></span><b style="color:#ffe14d"><span id="lblRL">4.0</span> Ω</b></div><input type="range" id="slRL" min="1" max="20" step="0.5" value="4"></div>
+            <div class="control-group"><div class="control-label"><span>播放速度（慢動作）</span></div><select id="selSlow"><option value="0.1">0.1 倍</option><option value="0.25">0.25 倍</option><option value="0.5" selected>0.5 倍</option><option value="1">1 倍</option></select></div>
+        </div>
+        <div class="check-row"><label><input type="checkbox" id="chkVec" checked> 顯示速度、電流與磁力向量</label><label><input type="checkbox" id="chkLoop" checked> 圖表自動捲動</label></div>
+        <div class="btn-row">
+            <button class="btn green" id="btnPlay">▶ 播放</button><button class="btn secondary" id="btnPause">⏸ 暫停</button><button class="btn secondary" id="btnReset">↺ 重設</button>
+            <button class="btn orange" id="btnSwitch" style="display:none">🔌 斷電，改接燈泡（馬達 → 發電機）</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span>端視圖與電路（從轉軸方向看，磁場由 N 極向 S 極）</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div>
+        <div class="two-col">
+            <div class="canvas-wrap"><canvas id="view" width="460" height="420"></canvas></div>
+            <div class="canvas-wrap"><canvas id="circ" width="380" height="420"></canvas></div>
+        </div>
+        <div class="legend"><span style="--c:var(--bfield)">磁場 B</span><span style="--c:var(--cur)">線圈電流 I（⊙ 出紙面、⊗ 入紙面）</span><span style="--c:var(--fmag)">磁力 F = ILB</span><span style="--c:var(--vel)">導線速度 v</span><span style="--c:var(--mom)">線圈法線（磁矩方向）n</span></div>
+        <div class="status" id="status"></div>
+    </div>
+
+    <div class="card"><div class="card-title">即時數據</div><div class="dashboard" id="dash"></div></div>
+
+    <div class="card">
+        <div class="card-title"><span>同步圖表</span><span style="font-size:.85rem;color:var(--text-muted)">游標＝現在</span></div>
+        <div class="two-col">
+            <div class="graph-box"><canvas id="g1" width="480" height="250"></canvas></div>
+            <div class="graph-box"><canvas id="g2" width="480" height="250"></canvas></div>
+            <div class="graph-box"><canvas id="g3" width="480" height="250"></canvas></div>
+            <div class="graph-box"><canvas id="g4" width="480" height="250"></canvas></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">馬達與發電機的比較</div>
+        <div style="overflow-x:auto"><table class="cmp">
+            <thead><tr><th></th><th>⚡→⚙ 馬達</th><th>⚙→⚡ 發電機</th></tr></thead>
+            <tbody>
+                <tr><td>能量轉換</td><td>電能 → 力學能（再加上線圈熱損 I²R）</td><td>力學能 → 電能（再加上線圈熱損 I²R）</td></tr>
+                <tr><td>輸入</td><td>電池（電壓 V）</td><td>外力矩轉動線圈（角速度 ω）</td></tr>
+                <tr><td>輸出</td><td>轉動的力矩、轉速（帶動負載）</td><td>感應電動勢 ε、輸出電流（點亮燈泡）</td></tr>
+                <tr><td>原因 → 結果</td><td>電流 → 磁力 → 力矩 → 轉動</td><td>轉動 → 磁通量變化 → 感應電動勢 → 電流</td></tr>
+                <tr><td>判斷方向的定則</td><td>安培右手開掌定則（F = qv × B）</td><td>冷次定律＋右手螺旋定則</td></tr>
+                <tr><td>線圈中的另一個效應</td><td>線圈轉動，也產生感應電動勢：<b>反電動勢</b> ε = NBAω sinφ，阻礙電流；轉速越高，電流越小</td><td>線圈有電流，也受磁力：<b>反向力矩</b> τ = NBAI sinφ，阻礙轉動；負載電流越大，越費力</td></tr>
+                <tr><td>換向器</td><td>每半圈換向，使<b>力矩方向不變</b>，線圈能持續同向轉動</td><td>使輸出電流方向不變（脈動直流）</td></tr>
+                <tr><td>滑環</td><td>力矩正負交替，淨力矩為 0，只會擺動（不能持續轉）</td><td>輸出交流電：ε = ε<sub>max</sub> sin ωt</td></tr>
+                <tr><td>中性面（φ = 0、π：線圈平面 ⊥ B）</td><td>線圈力矩為 0；換向器在此處換向</td><td>磁通量最大，但 dΦ/dt = 0 → ε = 0</td></tr>
+                <tr><td>主要公式</td><td>τ = NBAI sinφ；I = (V − 反電動勢) ÷ R</td><td>ε = NBAω sinφ；ε<sub>max</sub> = NBAω；I = ε ÷ (R + R<sub>L</sub>)</td></tr>
+            </tbody></table></div>
+        <p class="assume">兩者互為逆過程：把馬達的電源拆掉、改接燈泡、讓它靠慣性繼續轉，就變成發電機（按「🔌 斷電，改接燈泡」試試）；反過來把發電機接上電池，它就會轉成馬達。</p>
+    </div>
+
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary>
+            <ul>
+                <li>線圈：N 匝、面積 A = 0.020 m²（寬 0.10 m、長 0.20 m）、電阻 R = 2.0 Ω；磁場 B（T）均勻，向右。φ 為線圈法線 n 與磁場 B 的夾角。</li>
+                <li>磁通量：<b>Φ = N B A cosφ</b>（φ = 0 時線圈平面垂直磁場，磁通量最大）。</li>
+                <li><b>發電機</b>：線圈以角速度 ω 轉動，φ = ωt，<b>ε = −dΦ/dt = N B A ω sinφ</b>，最大值 <b>ε<sub>max</sub> = NBAω</b>；頻率 f = ω/2π。</li>
+                <li><b>馬達</b>：每邊導線受力 F = I L B（開掌定則），對轉軸的力矩 <b>τ = N B A I sinφ</b>；線圈轉動時也產生反電動勢 ε = NBAω sinφ。</li>
+                <li>馬達電路：<b>V = IR ＋ 反電動勢</b>（以換向器取絕對值）；能量：<b>VI = I²R ＋ τω</b>（電功率 = 熱損失 ＋ 機械功率）。</li>
+                <li>發電機的能量：外力的機械功率 = <b>εI = I²(R + R<sub>L</sub>)</b>（線圈熱損 ＋ 燈泡功率）。</li>
+            </ul>
+            <p class="assume">理想化假設：線圈為矩形、邊長均勻、磁場均勻且只在畫面所示範圍；忽略線圈自感與渦電流；電池為理想電池；摩擦力矩為 b ω（b = 0.02 N·m·s/rad）；轉動慣量 J = 0.10 kg·m²。換向器於 φ = 0、π 瞬間（中性面）換向。本頁數值由運動方程式 J dω/dt = τ_磁 − τ_L − bω 以逐步積分求得。</p>
+        </details>
+        <details><summary>建議講解順序</summary>
+            <ol>
+                <li>先用<b>馬達模式＋換向器</b>：從端視圖看兩條導線受力，用開掌定則判斷方向；問學生，為什麼過了中性面要換電流方向？</li>
+                <li>換成<b>滑環</b>：線圈只會擺動，說明換向器的作用。</li>
+                <li>加上負載力矩：轉速下降、電流上升。引入<b>反電動勢</b>：馬達也在發電。</li>
+                <li>按「🔌 斷電，改接燈泡」：同一個裝置變成發電機，燈泡亮一下就暗。</li>
+                <li>切到<b>發電機模式</b>：固定轉速，看 Φ–t 與 ε–t 圖相差 90°；中性面 ε = 0，與磁力線平行時 ε 最大。</li>
+                <li>調 ω、B、N，驗證 ε<sub>max</sub> = NBAω；切換換向器與滑環，比較交流與脈動直流。</li>
+            </ol>
+        </details>
+        <details><summary>可以問學生的問題</summary>
+            <ul>
+                <li>為什麼馬達剛啟動時電流最大、轉速上升後電流變小？（反電動勢）</li>
+                <li>馬達卡住不動（堵轉）會怎樣？（沒有反電動勢，電流很大，容易燒毀）</li>
+                <li>發電機輸出的電流越大，轉動時要用的力越大嗎？為什麼？（冷次定律、磁力阻礙轉動）</li>
+                <li>Φ 最大的時候，ε 是多少？ε 最大的時候，Φ 是多少？</li>
+                <li>轉速加倍，ε<sub>max</sub> 和頻率各變為幾倍？</li>
+                <li>手搖發電機燈泡越亮，手為什麼越吃力？（能量守恆）</li>
+            </ul>
+        </details>
+        <details><summary>常見迷思</summary>
+            <ul>
+                <li><b>「馬達只有磁力、沒有感應電動勢」</b>：只要線圈在轉，磁通量就在變，必有反電動勢（冷次定律的結果）。</li>
+                <li><b>「發電機不需要輸入能量」</b>：輸出的電能來自轉動的力學能；輸出電流越大，需要的外力矩越大。</li>
+                <li><b>「磁通量最大時感應電動勢最大」</b>：相反，Φ 最大（φ = 0）時 ε = 0；線圈平面平行磁場時 Φ = 0 而 ε 最大。</li>
+                <li><b>「換向器使電流變成直流」（馬達）</b>：電池本來就是直流；換向器是讓線圈中的電流<b>每半圈反向</b>，力矩才不會反向。</li>
+            </ul>
+        </details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script>
+(() => {
+    'use strict';
+    const el = id => document.getElementById(id), cv = el('view').getContext('2d'), cc = el('circ').getContext('2d');
+    const AREA = 0.02, LEN = 0.2, WID = 0.1, RC = 2.0, J = 0.1, BF = 0.02;
+    const S = { mode: 'motor', ring: 'comm', B: 0.5, N: 50, V: 6, tL: 0, drive: 'fixed', wSet: 15, RL: 4, slow: 0.5, phi: 0.5, w: 0, t: 0, playing: true, hist: [], ema: { pin: 0, loss: 0, mech: 0, out: 0 } };
+    const K = () => S.N * S.B * AREA;
+    const sgn = x => x > 1e-9 ? 1 : x < -1e-9 ? -1 : 0;
+    // ===================== 物理 =====================
+    // 線圈電流 I（沿線圈法線 n 的右手方向為正）、感應電動勢 eps、磁力矩 τ_mag
+    function coil(phi, w) {
+        const s = Math.sin(phi), eps = K() * s * w; let I;
+        if (S.mode === 'motor') { const Veff = S.ring === 'comm' ? -S.V * sgn(s) : -S.V; I = (Veff + eps) / RC; }
+        else I = eps / (RC + S.RL);
+        const tau = -K() * I * s;                                                        // τ_z = −N I A B sinφ
+        const sig = S.ring === 'comm' ? sgn(s) : 1, Iext = -sig * I;                      // 由上方電刷流出為正
+        return { s, eps, I, tau, Iext };
+    }
+    function drive(dt) {
+        const q = coil(S.phi, S.w);
+        if (S.mode === 'gen' && S.drive === 'fixed') { S.w = S.wSet; S.phi += S.w * dt; }
+        else { const tl = S.mode === 'motor' ? S.tL * Math.tanh(S.w / 0.3) : 0; const alpha = (q.tau - tl - BF * S.w) / J; S.w += alpha * dt; S.phi += S.w * dt; }
+        return q;
+    }
+    function powers(q) {
+        const R_tot = S.mode === 'motor' ? RC : RC + S.RL, I2R = q.I * q.I * RC;
+        if (S.mode === 'motor') { const Ib = -(S.ring === 'comm' ? sgn(q.s) : 1) * q.I; const pin = S.V * Ib, pm = q.tau * S.w; return { pin, loss: I2R, mech: pm, out: S.tL * Math.tanh(S.w / 0.3) * S.w, Ib }; }
+        const pin = -q.tau * S.w, pout = q.I * q.I * S.RL; return { pin, loss: I2R, mech: pin, out: pout, Ib: 0 };
+    }
+    function init(keep) { S.t = 0; S.hist = []; S.ema = { pin: 0, loss: 0, mech: 0, out: 0 }; if (!keep) { S.phi = 0.5; S.w = S.mode === 'gen' ? S.wSet : 0; } S.playing = true; syncUI(); }
+
+    // ===================== 繪圖工具 =====================
+    function arrow(ctx, x1, y1, x2, y2, color, w = 3, head = 10) { const len = Math.hypot(x2 - x1, y2 - y1); if (len < 2) return; const a = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(head, len * .6); ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(a) * hl * .6, y2 - Math.sin(a) * hl * .6); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - hl * Math.cos(a - .45), y2 - hl * Math.sin(a - .45)); ctx.lineTo(x2 - hl * Math.cos(a + .45), y2 - hl * Math.sin(a + .45)); ctx.closePath(); ctx.fill(); ctx.restore(); }
+    function txt(ctx, s, x, y, color, size = 14, align = 'left') { ctx.save(); ctx.font = `bold ${size}px sans-serif`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y); ctx.restore(); }
+    function wireSym(ctx, x, y, out, col, r = 13) { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.strokeStyle = '#2a1500'; ctx.lineWidth = 2.6; if (out) { ctx.fillStyle = '#2a1500'; ctx.beginPath(); ctx.arc(x, y, 4, 0, 7); ctx.fill(); } else { const d = r * .45; ctx.beginPath(); ctx.moveTo(x - d, y - d); ctx.lineTo(x + d, y + d); ctx.moveTo(x + d, y - d); ctx.lineTo(x - d, y + d); ctx.stroke(); } }
+
+    // ===================== 端視圖 =====================
+    function drawView() {
+        const q = coil(S.phi, S.w), c = cv, cx = 230, cy = 215, rho = 95, vec = el('chkVec').checked;
+        c.clearRect(0, 0, 460, 420); c.fillStyle = '#080a0f'; c.fillRect(0, 0, 460, 420);
+        // 磁鐵與磁場
+        c.fillStyle = '#b3283e'; c.fillRect(8, 70, 62, 290); c.fillStyle = '#2f55b0'; c.fillRect(390, 70, 62, 290); txt(c, 'N', 39, 215, '#fff', 30, 'center'); txt(c, 'S', 421, 215, '#fff', 30, 'center');
+        for (let y = 100; y <= 330; y += 38) arrow(c, 76, y, 384, y, 'rgba(53,214,255,.38)', 1.8, 9);
+        txt(c, 'B', 118, 62, '#35d6ff', 18, 'center');
+        // 轉軸與線圈（端視：一條線）
+        const nx = Math.cos(S.phi), ny = Math.sin(S.phi), tx = -ny, ty = nx;                 // n（數學座標）、線圈平面方向 t（= n 逆時針轉 90°）
+        const P1 = [cx + rho * tx, cy - rho * ty], P2 = [cx - rho * tx, cy + rho * ty];
+        c.strokeStyle = '#8a6b34'; c.lineWidth = 7; c.beginPath(); c.moveTo(P1[0], P1[1]); c.lineTo(P2[0], P2[1]); c.stroke();
+        c.strokeStyle = Math.abs(q.I) > 0.02 ? '#ffb020' : '#c98a3d'; c.lineWidth = 3; c.beginPath(); c.moveTo(P1[0], P1[1]); c.lineTo(P2[0], P2[1]); c.stroke();
+        c.fillStyle = '#9aa8bd'; c.beginPath(); c.arc(cx, cy, 8, 0, 7); c.fill(); c.strokeStyle = '#1a202c'; c.lineWidth = 2; c.stroke();
+        // φ 弧線與法線
+        const arrowLen = 70; arrow(c, cx, cy, cx + arrowLen * nx, cy - arrowLen * ny, '#d28bff', 4, 12); txt(c, 'n', cx + (arrowLen + 14) * nx, cy - (arrowLen + 14) * ny, '#d28bff', 16, 'center');
+        c.strokeStyle = '#ffe14d'; c.lineWidth = 2; c.beginPath(); c.arc(cx, cy, 40, -((S.phi % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI), 0); c.stroke();
+        txt(c, `φ = ${((deg(S.phi) % 360) + 360) % 360 < 0.05 ? 0 : (((deg(S.phi) % 360) + 360) % 360).toFixed(0)}°`, cx + 50, cy + 28, '#ffe14d', 14);
+        // 導線截面：+n 方向右手環繞 → 位置 P1（t 方向）處電流 ⊙（I>0）
+        const outAtP1 = q.I >= 0;
+        wireSym(c, P1[0], P1[1], outAtP1, '#ffb020'); wireSym(c, P2[0], P2[1], !outAtP1, '#ffb020');
+        if (vec) {
+            // 磁力：在 P1（I>0 時 ⊙）：F = +I L B ŷ（向上）；P2 反向
+            const Fm = Math.abs(q.I) * LEN * S.B * S.N, Lf = Math.min(80, 8 + Fm * 4); if (Math.abs(q.I) > 0.02) { arrow(c, P1[0] + 22, P1[1], P1[0] + 22, P1[1] - Math.sign(q.I) * Lf, '#ff4d6d', 5, 13); arrow(c, P2[0] - 22, P2[1], P2[0] - 22, P2[1] + Math.sign(q.I) * Lf, '#ff4d6d', 5, 13); }
+            // 速度：在 P1，v = ω(−cosφ, −sinφ)ρ（數學座標）→ 畫面 y 翻轉
+            const vl = Math.min(80, Math.abs(S.w) * 4.2); if (vl > 3) { const sg = Math.sign(S.w); arrow(c, P1[0], P1[1] + 0, P1[0] + sg * (-nx) * vl, P1[1] + sg * (ny) * vl, '#4d8dff', 4, 12); arrow(c, P2[0], P2[1], P2[0] + sg * nx * vl, P2[1] - sg * ny * vl, '#4d8dff', 4, 12); }
+        }
+        if (Math.abs(Math.sin(S.phi)) < 0.06) txt(c, '中性面（φ ≈ 0 或 180°）', cx, 392, '#00e676', 16, 'center'); else txt(c, S.mode === 'motor' ? '力矩 τ = NBAI sinφ' : '感應電動勢 ε = NBAω sinφ', cx, 392, '#9aa8bd', 14, 'center');
+        txt(c, S.mode === 'motor' ? '⚡→⚙ 馬達' : '⚙→⚡ 發電機', 14, 22, '#00d4ff', 18);
+        txt(c, `轉動方向：${S.w >= 0 ? '逆時針' : '順時針'}`, 446, 22, '#9aa8bd', 13, 'right');
+    }
+    const deg = r => r * 180 / Math.PI;
+
+    // ===================== 電路示意圖 =====================
+    function drawCirc() {
+        const q = coil(S.phi, S.w), c = cc, cx = 120, cy = 215, R1 = 52;
+        c.clearRect(0, 0, 380, 420); c.fillStyle = '#080a0f'; c.fillRect(0, 0, 380, 420);
+        txt(c, S.ring === 'comm' ? '換向器（半圓環）與電刷' : '滑環（完整圓環）與電刷', 14, 22, '#9aa8bd', 14);
+        // 環
+        c.lineWidth = 15;
+        if (S.ring === 'comm') {
+            const a = -S.phi;                                             // 畫面角度（順時針為正），半環 A 以法線方向為中心
+            c.strokeStyle = '#ffb020'; c.beginPath(); c.arc(cx, cy, R1, a - Math.PI / 2 + 0.07, a + Math.PI / 2 - 0.07); c.stroke(); c.strokeStyle = '#9fb6d0'; c.beginPath(); c.arc(cx, cy, R1, a + Math.PI / 2 + 0.07, a + 3 * Math.PI / 2 - 0.07); c.stroke();
+            const mk = (ang, lab, col) => txt(c, lab, cx + (R1 + 0) * Math.cos(ang), cy + R1 * Math.sin(ang), '#101010', 13, 'center'); mk(a, 'A', ''); mk(a + Math.PI, 'B', '');
+        } else {
+            c.strokeStyle = '#ffb020'; c.beginPath(); c.arc(cx, cy, R1 + 10, 0, 7); c.stroke(); c.strokeStyle = '#9fb6d0'; c.beginPath(); c.arc(cx, cy, R1 - 14, 0, 7); c.stroke();
+        }
+        c.fillStyle = '#1a202c'; c.beginPath(); c.arc(cx, cy, 14, 0, 7); c.fill();
+        // 電刷（固定在上、下）
+        const brush = (y, up) => { c.fillStyle = '#d6dde8'; c.fillRect(cx - 14, y - (up ? 26 : -0), 28, 26); c.strokeStyle = '#555'; c.lineWidth = 1; c.strokeRect(cx - 14, y - (up ? 26 : -0), 28, 26); };
+        brush(cy - R1 - 14, true); brush(cy + R1 + 14, false);
+        // 外電路：由上電刷 → 右側元件 → 下電刷
+        const ex = 300, topY = 60, botY = 370, path = [[cx, cy - R1 - 40], [cx, topY], [ex, topY], [ex, 150], [ex, 280], [ex, botY], [cx, botY], [cx, cy + R1 + 40]];
+        c.strokeStyle = '#8fa3c4'; c.lineWidth = 3; c.beginPath(); path.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.stroke();
+        c.fillStyle = '#080a0f'; c.fillRect(ex - 34, 150, 68, 130);
+        if (S.mode === 'motor' || (S.mode === 'gen' && false)) {
+            // 電池：上＋下−
+            c.strokeStyle = '#ffe14d'; c.lineWidth = 4; c.beginPath(); c.moveTo(ex - 28, 195); c.lineTo(ex + 28, 195); c.stroke(); c.lineWidth = 8; c.beginPath(); c.moveTo(ex - 14, 235); c.lineTo(ex + 14, 235); c.stroke();
+            txt(c, '+', ex + 40, 190, '#ffe14d', 22, 'center'); txt(c, '−', ex + 40, 238, '#ffe14d', 24, 'center'); txt(c, `${S.V.toFixed(1)} V`, ex, 270, '#ffe14d', 14, 'center'); txt(c, '電池', ex, 140, '#ffe14d', 14, 'center');
+            txt(c, '上電刷接 +', cx + 36, cy - R1 - 28, '#ffe14d', 12);
+        } else {
+            const I2 = q.Iext * q.Iext * S.RL, br = Math.min(1, I2 / 6); const g = c.createRadialGradient(ex, 215, 4, ex, 215, 60); g.addColorStop(0, `rgba(255,236,150,${0.15 + 0.85 * br})`); g.addColorStop(1, 'rgba(255,236,150,0)'); c.fillStyle = g; c.beginPath(); c.arc(ex, 215, 60, 0, 7); c.fill();
+            c.strokeStyle = '#d6dde8'; c.lineWidth = 3; c.fillStyle = `rgba(255,${Math.round(210 + 40 * br)},${Math.round(90 + 100 * br)},${0.3 + 0.7 * br})`; c.beginPath(); c.arc(ex, 215, 26, 0, 7); c.fill(); c.stroke(); c.beginPath(); c.moveTo(ex - 12, 224); c.lineTo(ex - 4, 205); c.lineTo(ex + 4, 224); c.lineTo(ex + 12, 205); c.stroke();
+            txt(c, `燈泡 ${S.RL.toFixed(1)} Ω`, ex, 140, '#ffe14d', 14, 'center'); txt(c, `${(I2).toFixed(2)} W`, ex, 270, '#ffe14d', 14, 'center');
+        }
+        // 電流流動點（Iext > 0：由上電刷流出，經外電路，由下電刷回流）
+        const lens = []; let tot = 0; for (let i = 1; i < path.length; i++) { const d = Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]); lens.push(d); tot += d; }
+        const ph = (Date.now() / 1000) * (0.1 + 0.9 * Math.min(1, Math.abs(q.Iext) / 4)) * -Math.sign(q.Iext) * -1; const n = 14;
+        if (Math.abs(q.Iext) > 0.03) for (let k = 0; k < n; k++) { let u = ((((ph * 0 + (Date.now() / 1000 * Math.sign(q.Iext) * (0.08 + 0.35 * Math.min(1, Math.abs(q.Iext) / 4))) + k / n) % 1) + 1) % 1) * tot, i = 0; while (i < lens.length && u > lens[i]) { u -= lens[i]; i++; } if (i >= lens.length) continue; const t = u / lens[i], x = path[i][0] + (path[i + 1][0] - path[i][0]) * t, y = path[i][1] + (path[i + 1][1] - path[i][1]) * t; c.fillStyle = '#ffb020'; c.beginPath(); c.arc(x, y, 4.2, 0, 7); c.fill(); }
+        txt(c, `外電路電流 ${q.Iext >= 0 ? '上 → 右 → 下' : '下 → 右 → 上'}（${Math.abs(q.Iext).toFixed(2)} A）`, 14, 400, '#ffb020', 13);
+        txt(c, S.ring === 'comm' ? '上電刷極性固定、電流方向不變' : '電流方向隨 sinφ 交替變化', 14, 44, '#9aa8bd', 12);
+    }
+
+    // ===================== 圖表 =====================
+    function series(cv2, o) {
+        const x = cv2.getContext('2d'), W = cv2.width, H = cv2.height, L = 58, Rm = 12, T = 30, B = 36, pw = W - L - Rm, ph = H - T - B;
+        const win = 6, x1 = Math.max(win, S.t), x0 = x1 - win; let amp = o.amp || 1; if (!o.amp) { S.hist.forEach(h => { if (h.t >= x0) amp = Math.max(amp, Math.abs(o.f(h)) * 1.15); }); }
+        const lo = o.nonneg ? 0 : -amp; const PX = v => L + (v - x0) / (x1 - x0) * pw, PY = v => T + ph - (v - lo) / (amp - lo) * ph;
+        x.clearRect(0, 0, W, H); x.fillStyle = '#0d121b'; x.fillRect(0, 0, W, H); x.font = '12px sans-serif';
+        const nice = r => { const t = r / 4, q = Math.pow(10, Math.floor(Math.log10(t))), n = t / q; return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * q; }, sy = nice(amp - lo); const dp = Math.max(0, Math.ceil(-Math.log10(sy) - 1e-9));
+        for (let v = Math.ceil(lo / sy) * sy; v <= amp + 1e-9; v += sy) { x.strokeStyle = Math.abs(v) < sy / 1e3 ? '#5b6a82' : '#1b2433'; x.beginPath(); x.moveTo(L, PY(v)); x.lineTo(L + pw, PY(v)); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'right'; x.fillText(v.toFixed(dp), L - 6, PY(v) + 4); }
+        for (let v = Math.ceil(x0); v <= x1; v += 1) { x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(PX(v), T); x.lineTo(PX(v), T + ph); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(v, PX(v), T + ph + 14); }
+        x.save(); x.beginPath(); x.rect(L, T, pw, ph); x.clip(); x.strokeStyle = o.color; x.lineWidth = 2.4; x.beginPath(); let first = true; S.hist.forEach(h => { if (h.t < x0 - 0.05) return; const px = PX(h.t), py = PY(o.f(h)); first ? x.moveTo(px, py) : x.lineTo(px, py); first = false; }); x.stroke();
+        x.strokeStyle = 'rgba(255,255,255,.45)'; x.setLineDash([4, 4]); x.beginPath(); x.moveTo(PX(S.t), T); x.lineTo(PX(S.t), T + ph); x.stroke(); x.restore();
+        x.fillStyle = '#c3d0e4'; x.font = 'bold 13px sans-serif'; x.textAlign = 'left'; x.fillText(o.title, L, 18); x.font = '12px sans-serif'; x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText('時間 t (s)', L + pw / 2, H - 5);
+        x.save(); x.translate(13, T + ph / 2); x.rotate(-Math.PI / 2); x.fillText(o.yl, 0, 0); x.restore();
+    }
+    function drawGraphs() {
+        series(el('g1'), { title: '磁通量 Φ = NBA cosφ', yl: 'Φ (Wb)', color: '#35d6ff', f: h => h.Phi, amp: S.N * S.B * AREA * 1.15 });
+        series(el('g2'), { title: S.mode === 'motor' ? '反電動勢 ε = NBAω sinφ' : '感應電動勢 ε = NBAω sinφ', yl: 'ε (V)', color: '#ffb020', f: h => h.eps });
+        series(el('g3'), { title: S.ring === 'comm' ? '外電路電流（上電刷流出為正）' : '外電路電流（交流）', yl: 'I (A)', color: '#ff9f43', f: h => h.Iext });
+        if (S.mode === 'motor' || S.drive === 'free') series(el('g4'), { title: '轉動角速度 ω', yl: 'ω (rad/s)', color: '#4d8dff', f: h => h.w, nonneg: true }); else series(el('g4'), { title: '外力需提供的力矩（= 磁力矩的反向）', yl: 'τ (N·m)', color: '#ff4d6d', f: h => -h.tau });
+    }
+
+    // ===================== 儀表 =====================
+    function renderDash() {
+        const q = coil(S.phi, S.w), pw = powers(q), m = (t, v, u, col = '#c3d0e4') => `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value" style="color:${col}">${v}<span class="unit">${u}</span></div></div>`, e = S.ema; let h = '', msg = '';
+        const rpm = Math.abs(S.w) * 60 / (2 * Math.PI);
+        if (S.mode === 'motor') {
+            const eff = e.pin > 0.05 ? e.out / e.pin * 100 : 0, back = K() * Math.abs(S.w) * 2 / Math.PI;
+            h = m('轉速 ω', S.w.toFixed(1), 'rad/s', '#4d8dff') + m('轉速', rpm.toFixed(0), 'rpm', '#4d8dff') + m('線圈電流 |I|', Math.abs(q.I).toFixed(2), 'A', '#ffb020') + m('反電動勢 |ε|', Math.abs(q.eps).toFixed(2), 'V', '#ffb020') + m('磁力矩 τ', q.tau.toFixed(2), 'N·m', '#ff4d6d') + m('電池輸入功率（平均）', e.pin.toFixed(1), 'W', '#ffe14d') + m('線圈熱損 I²R（平均）', e.loss.toFixed(1), 'W', '#9aa8bd') + m('輸出功率 τ_L ω（平均）', e.out.toFixed(1), 'W', '#00e676') + m('效率（輸出÷輸入）', eff.toFixed(0), '%', '#00e676');
+            msg = S.w < 0.5 ? '剛啟動：轉速低、反電動勢小，所以<b>電流最大、力矩最大</b>。' : `轉速上升，<b>反電動勢</b>（平均約 ${back.toFixed(1)} V）逐漸抵銷電池電壓，電流下降；電池輸入的電功率＝線圈熱損＋機械功率（VI ＝ I²R ＋ τω）。` + (S.ring === 'slip' ? '<br>⚠ 使用滑環：每半圈力矩正負交替，淨力矩約為 0，馬達不能持續轉動。' : '');
+        } else {
+            const eff = e.pin > 0.05 ? e.out / e.pin * 100 : 0, emax = K() * Math.abs(S.w);
+            h = m('轉動角速度 ω', S.w.toFixed(1), 'rad/s', '#4d8dff') + m('頻率 f = ω/2π', (Math.abs(S.w) / 2 / Math.PI).toFixed(2), 'Hz', '#4d8dff') + m('最大電動勢 NBAω', emax.toFixed(2), 'V', '#ffb020') + m('即時 ε', q.eps.toFixed(2), 'V', '#ffb020') + m('輸出電流 |I|', Math.abs(q.Iext).toFixed(2), 'A', '#ff9f43') + m('需要的外力矩', (-q.tau).toFixed(2), 'N·m', '#ff4d6d') + m('輸入機械功率（平均）', e.pin.toFixed(1), 'W', '#ffe14d') + m('燈泡功率（平均）', e.out.toFixed(1), 'W', '#00e676') + m('效率 R_L÷(R+R_L)', eff.toFixed(0), '%', '#00e676');
+            msg = '線圈轉動使磁通量改變，產生感應電動勢；<b>電流越大，磁力矩阻礙轉動越強，外力要做越多的功</b>（εI ＝ I²(R+R_L)）。' + (S.ring === 'slip' ? ' 滑環輸出交流電。' : ' 換向器使輸出電流方向固定（脈動直流）。') + (S.drive === 'free' ? ' 自由滑行：轉動動能被燈泡與線圈消耗，轉速逐漸下降。' : '');
+        }
+        el('dash').innerHTML = h; el('status').innerHTML = msg; el('runState').textContent = S.playing ? '播放中' : '暫停';
+    }
+
+    // ===================== 介面 =====================
+    const DESC = { motor: '電池接在線圈上。線圈中的電流在磁場中受磁力，形成力矩使線圈轉動；換向器每半圈改變線圈電流方向。調整負載力矩，觀察轉速、電流與功率。', gen: '用外力使線圈在磁場中轉動，磁通量連續變化，產生感應電動勢與電流，點亮燈泡。可選固定轉速，或只靠慣性自由滑行。' };
+    function syncUI() {
+        el('lblB').textContent = S.B.toFixed(2); el('lblN').textContent = S.N; el('lblV').textContent = S.V.toFixed(1); el('lblTL').textContent = S.tL.toFixed(2); el('lblW').textContent = S.wSet; el('lblRL').textContent = S.RL.toFixed(1);
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === S.mode)); el('modeDesc').textContent = DESC[S.mode];
+        const mot = S.mode === 'motor'; ['grpV', 'grpTL'].forEach(i => el(i).classList.toggle('off', !mot)); ['grpDrive', 'grpRL'].forEach(i => el(i).classList.toggle('off', mot)); el('grpW').classList.toggle('off', mot); el('btnSwitch').style.display = mot ? '' : 'none';
+        el('wNote').textContent = S.drive === 'free' ? '自由滑行：這是起始角速度' : '手搖的固定轉速（ε_max = NBAω）'; el('ringNote').textContent = S.ring === 'comm' ? (mot ? '每半圈換向，力矩方向不變' : '輸出為脈動直流') : (mot ? '力矩交替，只會擺動' : '輸出為交流電');
+    }
+    document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.mode; init(false); }));
+    const bind = (id, key, f = Number, re = false) => el(id).addEventListener('input', e => { S[key] = f(e.target.value); if (key === 'wSet' && S.mode === 'gen' && S.drive === 'fixed') S.w = S.wSet; if (re) init(false); syncUI(); });
+    bind('slB', 'B'); bind('slN', 'N'); bind('slV', 'V'); bind('slTL', 'tL'); bind('slW', 'wSet'); bind('slRL', 'RL');
+    el('selRing').addEventListener('change', e => { S.ring = e.target.value; init(false); }); el('selDrive').addEventListener('change', e => { S.drive = e.target.value; init(false); }); el('selSlow').addEventListener('change', e => { S.slow = +e.target.value; });
+    el('btnPlay').addEventListener('click', () => { S.playing = true; }); el('btnPause').addEventListener('click', () => { S.playing = false; }); el('btnReset').addEventListener('click', () => init(false));
+    el('btnSwitch').addEventListener('click', () => { const w = S.w; S.mode = 'gen'; S.drive = 'free'; el('selDrive').value = 'free'; S.wSet = Math.max(3, Math.min(40, Math.round(w))); el('slW').value = S.wSet; S.w = w; init(true); S.w = w; });
+
+    // ===================== 迴圈 =====================
+    let last = null, fn = 0;
+    function frame(ts) {
+        if (last === null) last = ts; let dt = Math.min((ts - last) / 1000, 0.05) * S.slow; last = ts;
+        if (S.playing) { while (dt > 1e-9) { const h = Math.min(0.0005, dt), q = drive(h), pw = powers(q), a = h / 0.5; S.ema.pin += (pw.pin - S.ema.pin) * a; S.ema.loss += (pw.loss - S.ema.loss) * a; S.ema.mech += (pw.mech - S.ema.mech) * a; S.ema.out += (pw.out - S.ema.out) * a; S.t += h; dt -= h;
+            if (!S.hist.length || S.t - S.hist[S.hist.length - 1].t >= 0.004) { S.hist.push({ t: S.t, Phi: K() * Math.cos(S.phi), eps: q.eps, Iext: q.Iext, w: S.w, tau: q.tau }); if (S.hist.length > 4000) S.hist.shift(); } } }
+        drawView(); drawCirc(); if (!(fn++ % 2)) { drawGraphs(); renderDash(); } requestAnimationFrame(frame);
+    }
+    window.__mg = { S, coil, drive, powers, init, K };
+    syncUI(); init(false); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
