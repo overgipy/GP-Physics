@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>都卜勒效應：視波速、視波長與視頻率 - 李捷物理實驗室</title>
+    <style>
+        :root { --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432; --text-main: #f0f3f8; --text-muted: #9aa8bd; --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676;
+            --obsR: #35d6ff; --obsL: #ff9f43; --vel: #4d8dff; --src: #ffe14d; }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6; }
+        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; } .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
+        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; } h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; } .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
+        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
+        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
+        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+        .mode-btn { flex: 1 1 200px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 10px 12px; font-size: .92rem; cursor: pointer; text-align: left; } .mode-btn b { display: block; color: var(--cyan); } .mode-btn.active { border-color: var(--cyan); background: #12303a; }
+        .mode-desc { font-size: .92rem; color: var(--text-muted); margin-bottom: 12px; }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; } .control-group.off { display: none; }
+        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; } .control-label b { font-family: monospace; font-size: 1.05rem; }
+        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
+        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; } input[type=range]:disabled { cursor: not-allowed; opacity: .5; }
+        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
+        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; } .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; } button.btn.secondary { background: #3a465b; color: #fff; } button.btn.green { background: var(--green); color: #00210f; }
+        button.btn:disabled { opacity: .4; cursor: not-allowed; } button.btn:not(:disabled):hover { filter: brightness(1.12); }
+        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; } canvas { display: block; width: 100%; height: auto; }
+        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; } .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #111622; font-size: 1rem; } .status b { color: var(--yellow); }
+        .obs-box { margin-bottom: 10px; } .obs-title { font-weight: bold; margin-bottom: 6px; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; } .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; } .meter-title { font-size: .82rem; color: var(--text-muted); } .meter-value { font-size: 1.3rem; font-weight: bold; font-family: monospace; } .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
+        .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+        table { width: 100%; border-collapse: collapse; font-size: .88rem; font-family: monospace; } th, td { border-bottom: 1px solid #263044; padding: 5px 6px; text-align: right; } th { color: var(--text-muted); font-weight: normal; } .table-scroll { max-height: 260px; overflow-y: auto; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; } .fit-text b { color: var(--yellow); }
+        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; } summary { cursor: pointer; font-weight: bold; color: var(--cyan); } details ol, details ul { margin: 8px 0 2px; padding-left: 22px; } details li { margin-bottom: 4px; }
+        .assume { font-size: .88rem; color: var(--text-muted); } footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>📡 都卜勒效應</h1>
+    <p class="subtitle">視波速、視波長、視頻率　｜　f′ = f₀ · (v ± v<sub>o</sub>) ÷ (v ∓ v<sub>s</sub>)</p>
+</header>
+
+<div class="container">
+    <div class="card">
+        <div class="card-title">操作模式</div>
+        <div class="mode-bar">
+            <button class="mode-btn active" data-mode="src"><b>① 波源運動</b>觀察者靜止；波前被壓縮或拉開（音爆也在這裡）</button>
+            <button class="mode-btn" data-mode="obs"><b>② 觀察者運動</b>波源靜止；波長不變，但視波速改變</button>
+            <button class="mode-btn" data-mode="circ"><b>③ 圓周運動的波源</b>f′–t 圖起伏，最大值在哪裡？</button>
+        </div>
+        <div class="mode-desc" id="modeDesc"></div>
+        <div class="controls-grid">
+            <div class="control-group" id="grpV"><div class="control-label">波速 v（介質決定）<b style="color:#c3d0e4"><span id="lblV">60</span> m/s</b></div><input type="range" id="slV" min="30" max="100" step="1" value="60"></div>
+            <div class="control-group" id="grpF"><div class="control-label"><span>波源實際頻率 f₀</span> <b style="color:var(--src)"><span id="lblF">3.0</span> Hz</b></div><input type="range" id="slF" min="1" max="5" step="0.5" value="3"></div>
+            <div class="control-group" id="grpVs"><div class="control-label"><span>波源速率 v<sub>s</sub></span> <b style="color:var(--vel)"><span id="lblVs">20</span> m/s</b></div><input type="range" id="slVs" min="0" max="120" step="1" value="20"><div class="sub-note" id="machNote"></div></div>
+            <div class="control-group" id="grpDir"><div class="control-label">波源方向</div><select id="selDir"><option value="1">向右（接近右側 R）</option><option value="-1">向左（接近左側 L）</option></select></div>
+            <div class="control-group" id="grpVo"><div class="control-label"><span>觀察者速度 v<sub>o</sub>（向右為正）</span> <b style="color:var(--obsR)"><span id="lblVo">-20</span> m/s</b></div><input type="range" id="slVo" min="-30" max="30" step="1" value="-20"><div class="sub-note">負值：往波源靠近；正值：遠離</div></div>
+            <div class="control-group" id="grpTc"><div class="control-label">圓周運動週期 T <b style="color:var(--vel)"><span id="lblTc">5.0</span> s</b></div><input type="range" id="slTc" min="3" max="10" step="0.5" value="5"><div class="sub-note" id="tcNote"></div></div>
+            <div class="control-group"><div class="control-label">播放速度（慢動作）</div><select id="selSlow"><option value="0.25">0.25 倍</option><option value="0.5" selected>0.5 倍</option><option value="1">1 倍</option></select></div>
+            <div class="control-group" id="grpSnd"><div class="control-label">🔊 聽聽看（以頻率比換算成音高）</div><select id="selSnd"><option value="off">關閉</option><option value="R">聆聽右側 R</option><option value="L">聆聽左側 L</option></select><div class="sub-note">瀏覽器需先點擊才能發聲</div></div>
+        </div>
+        <div class="check-row">
+            <label><input type="checkbox" id="chkCone" checked> 波源超過波速時畫出馬赫錐</label>
+            <label><input type="checkbox" id="chkLoop"> 自動連續播放</label>
+            <label><input type="checkbox" id="chkNoise"> 實驗加入量測誤差（±1%）</label>
+        </div>
+        <div class="btn-row">
+            <button class="btn green" id="btnPlay">▶ 播放</button><button class="btn secondary" id="btnPause">⏸ 暫停</button><button class="btn secondary" id="btnReset">↺ 重設</button>
+            <button class="btn secondary" id="btnUnknown">🎲 未知介質（隱藏 v 與 f₀）</button><button class="btn secondary" id="btnReveal" disabled>揭曉</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span>波前動畫（俯視，藍色箭頭＝速度）</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div>
+        <div class="canvas-wrap"><canvas id="scene" width="760" height="440"></canvas></div>
+        <div class="legend"><span style="--c:var(--src)">波源（每 1/f₀ 秒發出一個波前）</span><span style="--c:var(--obsR)">右側觀察者 R</span><span style="--c:var(--obsL)">左側觀察者 L</span><span style="--c:var(--vel)">速度</span></div>
+        <div class="status" id="status"></div>
+    </div>
+
+    <div class="card"><div class="card-title">視波速、視波長、視頻率</div><div id="dash"></div></div>
+
+    <div class="card">
+        <div class="card-title"><span>觀察者接收到的頻率 f′–t 圖</span><span style="font-size:.85rem;color:var(--text-muted)">點：實際接收到的波前（每兩個波前的時間間隔倒數）　線：公式</span></div>
+        <div class="graph-box"><canvas id="gF" width="760" height="300"></canvas></div>
+        <div class="fit-text" id="gNote"></div>
+    </div>
+
+    <div class="card" id="expCard">
+        <div class="card-title"><span>實驗：由 1/f′ 對 u 的直線求波速 v 與波源頻率 f₀（模式①）</span></div>
+        <div class="btn-row" style="margin-bottom:10px"><button class="btn secondary" id="btnRecord">＋ 記錄目前 R、L 的 f′</button><button class="btn secondary" id="btnSweep">⚡ 自動掃描 u</button><button class="btn secondary" id="btnClear">清除數據</button></div>
+        <div class="two-col">
+            <div class="graph-box"><canvas id="gExp" width="480" height="320"></canvas></div>
+            <div><div class="table-scroll"><table><thead><tr><th>#</th><th>觀察者</th><th>u (m/s)</th><th>f′ (Hz)</th><th>1/f′ (s)</th></tr></thead><tbody id="dataBody"></tbody></table></div></div>
+        </div>
+        <div class="fit-text" id="fitText"></div>
+        <div class="sub-note">u ＝ 波源朝向該觀察者的速度分量（接近為正、遠離為負）。f′ ＝ f₀ v ÷ (v − u)，所以 1/f′ ＝ 1/f₀ − u ÷ (f₀ v)：直線，截距 ＝ 1/f₀，斜率 ＝ −1/(f₀ v)。</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary>
+            <ul>
+                <li>波速 <b>v</b>（m/s）只由介質決定，不會因為波源或觀察者在動而改變；波源實際頻率 <b>f₀</b>（Hz）也不變。</li>
+                <li><b>視波速 v′</b>：觀察者看到波通過自己的速率。觀察者以 v<sub>o</sub> 迎向波：v′ = v + v<sub>o</sub>；遠離：v′ = v − v<sub>o</sub>。</li>
+                <li><b>視波長 λ′</b>：波源動，波前被壓縮或拉開。波源朝向觀察者：λ′ = (v − v<sub>s</sub>) ÷ f₀；遠離：λ′ = (v + v<sub>s</sub>) ÷ f₀。</li>
+                <li><b>視頻率 f′ = v′ ÷ λ′</b>（也就是「1 秒接收到幾個波」）：<b>f′ = f₀ (v ± v<sub>o</sub>) ÷ (v ∓ v<sub>s</sub>)</b>。上面的符號：觀察者靠近；下面的符號：波源靠近。</li>
+                <li>波源速率超過波速（v<sub>s</sub> &gt; v）：波前堆疊成錐形（馬赫錐），半頂角 <b>sinθ = v ÷ v<sub>s</sub></b>，即音爆。</li>
+                <li>光波（紅位移、藍位移）的低速近似也可用同一個概念：遠離 → 頻率變低、波長變長。</li>
+            </ul>
+            <p class="assume">理想化假設：介質靜止、沒有風；波源是點波源，各方向等速發出圓形波前；波速與介質有關、與波源和觀察者的運動無關。動畫中的波前位置、接收時間是依公式逐一計算的（波前半徑 = v × 經過時間；接收時間由「波前追上觀察者」的條件解出），不是「看起來像」的假動畫。為了看得清楚，使用較慢的示意波速與頻率。</p>
+        </details>
+        <details><summary>建議講解順序</summary>
+            <ol>
+                <li>先設 v<sub>s</sub> = 0，觀察波前是一圈一圈的同心圓；數一數 R、L 的 f′ 都等於 f₀。</li>
+                <li>調大 v<sub>s</sub>：波前往前方擠、往後方拉開。問學生：前方的<b>波長</b>變短，波速有變嗎？（沒有）</li>
+                <li>切到模式②：波源不動，波長一樣，改變的是觀察者看到的<b>波速</b>。</li>
+                <li>把 f′ = v′ ÷ λ′ 寫在黑板上，用「視波速、視波長、視頻率」三步判斷。</li>
+                <li>v<sub>s</sub> 超過 v：馬赫錐、音爆。</li>
+                <li>模式③：圓周運動的 f′–t 圖，並做實驗，用直線的斜率與截距反求 v 與 f₀。</li>
+            </ol>
+        </details>
+        <details><summary>可以問學生的問題</summary>
+            <ul>
+                <li>波源以 0.5v 靠近時，前方 f′ 是 f₀ 的幾倍？後方呢？（2 倍；2/3 倍）</li>
+                <li>觀察者的速度改變，波長會變嗎？視波速呢？</li>
+                <li>在圓周運動中，波源最靠近觀察者的時候，接收到的頻率最高嗎？（不是，要看速度朝向觀察者的分量）</li>
+                <li>圖中接收到的最高頻率，是「波源在哪個位置」發出的波？和接收時刻有什麼差別？</li>
+                <li>波源速度大於波速時，右側 R 為什麼聽不到由遠而近的聲音？</li>
+            </ul>
+        </details>
+        <details><summary>常見迷思</summary>
+            <ul>
+                <li><b>「波源靠近時，波速變快」</b>：波速由介質決定，不變。變的是波長（波源動）或視波速（觀察者動）。</li>
+                <li><b>「波源靠近時，波源的頻率變高」</b>：波源實際頻率 f₀ 不變，是觀察者接收到的頻率 f′ 改變。</li>
+                <li><b>「最靠近時頻率最高」</b>：頻率看的是速度在「波源→觀察者」方向的分量。圓周運動時，f′ 最大的時刻與距離最近的時刻不同。</li>
+                <li><b>「音爆是一個爆炸的聲音」</b>：是無數波前堆疊在馬赫錐上，錐面掃過觀察者時，才會同時接收到。</li>
+            </ul>
+        </details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script>
+(() => {
+    'use strict';
+    const el = id => document.getElementById(id), c = el('scene').getContext('2d');
+    const WX = 110, SC = 760 / (2 * WX), OX = 380, OY = 220, RC = 25;
+    const X = x => OX + x * SC, Y = y => OY - y * SC;
+    const S = { mode: 'src', v: 60, f0: 3, vs: 20, dir: 1, vo: -20, Tc: 5, slow: 0.5, t: 0, playing: true, finished: false, hidden: false, data: [], arr: [[], []], nEm: 0, flash: [0, 0], audio: null };
+
+    // ===================== 物理：位置與速度 =====================
+    const Tend = () => S.mode === 'src' ? (S.vs > 0.5 ? 110 / S.vs : Infinity) : S.mode === 'obs' ? (S.vo > 0 ? 75 / S.vo : S.vo < 0 ? 85 / -S.vo : Infinity) : Infinity;
+    const tc = t => Math.min(t, Tend());
+    function srcPos(t) {
+        if (S.mode === 'src') return [-55 * S.dir + S.dir * S.vs * tc(t), 0];
+        if (S.mode === 'obs') return [0, 0];
+        const a = 2 * Math.PI * t / S.Tc; return [RC * Math.cos(a), RC * Math.sin(a)];
+    }
+    function srcVel(t) {
+        if (S.mode === 'src') return t > Tend() ? [0, 0] : [S.dir * S.vs, 0];
+        if (S.mode === 'obs') return [0, 0];
+        const w = 2 * Math.PI / S.Tc, a = w * t; return [-RC * w * Math.sin(a), RC * w * Math.cos(a)];
+    }
+    const xo0 = () => S.vo > 0 ? 25 : S.vo < 0 ? 100 : 60;
+    function obsPos(i, t) {
+        if (S.mode === 'obs') return i === 0 ? [xo0() + S.vo * tc(t), 0] : null;
+        return [i === 0 ? 90 : -90, 0];
+    }
+    const nObs = () => S.mode === 'obs' ? 1 : 2;
+    // 第 k 個波前（於 t_k = k/f₀ 發出）到達觀察者 i 的時間
+    function arrival(i, k) {
+        const te = k / S.f0, p = srcPos(te);
+        if (S.mode !== 'obs') { const o = obsPos(i, 0); return te + Math.hypot(o[0] - p[0], o[1] - p[1]) / S.v; }
+        const g = tt => Math.abs(obsPos(0, tt)[0] - p[0]) - S.v * (tt - te);
+        let lo = te, hi = te + 400 / (S.v - Math.abs(S.vo)); for (let n = 0; n < 60; n++) { const m = (lo + hi) / 2; g(m) > 0 ? lo = m : hi = m; } return (lo + hi) / 2;
+    }
+    function resetSim() { S.t = 0; S.arr = [[], []]; S.nEm = 0; S.finished = false; S.flash = [0, 0]; S.playing = true; syncUI(); }
+    function ensureEmissions() { const n = Math.floor(S.t * S.f0 + 1e-9) + 1; while (S.nEm < n) { for (let i = 0; i < nObs(); i++) S.arr[i].push(arrival(i, S.nEm)); S.nEm++; } }
+
+    // 觀察者實際接收到的波前（到達時間 ≤ t），依時間排序
+    function received(i) { return S.arr[i].filter(a => a <= S.t + 1e-9).sort((a, b) => a - b); }
+    function measF(i, m = 4) { const a = received(i); if (a.length < 2) return null; const q = Math.min(m, a.length - 1); const T = (a[a.length - 1] - a[a.length - 1 - q]) / q; return T > 0 ? 1 / T : null; }
+    // 朝向觀察者的波源速度分量（接近為正）：模式①為常數；模式③隨時間變
+    function uToward(i, te) { const p = srcPos(te), o = obsPos(i, 0), vel = srcVel(te), dx = o[0] - p[0], dy = o[1] - p[1], d = Math.hypot(dx, dy); return (vel[0] * dx + vel[1] * dy) / d; }
+    const fTheory = (i, te) => { if (S.mode === 'obs') return S.f0 * (1 - S.vo / S.v); const u = uToward(i, te); return u < S.v * 0.98 ? S.f0 / (1 - u / S.v) : null; };
+    const supersonicAhead = i => S.mode === 'src' && S.vs >= S.v && uToward(i, 0) > 0;
+
+    // ===================== 繪圖工具 =====================
+    function arrow(ctx, x1, y1, x2, y2, color, w = 3, head = 10) { const len = Math.hypot(x2 - x1, y2 - y1); if (len < 2) return; const a = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(head, len * .6); ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(a) * hl * .6, y2 - Math.sin(a) * hl * .6); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - hl * Math.cos(a - .45), y2 - hl * Math.sin(a - .45)); ctx.lineTo(x2 - hl * Math.cos(a + .45), y2 - hl * Math.sin(a + .45)); ctx.closePath(); ctx.fill(); ctx.restore(); }
+    function txt(ctx, s, x, y, color, size = 14, align = 'left') { ctx.save(); ctx.font = `bold ${size}px sans-serif`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y); ctx.restore(); }
+
+    function drawScene() {
+        c.clearRect(0, 0, 760, 440); c.fillStyle = '#080a0f'; c.fillRect(0, 0, 760, 440);
+        c.strokeStyle = '#141b27'; c.lineWidth = 1; c.beginPath(); c.moveTo(0, OY); c.lineTo(760, OY); c.stroke();
+        // 波前
+        const n = Math.floor(S.t * S.f0 + 1e-9) + 1;
+        for (let k = 0; k < n; k++) { const te = k / S.f0, r = S.v * (S.t - te); if (r <= 0 || r > 330) continue; const p = srcPos(te); c.strokeStyle = `rgba(150,200,255,${Math.max(0.12, 0.85 - r / 330)})`; c.lineWidth = 1.8; c.beginPath(); c.arc(X(p[0]), Y(p[1]), r * SC, 0, 7); c.stroke(); }
+        // 馬赫錐
+        const sp = srcPos(S.t);
+        if (S.mode === 'src' && S.vs > S.v && el('chkCone').checked && S.t > 0.05) { const th = Math.asin(S.v / S.vs), L = 300; c.strokeStyle = 'rgba(255,225,77,.8)'; c.setLineDash([6, 5]); c.lineWidth = 2; for (const sg of [1, -1]) { const ang = Math.atan2(sg * Math.sin(th), -S.dir * Math.cos(th)); c.beginPath(); c.moveTo(X(sp[0]), Y(sp[1])); c.lineTo(X(sp[0]) + L * Math.cos(ang), Y(sp[1]) - L * Math.sin(ang) * 1); c.stroke(); } c.setLineDash([]); txt(c, `馬赫錐　sinθ = v/vₛ = ${(S.v / S.vs).toFixed(2)}`, 380, 30, '#ffe14d', 16, 'center'); }
+        if (S.mode === 'circ') { c.strokeStyle = 'rgba(255,225,77,.3)'; c.setLineDash([4, 6]); c.beginPath(); c.arc(X(0), Y(0), RC * SC, 0, 7); c.stroke(); c.setLineDash([]); }
+        // 波源
+        c.fillStyle = '#ffe14d'; c.beginPath(); c.arc(X(sp[0]), Y(sp[1]), 9, 0, 7); c.fill(); c.strokeStyle = '#4a3d00'; c.lineWidth = 2; c.stroke();
+        const sv = srcVel(S.t); if (Math.hypot(sv[0], sv[1]) > 0.5) arrow(c, X(sp[0]), Y(sp[1]) - 22, X(sp[0]) + sv[0] * 1.2, Y(sp[1]) - 22 - sv[1] * 1.2, '#4d8dff', 4, 12);
+        if (S.mode !== 'circ') txt(c, '波源', X(sp[0]), Y(sp[1]) + 26, '#ffe14d', 13, 'center');
+        // 觀察者
+        for (let i = 0; i < nObs(); i++) { const o = obsPos(i, S.t), col = i === 0 ? '#35d6ff' : '#ff9f43', fl = Math.max(0, 1 - (S.t - S.flash[i]) / 0.18), h = o[0] > 0 || S.mode === 'obs'; if (S.flash[i] > 0 && fl > 0) { c.strokeStyle = col; c.lineWidth = 3; c.globalAlpha = fl; c.beginPath(); c.arc(X(o[0]), Y(o[1]), 12 + (1 - fl) * 16, 0, 7); c.stroke(); c.globalAlpha = 1; }
+            c.fillStyle = col; c.beginPath(); c.arc(X(o[0]), Y(o[1]), 8, 0, 7); c.fill(); txt(c, i === 0 ? 'R' : 'L', X(o[0]), Y(o[1]) + 24, col, 16, 'center');
+            if (S.mode === 'obs' && Math.abs(S.vo) > 0.5) arrow(c, X(o[0]), Y(o[1]) - 24, X(o[0]) + S.vo * 2.2, Y(o[1]) - 24, '#4d8dff', 4, 12); }
+        txt(c, `t = ${S.t.toFixed(2)} s`, 14, 20, '#9aa8bd', 14);
+    }
+
+    // ===================== f′–t 圖 =====================
+    function drawF() {
+        const cv = el('gF'), x = cv.getContext('2d'), W = cv.width, H = cv.height, Lm = 62, Rm = 14, T = 30, B = 40, pw = W - Lm - Rm, ph = H - T - B;
+        const x0 = Math.max(0, S.t - 10), x1 = Math.max(10, S.t); const shown = !S.hidden;
+        let ymax = 2 * S.f0; const curves = [];
+        for (let i = 0; i < nObs(); i++) {
+            const pts = []; if (shown || true) { if (S.mode === 'obs') { pts.push([0, fTheory(i, 0)], [S.t, fTheory(i, 0)]); } else { for (let te = 0; te <= S.t; te += Math.max(0.01, S.t / 300)) { if (supersonicAhead(i)) break; const f = fTheory(i, te); if (f == null) continue; const o = obsPos(i, 0), p = srcPos(te); const ta = te + Math.hypot(o[0] - p[0], o[1] - p[1]) / S.v; if (ta <= S.t) pts.push([ta, f]); } } }
+            curves.push(pts); pts.forEach(p => { if (p[1] != null && isFinite(p[1])) ymax = Math.max(ymax, p[1] * 1.15); });
+        }
+        ymax = Math.min(Math.max(2 * S.f0, ymax), 6 * S.f0); ymax = Math.ceil(ymax * 2) / 2;
+        const PX = v => Lm + (v - x0) / (x1 - x0) * pw, PY = v => T + ph - v / ymax * ph;
+        x.clearRect(0, 0, W, H); x.fillStyle = '#0d121b'; x.fillRect(0, 0, W, H); x.font = '12px sans-serif';
+        const sy = ymax > 12 ? 2 : ymax > 6 ? 1 : 0.5; for (let v = 0; v <= ymax + 1e-9; v += sy) { x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(Lm, PY(v)); x.lineTo(Lm + pw, PY(v)); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'right'; x.fillText(v.toFixed(1), Lm - 6, PY(v) + 4); }
+        for (let v = Math.ceil(x0); v <= x1; v += 2) { x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(PX(v), T); x.lineTo(PX(v), T + ph); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(v.toFixed(0), PX(v), T + ph + 15); }
+        x.strokeStyle = '#5b6a82'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(Lm, T); x.lineTo(Lm, T + ph); x.lineTo(Lm + pw, T + ph); x.stroke();
+        x.save(); x.beginPath(); x.rect(Lm, T, pw, ph); x.clip();
+        if (shown) { x.strokeStyle = 'rgba(255,255,255,.4)'; x.setLineDash([5, 4]); x.lineWidth = 1.2; x.beginPath(); x.moveTo(Lm, PY(S.f0)); x.lineTo(Lm + pw, PY(S.f0)); x.stroke(); x.setLineDash([]); }
+        const cols = ['#35d6ff', '#ff9f43'];
+        if (shown) curves.forEach((pts, i) => { x.strokeStyle = cols[i]; x.globalAlpha = .55; x.lineWidth = 2; x.beginPath(); pts.forEach((p, j) => j ? x.lineTo(PX(p[0]), PY(p[1])) : x.moveTo(PX(p[0]), PY(p[1]))); x.stroke(); x.globalAlpha = 1; });
+        for (let i = 0; i < nObs(); i++) { if (supersonicAhead(i)) continue; const a = received(i); x.fillStyle = cols[i]; for (let j = 1; j < a.length; j++) { const f = 1 / (a[j] - a[j - 1]); if (f > ymax * 1.05) continue; x.beginPath(); x.arc(PX(a[j]), PY(f), 4.5, 0, 7); x.fill(); } }
+        x.strokeStyle = 'rgba(255,255,255,.4)'; x.setLineDash([4, 4]); x.beginPath(); x.moveTo(PX(S.t), T); x.lineTo(PX(S.t), T + ph); x.stroke(); x.restore();
+        x.fillStyle = '#c3d0e4'; x.font = 'bold 14px sans-serif'; x.textAlign = 'left'; x.fillText('接收頻率 f′ (Hz)　虛線：f₀', Lm, 18); x.fillStyle = '#8a99ad'; x.font = '12px sans-serif'; x.textAlign = 'center'; x.fillText('接收時間 t (s)', Lm + pw / 2, H - 6);
+        el('gNote').innerHTML = S.mode === 'circ' ? '圓周運動：f′ 隨時間起伏。注意曲線的橫軸是「接收時間」，最高頻率對應的是 <b>波源速度朝向觀察者最大</b> 的那一刻<b>發出</b>的波，比它早 d/v 秒。' : (S.mode === 'obs' ? '觀察者運動：波長不變，視波速 v′ = v − v<sub>o</sub>，所以 f′ = f₀ (1 − v<sub>o</sub>/v)，是常數。' : '波源等速運動：兩位觀察者各自接收到固定的頻率；音爆時 R 先收到後來發出的波，沒有「頻率」。');
+    }
+
+    // ===================== 儀表 =====================
+    function renderDash() {
+        const m = (t, v, u, col) => `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value" style="color:${col}">${v}<span class="unit">${u}</span></div></div>`, sh = !S.hidden, q = x => sh ? x : '？';
+        let h = `<div class="dashboard">${m('介質波速 v', q(S.v), 'm/s', '#c3d0e4')}${m('波源頻率 f₀', q(S.f0.toFixed(1)), 'Hz', '#ffe14d')}${m('波源速率 vₛ', S.mode === 'src' ? S.vs : S.mode === 'circ' ? (2 * Math.PI * RC / S.Tc).toFixed(1) : 0, 'm/s', '#4d8dff')}${m('觀察者速率 vₒ', S.mode === 'obs' ? S.vo : 0, 'm/s', '#4d8dff')}</div>`;
+        for (let i = 0; i < nObs(); i++) {
+            const col = i === 0 ? '#35d6ff' : '#ff9f43', name = i === 0 ? '右側觀察者 R' : '左側觀察者 L', f = measF(i), fth = fTheory(i, 0);
+            let vp = '—', lam = '—', ff = '—', mf = f == null ? '—' : f.toFixed(2);
+            if (supersonicAhead(i)) { mf = '音爆'; ff = '—'; }
+            else if (S.mode === 'src') { ff = sh && fth != null ? fth.toFixed(2) : '？'; vp = q(S.v); lam = sh && fth != null ? (S.v / fth).toFixed(1) : '？'; }
+            else if (S.mode === 'obs') { ff = sh ? fTheory(0, 0).toFixed(2) : '？'; vp = q((S.v - S.vo).toFixed(0)); lam = q((S.v / S.f0).toFixed(1)); }
+            else { const lo = [], te0 = 0; let mn = 1e9, mx = 0; for (let te = 0; te < S.Tc; te += S.Tc / 400) { const fx = fTheory(i, te); if (fx != null) { mn = Math.min(mn, fx); mx = Math.max(mx, fx); } } ff = sh ? `${mn.toFixed(2)}～${mx.toFixed(2)}` : '？'; }
+            h += `<div class="obs-box"><div class="obs-title" style="color:${col}">${name}</div><div class="dashboard">${m('視波速 v′', vp, 'm/s', col)}${m('視波長 λ′', lam, 'm', col)}${m('接收頻率 f′（實際計數）', mf, 'Hz', col)}${m(S.mode === 'circ' ? '公式 f′ 範圍' : '公式 f′ = v′÷λ′', ff, 'Hz', col)}</div></div>`;
+        }
+        el('dash').innerHTML = h;
+        let msg = '', k = S.mode;
+        if (k === 'src') msg = S.vs > S.v ? '波源<b>超音速</b>：波前堆疊成馬赫錐（黃色虛線）。右側 R 在錐面通過前聽不到聲音，錐面掃過時才接收到。' : `波源朝右前進：<b>右側 R 的波長被壓縮、頻率升高；左側 L 的波長被拉長、頻率降低</b>。波速 v 沒有變。`;
+        else if (k === 'obs') msg = '波源不動，波長不變。觀察者' + (S.vo < 0 ? '迎向波：視波速 v′ = v + |vₒ| 變大，所以 f′ 升高' : S.vo > 0 ? '遠離波源：視波速 v′ = v − vₒ 變小，所以 f′ 降低' : '靜止：f′ = f₀') + '。';
+        else msg = '波源繞圓周運動，兩位遠方的觀察者接收到的頻率隨時間起伏，高低各一次。';
+        el('status').innerHTML = msg; el('runState').textContent = S.finished ? '已完成' : (S.playing ? '播放中' : '暫停');
+    }
+
+    // ===================== 實驗：1/f′ 對 u =====================
+    function steadyF(u, obsRight) {          // 用與動畫相同的「到達時間」關係，算 8 個波前的平均接收頻率
+        const Tm = 1 / S.f0, dist = 90, arr = []; for (let k = 0; k < 8; k++) { const te = k * Tm, xs = -55 + u * te * 1; const xsig = obsRight ? xs : -xs; arr.push(te + (90 - xsig) / S.v); }
+        arr.sort((a, b) => a - b); return 7 / (arr[7] - arr[0]);
+    }
+    const noise = () => el('chkNoise').checked ? 1 + (Math.random() + Math.random() - 1) * 0.01 : 1;
+    function addPoint(name, u, f) { S.data.push({ name, u, f }); if (S.data.length > 40) S.data.shift(); }
+    function recordNow() {
+        if (S.mode !== 'src') { alert('請切換到「① 波源運動」。'); return; } if (S.vs >= S.v) { alert('波源速率需小於波速。'); return; }
+        const u = S.dir * S.vs; const f = [measF(0, 6), measF(1, 6)]; if (f[0] == null || f[1] == null || received(0).length < 4 || received(1).length < 4) { alert('請等觀察者各接收到至少 4 個波前再記錄。'); return; }
+        addPoint('R', u, f[0] * noise()); addPoint('L', -u, f[1] * noise()); renderExp();
+    }
+    function sweep() { const lim = Math.floor(S.v * 0.85 / 10) * 10, saveV = S.vs; for (let u = -lim; u <= lim; u += 10) { addPoint('R', u, steadyF(u, true) * noise()); } renderExp(); }
+    function renderExp() {
+        const cv = el('gExp'), x = cv.getContext('2d'), W = cv.width, H = cv.height, Lm = 62, Rm = 14, T = 30, B = 40, pw = W - Lm - Rm, ph = H - T - B;
+        const xs = S.data.map(d => d.u), ys = S.data.map(d => 1 / d.f), xmin = -100, xmax = 100, ymax = Math.max(0.6, ...ys.map(v => v * 1.2));
+        const PX = v => Lm + (v - xmin) / (xmax - xmin) * pw, PY = v => T + ph - v / ymax * ph;
+        x.clearRect(0, 0, W, H); x.fillStyle = '#0d121b'; x.fillRect(0, 0, W, H); x.font = '12px sans-serif';
+        for (let v = -100; v <= 100; v += 20) { x.strokeStyle = v === 0 ? '#3a4a66' : '#1b2433'; x.beginPath(); x.moveTo(PX(v), T); x.lineTo(PX(v), T + ph); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(v, PX(v), T + ph + 15); }
+        const sy = ymax > 1.5 ? 0.5 : 0.1; for (let v = 0; v <= ymax + 1e-9; v += sy) { x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(Lm, PY(v)); x.lineTo(Lm + pw, PY(v)); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'right'; x.fillText(v.toFixed(1), Lm - 6, PY(v) + 4); }
+        x.strokeStyle = '#5b6a82'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(Lm, T); x.lineTo(Lm, T + ph); x.lineTo(Lm + pw, T + ph); x.stroke();
+        let txtFit = S.data.length < 2 ? '至少需要 2 筆數據（先按「記錄」或「自動掃描」）。' : '';
+        if (S.data.length >= 2) { const n = xs.length, mx = xs.reduce((a, b) => a + b) / n, my = ys.reduce((a, b) => a + b) / n; let sxy = 0, sxx = 0; xs.forEach((u, i) => { sxy += (u - mx) * (ys[i] - my); sxx += (u - mx) ** 2; }); if (sxx > 0) { const b = sxy / sxx, a = my - b * mx; x.save(); x.beginPath(); x.rect(Lm, T, pw, ph); x.clip(); x.strokeStyle = 'rgba(0,212,255,.9)'; x.setLineDash([6, 5]); x.lineWidth = 2; x.beginPath(); x.moveTo(PX(xmin), PY(a + b * xmin)); x.lineTo(PX(xmax), PY(a + b * xmax)); x.stroke(); x.restore();
+            const f0e = 1 / a, ve = -a / b; txtFit = `直線 1/f′ ＝ ${a.toFixed(4)} ＋ (${b.toFixed(5)})·u　→ 截距 ＝ 1/f₀，<b>f₀ ≈ ${f0e.toFixed(2)} Hz</b>；斜率 ＝ −1/(f₀v)，<b>v ≈ ${ve.toFixed(1)} m/s</b>。` + (S.hidden ? '（真實值已隱藏，按「揭曉」對答案）' : `真實值：f₀ ＝ ${S.f0.toFixed(1)} Hz，v ＝ ${S.v} m/s。`); } }
+        S.data.forEach(d => { x.fillStyle = d.name === 'R' ? '#35d6ff' : '#ff9f43'; x.beginPath(); x.arc(PX(d.u), PY(1 / d.f), 5, 0, 7); x.fill(); });
+        x.fillStyle = '#c3d0e4'; x.font = 'bold 14px sans-serif'; x.textAlign = 'left'; x.fillText('1/f′ 對 u（藍：R、橘：L）', Lm, 18); x.font = '12px sans-serif'; x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText('u：波源朝向觀察者的速度 (m/s)', Lm + pw / 2, H - 6);
+        x.save(); x.translate(14, T + ph / 2); x.rotate(-Math.PI / 2); x.fillText('1/f′ (s)', 0, 0); x.restore();
+        el('fitText').innerHTML = txtFit; el('dataBody').innerHTML = S.data.map((d, i) => `<tr><td>${i + 1}</td><td>${d.name}</td><td>${d.u.toFixed(0)}</td><td>${d.f.toFixed(2)}</td><td>${(1 / d.f).toFixed(3)}</td></tr>`).join('');
+    }
+
+    // ===================== 聲音 =====================
+    function updateAudio() {
+        const sel = el('selSnd').value; if (sel === 'off') { if (S.audio) S.audio.g.gain.setTargetAtTime(0, S.audio.ctx.currentTime, 0.05); return; }
+        try { if (!S.audio) { const ctx = new (window.AudioContext || window.webkitAudioContext)(), o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; g.gain.value = 0; o.connect(g); g.connect(ctx.destination); o.start(); S.audio = { ctx, o, g }; }
+            const i = sel === 'R' ? 0 : 1; if (i >= nObs()) return; const f = measF(i, 2) || S.f0; S.audio.g.gain.setTargetAtTime(S.playing ? 0.06 : 0, S.audio.ctx.currentTime, 0.05); S.audio.o.frequency.setTargetAtTime(330 * f / S.f0, S.audio.ctx.currentTime, 0.08); } catch (e) { }
+    }
+
+    // ===================== 事件 =====================
+    const DESC = { src: '波源以速率 vₛ 由一端移向另一端，兩位觀察者靜止。數一數：每個觀察者 1 秒接收到幾個波前？', obs: '波源靜止，只有觀察者（R）運動。波長不變，改變的是觀察者看到的波速。', circ: '波源在半徑 25 m 的圓周上運動（週期 T），R、L 在遠方靜止。看接收頻率如何起伏。' };
+    function syncUI() {
+        el('lblV').textContent = S.hidden ? '？' : S.v; el('lblF').textContent = S.hidden ? '？' : S.f0.toFixed(1); el('lblVs').textContent = S.vs; el('lblVo').textContent = S.vo; el('lblTc').textContent = S.Tc.toFixed(1);
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === S.mode)); el('modeDesc').textContent = DESC[S.mode];
+        el('grpVs').classList.toggle('off', S.mode !== 'src'); el('grpDir').classList.toggle('off', S.mode !== 'src'); el('grpVo').classList.toggle('off', S.mode !== 'obs'); el('grpTc').classList.toggle('off', S.mode !== 'circ'); el('expCard').style.display = S.mode === 'src' ? '' : 'none';
+        el('slV').disabled = S.hidden; el('slF').disabled = S.hidden; el('btnReveal').disabled = !S.hidden;
+        const vmax = Math.round(S.v * 0.8); el('slVo').min = -vmax; el('slVo').max = vmax; if (Math.abs(S.vo) > vmax) { S.vo = Math.sign(S.vo) * vmax; el('slVo').value = S.vo; el('lblVo').textContent = S.vo; }
+        const tmin = Math.ceil(2 * Math.PI * RC / (0.9 * S.v) * 2) / 2; el('slTc').min = Math.max(3, tmin); if (S.Tc < tmin) { S.Tc = tmin; el('slTc').value = S.Tc; el('lblTc').textContent = S.Tc.toFixed(1); }
+        el('tcNote').textContent = `圓周速率 ＝ 2π×25÷T ＝ ${(2 * Math.PI * RC / S.Tc).toFixed(1)} m/s（需小於 v）`; el('machNote').textContent = S.vs > S.v ? '已超過波速：音爆！' : (S.vs === S.v ? '等於波速：波前在前方疊成一點' : '');
+    }
+    document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.mode; resetSim(); }));
+    const bind = (id, key, f = Number) => el(id).addEventListener('input', e => { S[key] = f(e.target.value); S.data = (key === 'v' || key === 'f0') ? [] : S.data; resetSim(); if (key === 'v' || key === 'f0') renderExp(); });
+    bind('slV', 'v'); bind('slF', 'f0'); bind('slVs', 'vs'); bind('slVo', 'vo'); bind('slTc', 'Tc');
+    el('selDir').addEventListener('change', e => { S.dir = +e.target.value; resetSim(); }); el('selSlow').addEventListener('change', e => { S.slow = +e.target.value; });
+    el('btnPlay').addEventListener('click', () => { if (S.finished) resetSim(); S.playing = true; }); el('btnPause').addEventListener('click', () => { S.playing = false; }); el('btnReset').addEventListener('click', resetSim);
+    el('btnRecord').addEventListener('click', recordNow); el('btnSweep').addEventListener('click', sweep); el('btnClear').addEventListener('click', () => { S.data = []; renderExp(); });
+    el('btnUnknown').addEventListener('click', () => { S.v = 40 + Math.round(Math.random() * 12) * 5; S.f0 = 2 + Math.round(Math.random() * 4) * 0.5; el('slV').value = S.v; el('slF').value = S.f0; S.hidden = true; S.data = []; resetSim(); renderExp(); });
+    el('btnReveal').addEventListener('click', () => { S.hidden = false; syncUI(); renderExp(); });
+    el('selSnd').addEventListener('change', updateAudio);
+
+    // ===================== 迴圈 =====================
+    let last = null, fn = 0;
+    function frame(ts) {
+        if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05) * S.slow; last = ts;
+        if (S.playing) { S.t += dt; const te = Tend(); if (S.t >= te) { S.t = te; S.playing = false; S.finished = true; if (el('chkLoop').checked) setTimeout(resetSim, 500); } }
+        ensureEmissions();
+        for (let i = 0; i < nObs(); i++) for (const a of S.arr[i]) if (a <= S.t && a > S.t - dt - 1e-9 && S.playing) S.flash[i] = S.t;
+        drawScene(); if (!(fn++ % 2)) { drawF(); renderDash(); updateAudio(); } requestAnimationFrame(frame);
+    }
+    window.__dp = { S, resetSim, measF, received, fTheory, steadyF, arrival, recordNow, sweep, ensureEmissions, supersonicAhead };
+    syncUI(); renderExp(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
