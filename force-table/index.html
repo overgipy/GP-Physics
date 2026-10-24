@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三力平衡：力桌實驗 - 李捷物理實驗室</title>
+    <style>
+        :root {
+            --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432;
+            --text-main: #f0f3f8; --text-muted: #9aa8bd;
+            --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676;
+            --f1: #ff4d6d; --f2: #ff9f43; --f3: #ff6bd6; --net: #ffe14d;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px;
+            display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6;
+        }
+        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; }
+        .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
+        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; }
+        h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; }
+        .subtitle { margin: 4px 0 0; font-size: 0.95rem; color: var(--text-muted); }
+        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
+        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
+        .card-title {
+            font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px;
+            border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;
+        }
+        .force-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .fbox { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-left-width: 5px; border-radius: 8px; padding: 10px 12px; }
+        .fbox h3 { margin: 0 0 6px; font-size: 1.05rem; }
+        .row-label { display: flex; justify-content: space-between; font-size: .93rem; color: #c3d0e4; margin: 6px 0 2px; }
+        .row-label b { font-family: monospace; font-size: 1.05rem; }
+        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
+        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin: 4px 0 12px; font-size: .95rem; }
+        .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; }
+        button.btn.secondary { background: #3a465b; color: #fff; }
+        button.btn.green { background: var(--green); color: #00210f; }
+        button.btn:hover { filter: brightness(1.12); }
+        .btn-note { font-size: .85rem; color: var(--text-muted); margin-top: 8px; }
+        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; }
+        canvas { display: block; width: 100%; height: auto; }
+        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; font-size: 1.05rem; font-weight: bold; text-align: center; border: 1px solid #333; }
+        .status.ok { background: rgba(0,230,118,.12); border-color: var(--green); color: var(--green); }
+        .status.near { background: rgba(255,204,0,.1); border-color: var(--yellow); color: var(--yellow); }
+        .status.bad { background: rgba(255,77,109,.1); border-color: var(--f1); color: #ff8aa0; }
+        .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+        table { width: 100%; border-collapse: collapse; font-size: .92rem; font-family: monospace; }
+        th, td { border-bottom: 1px solid #263044; padding: 5px 6px; text-align: right; }
+        th { color: var(--text-muted); font-weight: normal; }
+        td:first-child, th:first-child { text-align: left; }
+        tr.sum td { border-top: 2px solid #3a465b; color: var(--net); font-weight: bold; }
+        .lami { margin-top: 10px; background: #111622; border: 1px dashed #2f3b50; border-radius: 8px; padding: 8px 12px; font-family: monospace; font-size: .92rem; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+        .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; }
+        .meter-title { font-size: .82rem; color: var(--text-muted); }
+        .meter-value { font-size: 1.35rem; font-weight: bold; font-family: monospace; }
+        .unit { font-size: .78rem; color: #6a7a92; margin-left: 3px; }
+        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+        summary { cursor: pointer; font-weight: bold; color: var(--cyan); }
+        details ol, details ul { margin: 8px 0 2px; padding-left: 22px; }
+        details li { margin-bottom: 4px; }
+        .assume { font-size: .88rem; color: var(--text-muted); }
+        .sub-note { font-size: .85rem; color: var(--text-muted); margin-top: 6px; }
+        footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
+    </style>
+</head>
+<body>
+
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>🎯 三力平衡：力桌實驗</h1>
+    <p class="subtitle">共點力平衡條件：ΣF = 0　｜　三個力的向量首尾相接會形成封閉三角形</p>
+</header>
+
+<div class="container">
+
+    <div class="card">
+        <div class="card-title">調整三個力（砝碼重 ＝ 質量 × g）</div>
+        <div class="force-grid" id="forceGrid"></div>
+        <div class="check-row">
+            <label><input type="checkbox" id="chkComp" checked> 顯示 F₁＋F₂ 的合力（虛線）</label>
+            <label><input type="checkbox" id="chkNet" checked> 顯示三力合力 ΣF（黃色）</label>
+            <label><input type="checkbox" id="chkScale" checked> 顯示角度刻度</label>
+        </div>
+        <div class="btn-row">
+            <button class="btn" id="btnPreset1">範例：3-4-5 直角</button>
+            <button class="btn" id="btnPreset2">範例：三個等大力 120°</button>
+            <button class="btn green" id="btnSolve">自動求第三力 F₃</button>
+            <button class="btn secondary" id="btnRandom">🎲 隨機出題</button>
+            <button class="btn secondary" id="btnReset">↺ 重設</button>
+        </div>
+        <div class="btn-note" id="solveNote">「隨機出題」會隨機給 F₁、F₂，請你調整 F₃ 讓圓環回到中心；做不出來時按「自動求第三力」看答案。</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span>力桌（俯視圖）</span><span style="font-size:.85rem;color:var(--text-muted);">箭頭長度與力的大小成正比：1 N ＝ 60 px</span></div>
+        <div class="canvas-wrap"><canvas id="table" width="760" height="680"></canvas></div>
+        <div class="status" id="status"></div>
+        <div class="sub-note">圓環的偏移量只是示意（與合力成正比）：不平衡時，圓環會被拉向合力的方向；平衡時圓環停在中心銷釘上。角度由 +x 方向（0°，朝右）逆時針量起。</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">合力與分量</div>
+        <div class="dashboard" style="margin-bottom:12px;">
+            <div class="meter"><div class="meter-title">ΣFx</div><div class="meter-value" id="mSx">0<span class="unit">N</span></div></div>
+            <div class="meter"><div class="meter-title">ΣFy</div><div class="meter-value" id="mSy">0<span class="unit">N</span></div></div>
+            <div class="meter"><div class="meter-title">合力大小 |ΣF|</div><div class="meter-value" id="mNet" style="color:var(--net)">0<span class="unit">N</span></div></div>
+            <div class="meter"><div class="meter-title">合力方向</div><div class="meter-value" id="mDir">—</div></div>
+        </div>
+        <div class="two-col">
+            <div>
+                <table>
+                    <thead><tr><th></th><th>大小 F (N)</th><th>角度 θ</th><th>Fx = F cosθ</th><th>Fy = F sinθ</th></tr></thead>
+                    <tbody id="compBody"></tbody>
+                </table>
+                <div class="lami" id="lami"></div>
+            </div>
+            <div>
+                <div class="graph-box"><canvas id="tri" width="520" height="400"></canvas></div>
+                <div class="sub-note">向量首尾相接：F₁→F₂→F₃。若三力平衡，終點回到起點，圖形封閉；黃色線是「沒有封閉的缺口」，就是合力 ΣF 的相反向量（缺口 ＝ −ΣF）。</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open>
+            <summary>核心公式（符號與單位）</summary>
+            <ul>
+                <li>每個力：<b>F = m g</b>　F：力（N）、m：砝碼質量（kg）、g = 9.8 m/s²（1 gw ＝ 0.0098 N，砝碼 50 g 的重量約 0.49 N）</li>
+                <li>平衡條件：<b>ΣFx = F₁cosθ₁ + F₂cosθ₂ + F₃cosθ₃ = 0</b>，<b>ΣFy = F₁sinθ₁ + F₂sinθ₂ + F₃sinθ₃ = 0</b>（θ：由 +x 逆時針量起的角度）</li>
+                <li>三力平衡時，任一力必與另外兩力的合力<b>等大反向</b>：F₃ ＝ −(F₁ + F₂)。</li>
+                <li><b>拉密定理（Lami）：</b>F₁ ÷ sin α₂₃ ＝ F₂ ÷ sin α₃₁ ＝ F₃ ÷ sin α₁₂，其中 α₂₃ 為 F₂、F₃ 之間的夾角（其餘類推）。</li>
+            </ul>
+            <p class="assume">理想化假設：細繩輕、不可伸長；滑輪無摩擦；圓環視為質點（三力共點）；力桌水平且無摩擦。滑桿的質量取整數公克、角度取 0.1°，所以自動求解後會有微小殘差（最大約 0.007 N），判定「平衡」的門檻是 |ΣF| &lt; 0.01 N。</p>
+        </details>
+        <details>
+            <summary>建議講解順序</summary>
+            <ol>
+                <li>先按「範例：三個等大力 120°」，問學生：為什麼三個一樣大的力要相隔 120°才會平衡？再看向量三角形（正三角形）。</li>
+                <li>按「範例：3-4-5 直角」，看 F₁ ⟂ F₂ 時，F₃ ＝ √(F₁² + F₂²) 且方向與合力相反。</li>
+                <li>隨便改一個角度，圓環被拉走；讓學生猜哪個力要變大或變小才能拉回來。</li>
+                <li>「隨機出題」：學生手動調 F₃，再用「自動求第三力」對答案，並看分量表怎麼算。</li>
+                <li>最後用表格驗證 ΣFx、ΣFy 都為 0，並介紹拉密定理。</li>
+            </ol>
+        </details>
+        <details>
+            <summary>可以問學生的問題</summary>
+            <ul>
+                <li>三個力的大小可以是 1 N、1 N、3 N 嗎？（不行，不能形成封閉三角形：兩邊和必須大於第三邊）</li>
+                <li>如果其中兩個力同方向，第三個力要怎麼放？（共線平衡，F₃ ＝ F₁ ＋ F₂ 方向相反）</li>
+                <li>把 F₁ 的角度增加 10°，需要怎麼調整 F₃ 的角度？</li>
+                <li>為什麼說「三力平衡的作用線必共點」？</li>
+            </ul>
+        </details>
+        <details>
+            <summary>常見迷思</summary>
+            <ul>
+                <li><b>「力大的方向一定要多放幾個力在另一邊」</b>：平衡看的是向量和，不是個數。</li>
+                <li><b>「每個力都相等才會平衡」</b>：不一定，只要三角形能封閉即可（例如 3、4、5）。</li>
+                <li><b>「角度大就是力大」</b>：和夾角及方向有關，要用分量或拉密定理判斷。</li>
+                <li>角度要看清楚是<b>由哪條線量起</b>，不要把夾角當成 θ 本身。</li>
+            </ul>
+        </details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script>
+(() => {
+    'use strict';
+    const G = 9.8;
+    const PX_PER_N = 60;
+    const TOL_OK = 0.01, TOL_NEAR = 0.05;       // N
+    const M_MIN = 10, M_MAX = 250;               // g
+    const COLORS = ['#ff4d6d', '#ff9f43', '#ff6bd6'];
+    const NET = '#ffe14d';
+    const el = id => document.getElementById(id);
+    const cv = el('table'), c = cv.getContext('2d');
+    const CX = 380, CY = 340, RT = 245;           // 力桌中心與半徑
+
+    const DEFAULT = [{ m: 100, th: 90 }, { m: 100, th: 210 }, { m: 100, th: 330 }];
+    const forces = DEFAULT.map(f => ({ ...f }));
+
+    // ===== 物理 =====
+    const mag = f => f.m / 1000 * G;                                   // N
+    const rad = d => d * Math.PI / 180;
+    const vec = f => ({ x: mag(f) * Math.cos(rad(f.th)), y: mag(f) * Math.sin(rad(f.th)) });
+    function sums() {
+        let x = 0, y = 0;
+        forces.forEach(f => { const v = vec(f); x += v.x; y += v.y; });
+        const m = Math.hypot(x, y);
+        let dir = Math.atan2(y, x) * 180 / Math.PI; if (dir < 0) dir += 360;
+        return { x, y, m, dir };
+    }
+    // 兩個力方向之間的夾角（0–180°）
+    function between(a, b) {
+        let d = Math.abs(a.th - b.th) % 360; if (d > 180) d = 360 - d; return d;
+    }
+
+    // ===== 建立控制項 =====
+    const grid = el('forceGrid');
+    forces.forEach((f, i) => {
+        const d = document.createElement('div');
+        d.className = 'fbox'; d.style.borderLeftColor = COLORS[i];
+        d.innerHTML = `
+            <h3 style="color:${COLORS[i]}">F<sub>${i + 1}</sub></h3>
+            <div class="row-label"><span>砝碼質量 m<sub>${i + 1}</sub></span><b id="lm${i}"></b></div>
+            <input type="range" id="sm${i}" min="${M_MIN}" max="${M_MAX}" step="1" value="${f.m}">
+            <div class="row-label"><span>方向 θ<sub>${i + 1}</sub></span><b id="lt${i}"></b></div>
+            <input type="range" id="st${i}" min="0" max="359.9" step="0.1" value="${f.th}">
+            <div class="row-label">力的大小<b id="lf${i}" style="color:${COLORS[i]}"></b></div>`;
+        grid.appendChild(d);
+        el('sm' + i).addEventListener('input', e => { forces[i].m = +e.target.value; refresh(); });
+        el('st' + i).addEventListener('input', e => { forces[i].th = +e.target.value; refresh(); });
+    });
+    function syncSliders() {
+        forces.forEach((f, i) => { el('sm' + i).value = f.m; el('st' + i).value = f.th; });
+        refresh();
+    }
+
+    // ===== 繪圖工具 =====
+    function arrow(ctx, x1, y1, x2, y2, color, w = 3, head = 10, dash = null) {
+        const len = Math.hypot(x2 - x1, y2 - y1);
+        if (len < 2) return;
+        const a = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(head, len * 0.6);
+        ctx.save();
+        ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round';
+        if (dash) ctx.setLineDash(dash);
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(a) * hl * .6, y2 - Math.sin(a) * hl * .6); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - hl * Math.cos(a - .45), y2 - hl * Math.sin(a - .45));
+        ctx.lineTo(x2 - hl * Math.cos(a + .45), y2 - hl * Math.sin(a + .45));
+        ctx.closePath(); ctx.fill(); ctx.restore();
+    }
+    function text(ctx, s, x, y, color, size = 14, align = 'left', bold = true) {
+        ctx.save(); ctx.font = `${bold ? 'bold ' : ''}${size}px sans-serif`; ctx.fillStyle = color;
+        ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y); ctx.restore();
+    }
+    const P = (th, r) => ({ x: CX + r * Math.cos(rad(th)), y: CY - r * Math.sin(rad(th)) });   // 螢幕 y 軸向下
+
+    // ===== 力桌 =====
+    let ring = { x: 0, y: 0 };            // 圓環相對中心的偏移（px，螢幕座標）
+    function targetOffset() {
+        const s = sums(); const k = 80;   // 1 N → 80 px（示意）
+        let dx = s.x * k, dy = -s.y * k;
+        const l = Math.hypot(dx, dy), cap = 70;
+        if (l > cap) { dx *= cap / l; dy *= cap / l; }
+        return { x: dx, y: dy };
+    }
+
+    function drawTable() {
+        c.clearRect(0, 0, cv.width, cv.height);
+        c.fillStyle = '#080a0f'; c.fillRect(0, 0, cv.width, cv.height);
+        // 桌面
+        const g = c.createRadialGradient(CX, CY, 20, CX, CY, RT);
+        g.addColorStop(0, '#26303f'); g.addColorStop(1, '#1b2330');
+        c.fillStyle = g; c.beginPath(); c.arc(CX, CY, RT, 0, 7); c.fill();
+        c.strokeStyle = '#4a5870'; c.lineWidth = 3; c.stroke();
+
+        if (el('chkScale').checked) {
+            for (let d = 0; d < 360; d += 5) {
+                const major = d % 30 === 0, a = P(d, RT - (major ? 16 : 8)), b = P(d, RT);
+                c.strokeStyle = major ? '#8a99ad' : '#4a5870'; c.lineWidth = major ? 2 : 1;
+                c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke();
+                if (major) { const t = P(d, RT - 30); text(c, d + '°', t.x, t.y, '#8a99ad', 12, 'center', false); }
+            }
+            c.strokeStyle = 'rgba(255,255,255,.12)'; c.lineWidth = 1;
+            c.beginPath(); c.moveTo(CX - RT + 30, CY); c.lineTo(CX + RT - 30, CY); c.moveTo(CX, CY - RT + 30); c.lineTo(CX, CY + RT - 30); c.stroke();
+        }
+        // 中心銷釘
+        c.strokeStyle = '#aab6c8'; c.lineWidth = 2;
+        c.beginPath(); c.moveTo(CX - 8, CY); c.lineTo(CX + 8, CY); c.moveTo(CX, CY - 8); c.lineTo(CX, CY + 8); c.stroke();
+
+        const rx = CX + ring.x, ry = CY + ring.y;
+
+        // 細繩、滑輪與砝碼標示
+        forces.forEach((f, i) => {
+            const p = P(f.th, RT + 6);
+            c.strokeStyle = COLORS[i]; c.lineWidth = 2;
+            c.beginPath(); c.moveTo(rx, ry); c.lineTo(p.x, p.y); c.stroke();
+            c.fillStyle = '#c3d0e4'; c.beginPath(); c.arc(p.x, p.y, 9, 0, 7); c.fill();
+            c.strokeStyle = '#0a0c10'; c.lineWidth = 2; c.stroke();
+            const t = P(f.th, RT + 52);
+            c.fillStyle = 'rgba(0,0,0,.55)'; c.fillRect(t.x - 52, t.y - 22, 104, 44);
+            c.strokeStyle = COLORS[i]; c.lineWidth = 1.5; c.strokeRect(t.x - 52, t.y - 22, 104, 44);
+            text(c, `F${i + 1}  ${f.m} g`, t.x, t.y - 8, COLORS[i], 14, 'center');
+            text(c, `${f.th.toFixed(1)}°  ${mag(f).toFixed(3)} N`, t.x, t.y + 10, '#e3e9f3', 12, 'center', false);
+        });
+
+        // F1+F2 合力（虛線）
+        if (el('chkComp').checked) {
+            const v1 = vec(forces[0]), v2 = vec(forces[1]);
+            const rxv = v1.x + v2.x, ryv = v1.y + v2.y;
+            arrow(c, rx, ry, rx + rxv * PX_PER_N, ry - ryv * PX_PER_N, '#9be7ff', 3, 11, [8, 6]);
+            const l = Math.hypot(rxv, ryv);
+            if (l > 0.02) text(c, `F₁+F₂ = ${l.toFixed(3)} N`, rx + rxv * PX_PER_N * 0.5 + 8, ry - ryv * PX_PER_N * 0.5 - 12, '#9be7ff', 13, 'left');
+        }
+        // 三個力的箭頭
+        forces.forEach((f, i) => {
+            const v = vec(f);
+            arrow(c, rx, ry, rx + v.x * PX_PER_N, ry - v.y * PX_PER_N, COLORS[i], 5, 13);
+        });
+        // 合力
+        const s = sums();
+        if (el('chkNet').checked && s.m > 0.003) {
+            arrow(c, rx, ry, rx + s.x * PX_PER_N, ry - s.y * PX_PER_N, NET, 4, 12);
+            text(c, `ΣF=${s.m.toFixed(3)} N`, rx + s.x * PX_PER_N + 8, ry - s.y * PX_PER_N - 14, NET, 14, 'left');
+        }
+        // 圓環
+        c.strokeStyle = s.m < TOL_OK ? '#00e676' : '#e8eef8'; c.lineWidth = 4;
+        c.beginPath(); c.arc(rx, ry, 14, 0, 7); c.stroke();
+    }
+
+    // ===== 向量三角形 =====
+    function drawTri() {
+        const t = el('tri'), x = t.getContext('2d'), W = t.width, H = t.height;
+        x.clearRect(0, 0, W, H); x.fillStyle = '#0d121b'; x.fillRect(0, 0, W, H);
+        text(x, '向量首尾相接', 12, 18, '#c3d0e4', 14);
+        // 路徑點（物理座標，y 向上）
+        const pts = [{ x: 0, y: 0 }]; let cx = 0, cy = 0;
+        forces.forEach(f => { const v = vec(f); cx += v.x; cy += v.y; pts.push({ x: cx, y: cy }); });
+        const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+        const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+        const spanX = Math.max(maxX - minX, 0.2), spanY = Math.max(maxY - minY, 0.2);
+        const sc = Math.min((W - 130) / spanX, (H - 100) / spanY, 140);
+        const ox = W / 2 - (minX + maxX) / 2 * sc, oy = H / 2 + 8 + (minY + maxY) / 2 * sc;
+        const X = p => ox + p.x * sc, Y = p => oy - p.y * sc;
+        for (let i = 0; i < 3; i++) {
+            arrow(x, X(pts[i]), Y(pts[i]), X(pts[i + 1]), Y(pts[i + 1]), COLORS[i], 4, 12);
+            text(x, `F${i + 1}`, (X(pts[i]) + X(pts[i + 1])) / 2 + 8, (Y(pts[i]) + Y(pts[i + 1])) / 2 - 10, COLORS[i], 14, 'center');
+        }
+        // 缺口
+        const gap = Math.hypot(pts[3].x, pts[3].y);
+        if (gap > 0.003) {
+            x.save(); x.strokeStyle = NET; x.lineWidth = 3; x.setLineDash([6, 5]);
+            x.beginPath(); x.moveTo(X(pts[3]), Y(pts[3])); x.lineTo(X(pts[0]), Y(pts[0])); x.stroke(); x.restore();
+            text(x, `缺口 ${gap.toFixed(3)} N`, W - 12, 18, NET, 13, 'right');
+        } else text(x, '封閉 ✓', W - 12, 18, '#00e676', 14, 'right');
+        x.fillStyle = '#fff'; x.beginPath(); x.arc(X(pts[0]), Y(pts[0]), 4, 0, 7); x.fill();
+        text(x, '起點', X(pts[0]) - 8, Y(pts[0]) + 14, '#9aa8bd', 12, 'right', false);
+    }
+
+    // ===== 數據與狀態 =====
+    function updateInfo() {
+        const s = sums();
+        forces.forEach((f, i) => {
+            el('lm' + i).textContent = f.m + ' g';
+            el('lt' + i).textContent = f.th.toFixed(1) + '°';
+            el('lf' + i).textContent = mag(f).toFixed(3) + ' N';
+        });
+        const st = el('status');
+        if (s.m < TOL_OK) { st.className = 'status ok'; st.textContent = `✓ 三力平衡：|ΣF| = ${s.m.toFixed(4)} N（圓環停在中心）`; }
+        else if (s.m < TOL_NEAR) { st.className = 'status near'; st.textContent = `接近平衡：|ΣF| = ${s.m.toFixed(3)} N，方向 ${s.dir.toFixed(0)}°，圓環略偏`; }
+        else { st.className = 'status bad'; st.textContent = `不平衡：|ΣF| = ${s.m.toFixed(3)} N，方向 ${s.dir.toFixed(0)}°，圓環被拉向合力方向`; }
+        el('mSx').innerHTML = `${s.x.toFixed(3)}<span class="unit">N</span>`;
+        el('mSy').innerHTML = `${s.y.toFixed(3)}<span class="unit">N</span>`;
+        el('mNet').innerHTML = `${s.m.toFixed(3)}<span class="unit">N</span>`;
+        el('mDir').textContent = s.m < TOL_OK ? '—' : s.dir.toFixed(0) + '°';
+
+        let rows = '';
+        forces.forEach((f, i) => {
+            const v = vec(f);
+            rows += `<tr><td style="color:${COLORS[i]}">F${i + 1}</td><td>${mag(f).toFixed(3)}</td><td>${f.th.toFixed(1)}°</td><td>${v.x.toFixed(3)}</td><td>${v.y.toFixed(3)}</td></tr>`;
+        });
+        rows += `<tr class="sum"><td>Σ</td><td>${s.m.toFixed(3)}</td><td>${s.m < TOL_OK ? '—' : s.dir.toFixed(0) + '°'}</td><td>${s.x.toFixed(3)}</td><td>${s.y.toFixed(3)}</td></tr>`;
+        el('compBody').innerHTML = rows;
+
+        // 拉密定理
+        const a23 = between(forces[1], forces[2]), a31 = between(forces[2], forces[0]), a12 = between(forces[0], forces[1]);
+        const r = (F, a) => { const sn = Math.sin(rad(a)); return Math.abs(sn) < 1e-3 ? null : F / sn; };
+        const r1 = r(mag(forces[0]), a23), r2 = r(mag(forces[1]), a31), r3 = r(mag(forces[2]), a12);
+        const f = v => v === null ? '— (共線)' : v.toFixed(3);
+        el('lami').innerHTML = `拉密：F₁/sinα₂₃ ＝ F₂/sinα₃₁ ＝ F₃/sinα₁₂<br>` +
+            `α₂₃=${a23.toFixed(1)}°, α₃₁=${a31.toFixed(1)}°, α₁₂=${a12.toFixed(1)}°<br>` +
+            `${f(r1)}　${f(r2)}　${f(r3)}　<span style="color:${s.m < TOL_OK ? '#00e676' : '#9aa8bd'}">${s.m < TOL_OK ? '✓ 平衡時三者相等' : '（不平衡，不一定相等）'}</span>`;
+    }
+    function refresh() { updateInfo(); drawTri(); }
+
+    // ===== 動作 =====
+    function setForces(arr) { arr.forEach((a, i) => { forces[i].m = a.m; forces[i].th = a.th; }); syncSliders(); }
+    function solveThird() {
+        const v1 = vec(forces[0]), v2 = vec(forces[1]);
+        const x = -(v1.x + v2.x), y = -(v1.y + v2.y);
+        const mReal = Math.hypot(x, y) / G * 1000;
+        let note = '';
+        let m = Math.round(mReal);
+        if (m > M_MAX) { m = M_MAX; note = `所需 F₃ ≈ ${mReal.toFixed(0)} g，超出滑桿上限 ${M_MAX} g，只能設到上限，請減小 F₁ 或 F₂。`; }
+        if (m < M_MIN) { m = M_MIN; note = `所需 F₃ 只有 ${mReal.toFixed(1)} g（F₁ 與 F₂ 幾乎抵銷），滑桿最小為 ${M_MIN} g。`; }
+        let th = Math.round(Math.atan2(y, x) * 1800 / Math.PI) / 10; if (th < 0) th += 360; if (th >= 360) th -= 360;
+        forces[2].m = m; forces[2].th = th; syncSliders();
+        el('solveNote').textContent = note || `答案：F₃ = −(F₁ + F₂)：大小 ${mReal.toFixed(1)} g（約 ${(mReal / 1000 * G).toFixed(3)} N），方向 ${th.toFixed(1)}°（質量取整數 g、角度取 0.1°，殘差見合力）。`;
+    }
+    function randomProblem() {
+        const rnd = (a, b) => Math.floor(a + Math.random() * (b - a + 1));
+        const th1 = rnd(0, 3599) / 10, gap = rnd(40, 150) * (Math.random() < .5 ? 1 : -1);
+        const th2 = Math.round((((th1 + gap) % 360 + 360) % 360) * 10) / 10;
+        setForces([{ m: rnd(40, 120), th: th1 }, { m: rnd(40, 120), th: th2 }, { m: 10, th: 0 }]);
+        el('solveNote').textContent = '題目：F₁、F₂ 已固定，請調整 F₃ 的質量與方向，讓圓環回到中心。（先估：F₃ 應與 F₁＋F₂ 的合力反向）';
+    }
+    el('btnPreset1').addEventListener('click', () => {
+        setForces([{ m: 60, th: 0 }, { m: 80, th: 90 }, { m: 100, th: 233.1 }]);
+        el('solveNote').textContent = '3-4-5 直角三角形：F₁ ⟂ F₂，F₃ ＝ √(F₁²＋F₂²)，方向與 F₁、F₂ 的合力相反（θ₃ ＝ 180° ＋ arctan(4/3) ≈ 233.13°，滑桿取 233.1°）。';
+    });
+    el('btnPreset2').addEventListener('click', () => {
+        setForces([{ m: 100, th: 90 }, { m: 100, th: 210 }, { m: 100, th: 330 }]);
+        el('solveNote').textContent = '三個等大的力相隔 120°，向量三角形是正三角形，剛好平衡。';
+    });
+    el('btnReset').addEventListener('click', () => {
+        setForces(DEFAULT); el('solveNote').textContent = '「隨機出題」會隨機給 F₁、F₂，請你調整 F₃ 讓圓環回到中心；做不出來時按「自動求第三力」看答案。';
+    });
+    el('btnSolve').addEventListener('click', solveThird);
+    el('btnRandom').addEventListener('click', randomProblem);
+    ['chkComp', 'chkNet', 'chkScale'].forEach(id => el(id).addEventListener('change', () => { drawTable(); }));
+
+    // ===== 動畫迴圈：圓環平滑移向目標位置（示意） =====
+    let last = null;
+    function frame(ts) {
+        if (last === null) last = ts;
+        const dt = Math.min((ts - last) / 1000, 0.05); last = ts;
+        const tg = targetOffset(), k = 1 - Math.exp(-dt * 8);
+        ring.x += (tg.x - ring.x) * k; ring.y += (tg.y - ring.y) * k;
+        drawTable();
+        requestAnimationFrame(frame);
+    }
+
+    window.__ft = { forces, sums, vec, mag, solveThird, get ring() { return ring; }, targetOffset };
+    refresh();
+    requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
