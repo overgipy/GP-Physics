@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圓周運動：錐動擺 - 李捷物理實驗室</title>
+    <style>
+        :root {
+            --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432;
+            --text-main: #f0f3f8; --text-muted: #9aa8bd;
+            --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676; --blue: #4da3ff; --red: #ff4d6d; --net: #ffe14d;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px;
+            display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6;
+        }
+        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; }
+        .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
+        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; }
+        h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; }
+        .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
+        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
+        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
+        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; }
+        .control-group.off { opacity: .45; }
+        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; }
+        .control-label b { font-family: monospace; font-size: 1.05rem; }
+        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
+        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
+        input[type=range]:disabled { cursor: not-allowed; }
+        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
+        .radio-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; }
+        .radio-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; background: var(--bg-control); padding: 8px 12px; border: 2px solid #2c3749; border-radius: 8px; }
+        .radio-row label.sel { border-color: var(--cyan); background: #12303a; }
+        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; }
+        .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 18px; font-size: 1rem; font-weight: bold; cursor: pointer; min-width: 100px; }
+        button.btn.secondary { background: #3a465b; color: #fff; }
+        button.btn.danger { background: var(--red); color: #fff; }
+        button.btn:disabled { opacity: .4; cursor: not-allowed; }
+        button.btn:not(:disabled):hover { filter: brightness(1.12); }
+        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; }
+        canvas { display: block; width: 100%; height: auto; }
+        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+        .lg-red::before { background: var(--red); } .lg-net::before { background: var(--net); } .lg-blue::before { background: var(--blue); } .lg-green::before { background: var(--green); }
+        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #111622; font-size: 1rem; }
+        .status b { color: var(--yellow); }
+        .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+        .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; }
+        .meter-title { font-size: .82rem; color: var(--text-muted); }
+        .meter-value { font-size: 1.3rem; font-weight: bold; font-family: monospace; }
+        .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
+        .c-blue { color: var(--blue); } .c-red { color: var(--red); } .c-green { color: var(--green); } .c-yellow { color: var(--yellow); } .c-net { color: var(--net); }
+        .check-box { margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
+        .eq { background: #111622; border: 1px dashed #2f3b50; border-radius: 8px; padding: 8px 12px; font-family: monospace; font-size: .92rem; }
+        .eq .ok { color: var(--green); }
+        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+        summary { cursor: pointer; font-weight: bold; color: var(--cyan); }
+        details ol, details ul { margin: 8px 0 2px; padding-left: 22px; }
+        details li { margin-bottom: 4px; }
+        .assume { font-size: .88rem; color: var(--text-muted); }
+        footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
+    </style>
+</head>
+<body>
+
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>🌀 圓周運動：錐動擺</h1>
+    <p class="subtitle">水平面上的等速率圓周運動　｜　T cosθ = mg、T sinθ = mω²r</p>
+</header>
+
+<div class="container">
+
+    <div class="card">
+        <div class="card-title">實驗設定</div>
+        <div class="radio-row">
+            <label id="rowTheta" class="sel"><input type="radio" name="drive" value="theta" checked> 由角度 θ 決定（問：要轉多快？）</label>
+            <label id="rowOmega"><input type="radio" name="drive" value="omega"> 由角速度 ω 決定（問：轉越快，球會怎樣？）</label>
+        </div>
+        <div class="controls-grid">
+            <div class="control-group" id="grpTheta">
+                <div class="control-label">擺線與鉛直線夾角 θ <b class="c-yellow"><span id="lblTheta">30</span>°</b></div>
+                <input type="range" id="slTheta" min="5" max="80" step="1" value="30">
+            </div>
+            <div class="control-group off" id="grpOmega">
+                <div class="control-label">角速度 ω <b class="c-yellow"><span id="lblOmega">3.36</span> rad/s</b></div>
+                <input type="range" id="slOmega" min="3.2" max="8" step="any" value="3.36" disabled>
+                <div class="sub-note" id="omegaNote"></div>
+            </div>
+            <div class="control-group">
+                <div class="control-label">擺線長度 L <b class="c-yellow"><span id="lblL">1.00</span> m</b></div>
+                <input type="range" id="slL" min="0.5" max="1.5" step="0.05" value="1">
+            </div>
+            <div class="control-group">
+                <div class="control-label">小球質量 m <b class="c-red"><span id="lblM">0.20</span> kg</b></div>
+                <input type="range" id="slM" min="0.05" max="0.5" step="0.05" value="0.2">
+                <div class="sub-note">試試看：改變 m，θ、ω、週期會變嗎？</div>
+            </div>
+            <div class="control-group">
+                <div class="control-label">播放速度</div>
+                <select id="selSpeed"><option value="1">1 倍</option><option value="0.5">0.5 倍（慢動作）</option><option value="0.25">0.25 倍</option></select>
+            </div>
+            <div class="control-group">
+                <div class="control-label">圖表縱軸</div>
+                <select id="selGraph"><option value="period">週期 T<sub>p</sub></option><option value="omega">角速度 ω</option><option value="tension">繩張力 T</option><option value="speed">速率 v</option></select>
+            </div>
+        </div>
+        <div class="check-row">
+            <label><input type="checkbox" id="chkVec" checked> 顯示向量</label>
+            <label><input type="checkbox" id="chkTrail" checked> 顯示軌跡</label>
+        </div>
+        <div class="btn-row">
+            <button class="btn" id="btnPlay">⏸ 暫停</button>
+            <button class="btn secondary" id="btnReset">↺ 重設</button>
+            <button class="btn danger" id="btnCut">✂ 剪斷繩子</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span>錐動擺（斜視圖）</span><span id="runState" style="font-size:.85rem;color:var(--text-muted);">轉動中</span></div>
+        <div class="canvas-wrap"><canvas id="scene" width="760" height="500"></canvas></div>
+        <div class="legend"><span class="lg-red">力（紅）</span><span class="lg-net">合力（黃）</span><span class="lg-blue">速度（藍）</span><span class="lg-green">加速度（綠）</span></div>
+        <div class="status" id="status"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">俯視圖與受力圖</div>
+        <div class="two-col">
+            <div class="graph-box"><canvas id="top" width="420" height="420"></canvas></div>
+            <div class="graph-box"><canvas id="side" width="420" height="420"></canvas></div>
+        </div>
+        <div class="sub-note">左：從正上方看，速度（藍）沿切線，加速度（綠）與合力（黃）都指向圓心。右：球受兩個力——重力 mg 與繩張力 T；兩力的合力水平指向圓心，就是向心力。</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">即時數據</div>
+        <div class="dashboard" id="dash"></div>
+        <div class="check-box">
+            <div class="eq" id="eqV"></div>
+            <div class="eq" id="eqH"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title" id="graphTitle">圖表</div>
+        <div class="graph-box"><canvas id="gMain" width="760" height="300"></canvas></div>
+        <div class="sub-note" id="graphNote"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open>
+            <summary>核心公式（符號與單位）</summary>
+            <ul>
+                <li>鉛直方向平衡（球不上下運動）：<b>T cosθ = mg</b>　T：繩張力（N）、m：質量（kg）、g = 9.8 m/s²、θ：擺線與鉛直線的夾角</li>
+                <li>水平方向（向心力）：<b>T sinθ = m ω² r = m v² ÷ r</b>　r = L sinθ：圓周半徑（m）、ω：角速度（rad/s）、v = ωr：速率（m/s）</li>
+                <li>兩式相除：<b>tanθ = ω² r ÷ g</b>，代入 r = L sinθ 得 <b>ω² = g ÷ (L cosθ)</b>，所以週期 <b>T<sub>p</sub> = 2π ÷ ω = 2π √(L cosθ ÷ g)</b>（s）。</li>
+                <li>向心加速度 <b>a<sub>c</sub> = ω²r = g tanθ</b>；向心力 <b>F<sub>c</sub> = mg tanθ</b>；繩張力 <b>T = mg ÷ cosθ</b>；速率 <b>v = √(g L sinθ tanθ)</b>。</li>
+                <li>θ 越大，所需的 ω 越大、張力越大；ω 至少要大於 √(g ÷ L)，球才會離開鉛直位置。</li>
+            </ul>
+            <p class="assume">理想化假設：細繩輕且不可伸長、球視為質點、忽略空氣阻力，並且球已經達到穩定的水平圓周運動（程式以穩定解直接計算，位置由 φ = ωt 算出）。剪斷繩子後，球以剪斷瞬間的速度做平拋運動。</p>
+        </details>
+        <details>
+            <summary>建議講解順序</summary>
+            <ol>
+                <li>先看「俯視圖」：球做等速率圓周運動，速度（藍）方向一直改變，所以有加速度（綠），指向圓心。</li>
+                <li>再看「受力圖」：球只受重力與繩張力。問學生：「向心力」是第三種力嗎？（不是，它是 T 與 mg 的合力。）</li>
+                <li>對照即時數據的兩條式子：T cosθ 抵消 mg，T sinθ 提供向心力。</li>
+                <li>切換為「由角速度 ω 決定」：慢慢加快轉速，θ 變大、球升高；轉不夠快時（ω ≤ √(g/L)）球根本離不開鉛直線。</li>
+                <li>改變 m：θ、ω、週期、速率都不變，只有 T 與向心力與 m 成正比。</li>
+                <li>按「✂ 剪斷繩子」：球沿切線飛出並平拋，說明為什麼沒有「向外的離心力」把球甩出去。</li>
+            </ol>
+        </details>
+        <details>
+            <summary>可以問學生的問題</summary>
+            <ul>
+                <li>為什麼擺線不可能是水平的？（水平時 T cosθ = 0，無法支撐重力）</li>
+                <li>θ 從 30° 增加到 60°，張力變成幾倍？（cos30°÷cos60° ≈ 1.73 倍）</li>
+                <li>L 變長，同樣的 θ，週期變長還是變短？</li>
+                <li>如果在月球上（g 較小），同樣 θ 的週期怎麼變？</li>
+                <li>剪斷繩子的瞬間，球往哪個方向飛？為什麼不是往圓心或往外？</li>
+            </ul>
+        </details>
+        <details>
+            <summary>常見迷思</summary>
+            <ul>
+                <li><b>「球受到向心力與離心力」</b>：在慣性座標系，球只受重力與張力，向心力是它們的合力；離心力是在旋轉座標系中才引入的假想力。</li>
+                <li><b>「張力 T 就是向心力」</b>：只有 T 的水平分量 T sinθ 提供向心力；T 的鉛直分量 T cosθ 用來抵消重力。</li>
+                <li><b>「轉越快，繩子越接近水平」</b>：θ 趨近 90° 時需要無限大的 ω 與 T，所以繩子永遠不會真的水平。</li>
+                <li><b>「球越重，轉得越慢」</b>：週期與質量無關。</li>
+            </ul>
+        </details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script>
+(() => {
+    'use strict';
+    const G = 9.8;
+    const el = id => document.getElementById(id);
+    const cv = el('scene'), c = cv.getContext('2d');
+    const S = { drive: 'theta', theta: 30, omega: 3.36, L: 1.0, m: 0.2, speed: 1, playing: true, phi: 0, t: 0, trail: [], cut: null };
+    const TH_MIN = 5, TH_MAX = 80;
+    const rad = d => d * Math.PI / 180;
+
+    // ===================== 物理 =====================
+    // 穩定錐動擺：T cosθ = mg，T sinθ = m ω² r，r = L sinθ  →  ω² = g/(L cosθ)
+    function solve(theta, L, m) {
+        const th = rad(theta), cos = Math.cos(th), sin = Math.sin(th);
+        const w = Math.sqrt(G / (L * cos));
+        const r = L * sin, h = L * cos;
+        return { th, theta, L, m, w, r, h, v: w * r, ac: w * w * r, T: m * G / cos, Fc: m * G * Math.tan(th), mg: m * G, Tp: 2 * Math.PI / w };
+    }
+    const w0 = L => Math.sqrt(G / L);                                // 最小角速度（θ → 0）
+    const wOf = (theta, L) => Math.sqrt(G / (L * Math.cos(rad(theta))));
+    function thetaFromOmega(w, L) {                                  // cosθ = g / (ω² L)
+        const c = G / (w * w * L);
+        return c >= 1 ? 0 : Math.acos(c) * 180 / Math.PI;
+    }
+    function P() {
+        if (S.drive === 'omega') S.theta = Math.max(TH_MIN, Math.min(TH_MAX, thetaFromOmega(S.omega, S.L)));
+        return solve(S.theta, S.L, S.m);
+    }
+
+    // ===================== 投影（斜視圖） =====================
+    const SC = 200, PX = 380, PY = 62, E = rad(22);
+    const proj = (x, y, z) => ({ x: PX + SC * x, y: PY - SC * (z * Math.cos(E) + y * Math.sin(E)) });
+    const FLOOR_Z = () => -(S.L + 0.45);
+
+    function ballPos(p) {
+        if (S.cut) {
+            const t = Math.min(S.cut.t, Math.sqrt(2 * (S.cut.z0 - FLOOR_Z()) / G));      // 落地後不再前進
+            return { x: S.cut.x0 + S.cut.vx * t, y: S.cut.y0 + S.cut.vy * t, z: Math.max(S.cut.z0 - 0.5 * G * t * t, FLOOR_Z()) };
+        }
+        return { x: p.r * Math.cos(S.phi), y: p.r * Math.sin(S.phi), z: -p.h };
+    }
+
+    // ===================== 繪圖工具 =====================
+    function arrow(ctx, x1, y1, x2, y2, color, w = 3, head = 10, dash = null) {
+        const len = Math.hypot(x2 - x1, y2 - y1); if (len < 2) return;
+        const a = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(head, len * .6);
+        ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round'; if (dash) ctx.setLineDash(dash);
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(a) * hl * .6, y2 - Math.sin(a) * hl * .6); ctx.stroke(); ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - hl * Math.cos(a - .45), y2 - hl * Math.sin(a - .45)); ctx.lineTo(x2 - hl * Math.cos(a + .45), y2 - hl * Math.sin(a + .45)); ctx.closePath(); ctx.fill(); ctx.restore();
+    }
+    function txt(ctx, s, x, y, color, size = 14, align = 'left') {
+        ctx.save(); ctx.font = `bold ${size}px sans-serif`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y); ctx.restore();
+    }
+
+    function drawScene(p) {
+        c.clearRect(0, 0, 760, 500); c.fillStyle = '#080a0f'; c.fillRect(0, 0, 760, 500);
+        // 地板
+        const fz = FLOOR_Z(), f = [[-1.8, -1.1], [1.8, -1.1], [1.8, 1.1], [-1.8, 1.1]].map(q => proj(q[0], q[1], fz));
+        c.fillStyle = '#10151f'; c.strokeStyle = '#27324a'; c.lineWidth = 1.5; c.beginPath(); f.forEach((q, i) => i ? c.lineTo(q.x, q.y) : c.moveTo(q.x, q.y)); c.closePath(); c.fill(); c.stroke();
+        // 支架
+        const pv = proj(0, 0, 0);
+        c.strokeStyle = '#6b7690'; c.lineWidth = 6; c.lineCap = 'round'; c.beginPath(); const a = proj(-0.5, 0, 0), b = proj(0.5, 0, 0); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke();
+        c.strokeStyle = 'rgba(140,160,190,.35)'; c.lineWidth = 1.5; c.setLineDash([5, 5]); c.beginPath(); const ax0 = proj(0, 0, 0), ax1 = proj(0, 0, -p.h - 0.25); c.moveTo(ax0.x, ax0.y); c.lineTo(ax1.x, ax1.y); c.stroke(); c.setLineDash([]);
+        // 圓錐與軌道
+        const ring = []; for (let i = 0; i <= 90; i++) { const q = i / 90 * 2 * Math.PI; ring.push(proj(p.r * Math.cos(q), p.r * Math.sin(q), -p.h)); }
+        c.fillStyle = 'rgba(0,212,255,.06)'; c.beginPath(); c.moveTo(pv.x, pv.y); const lft = proj(-p.r, 0, -p.h), rgt = proj(p.r, 0, -p.h); c.lineTo(lft.x, lft.y);
+        for (let i = 45; i <= 90; i++) c.lineTo(ring[i].x, ring[i].y); c.lineTo(rgt.x, rgt.y); c.closePath(); c.fill();
+        c.strokeStyle = 'rgba(0,212,255,.45)'; c.lineWidth = 1.5; c.setLineDash([6, 5]); c.beginPath(); ring.forEach((q, i) => i ? c.lineTo(q.x, q.y) : c.moveTo(q.x, q.y)); c.stroke(); c.setLineDash([]);
+        // 軌跡
+        if (el('chkTrail').checked && S.trail.length > 1) {
+            c.strokeStyle = 'rgba(255,204,0,.55)'; c.lineWidth = 2; c.beginPath();
+            S.trail.forEach((q, i) => { const s = proj(q.x, q.y, q.z); i ? c.lineTo(s.x, s.y) : c.moveTo(s.x, s.y); }); c.stroke();
+        }
+        const bp = ballPos(p), bs = proj(bp.x, bp.y, bp.z);
+        // 球的陰影
+        const sh = proj(bp.x, bp.y, fz); c.fillStyle = 'rgba(0,0,0,.45)'; c.beginPath(); c.ellipse(sh.x, sh.y, 14, 5, 0, 0, 7); c.fill();
+        // 擺線
+        if (!S.cut) { c.strokeStyle = '#d0d6e2'; c.lineWidth = 2; c.beginPath(); c.moveTo(pv.x, pv.y); c.lineTo(bs.x, bs.y); c.stroke(); }
+        c.fillStyle = '#c3d0e4'; c.beginPath(); c.arc(pv.x, pv.y, 5, 0, 7); c.fill();
+        // 球
+        const rr = 9 + 14 * p.m; const gr = c.createRadialGradient(bs.x - rr * .3, bs.y - rr * .3, 2, bs.x, bs.y, rr);
+        gr.addColorStop(0, '#ff9aa9'); gr.addColorStop(1, '#c2243f'); c.fillStyle = gr; c.beginPath(); c.arc(bs.x, bs.y, rr, 0, 7); c.fill();
+        c.strokeStyle = '#fff'; c.lineWidth = 1; c.stroke();
+
+        // 向量（只在繩子未剪斷時）
+        if (el('chkVec').checked && !S.cut) {
+            const kN = 70 / Math.max(p.T, p.mg);                    // px / N
+            const tx = -p.r * Math.cos(S.phi), ty = -p.r * Math.sin(S.phi), tz = p.h;       // 球 → 支點
+            const tl = Math.hypot(tx, ty, tz);
+            const Tv = [tx / tl * p.T, ty / tl * p.T, tz / tl * p.T];
+            const k = kN;
+            const sTo = (dx, dy, dz) => proj(bp.x + dx, bp.y + dy, bp.z + dz);                // 以 N 為單位的位移，用 px/N 比例轉換
+            const sc = k / SC;                                                                // 把 N 換成 m（再乘 SC 變 px）
+            let e;
+            e = sTo(Tv[0] * sc, Tv[1] * sc, Tv[2] * sc); arrow(c, bs.x, bs.y, e.x, e.y, '#ff4d6d', 4); txt(c, `T=${p.T.toFixed(2)} N`, e.x + 8, e.y - 8, '#ff4d6d', 14);
+            e = sTo(0, 0, -p.mg * sc); arrow(c, bs.x, bs.y, e.x, e.y, '#ff4d6d', 4); txt(c, `mg=${p.mg.toFixed(2)} N`, e.x + 8, e.y + 6, '#ff4d6d', 14);
+            const cx = -Math.cos(S.phi), cy = -Math.sin(S.phi);                                   // 指向圓心的單位向量
+            e = sTo(cx * p.Fc * sc, cy * p.Fc * sc, 0); arrow(c, bs.x, bs.y, e.x, e.y, '#ffe14d', 4); txt(c, `F合=${p.Fc.toFixed(2)} N`, e.x - 8, e.y + 18, '#ffe14d', 14, 'right');
+            const vx = -Math.sin(S.phi), vy = Math.cos(S.phi);
+            e = sTo(vx * p.v * 0.3, vy * p.v * 0.3, 0); arrow(c, bs.x, bs.y, e.x, e.y, '#4da3ff', 4); txt(c, `v=${p.v.toFixed(2)} m/s`, e.x + 8, e.y + 6, '#4da3ff', 14);
+        }
+        // 標示
+        const mid = proj(0, 0, -p.h / 2);
+        txt(c, `L = ${p.L.toFixed(2)} m`, 20, 30, '#c3d0e4', 17);
+        txt(c, `θ = ${p.theta.toFixed(1)}°`, 20, 56, '#ffcc00', 17);
+        txt(c, `r = ${p.r.toFixed(3)} m`, 20, 82, '#9aa8bd', 15);
+        txt(c, `h = ${p.h.toFixed(3)} m`, 20, 104, '#9aa8bd', 15);
+        // 角度弧（於支點）
+        c.strokeStyle = '#ffcc00'; c.lineWidth = 2; c.beginPath(); c.arc(ax0.x, ax0.y, 44, Math.PI / 2 - 0.0001, Math.PI / 2 - rad(p.theta) * 1.0, true); c.stroke();
+    }
+
+    function drawTop(p) {
+        const t = el('top'), x = t.getContext('2d'), W = 420, Cx = 210, Cy = 210, R = 170, s = R / (1.5 * Math.sin(rad(TH_MAX)) * 1.0);
+        x.clearRect(0, 0, W, W); x.fillStyle = '#0d121b'; x.fillRect(0, 0, W, W);
+        txt(x, '俯視圖', 12, 18, '#c3d0e4', 14);
+        const rp = Math.min(s * p.r, 185);
+        x.strokeStyle = '#27324a'; x.lineWidth = 1; x.beginPath(); x.moveTo(15, Cy); x.lineTo(405, Cy); x.moveTo(Cx, 25); x.lineTo(Cx, 405); x.stroke();
+        x.strokeStyle = 'rgba(0,212,255,.5)'; x.setLineDash([6, 5]); x.lineWidth = 1.5; x.beginPath(); x.arc(Cx, Cy, rp, 0, 7); x.stroke(); x.setLineDash([]);
+        x.fillStyle = '#c3d0e4'; x.beginPath(); x.arc(Cx, Cy, 4, 0, 7); x.fill();
+        if (S.cut) {
+            const bp = ballPos(p), bx = Cx + s * bp.x, by = Cy - s * bp.y;
+            x.strokeStyle = 'rgba(255,204,0,.7)'; x.lineWidth = 2; x.beginPath(); x.moveTo(Cx + s * S.cut.x0, Cy - s * S.cut.y0); x.lineTo(bx, by); x.stroke();
+            x.fillStyle = '#e0364f'; x.beginPath(); x.arc(bx, by, 9, 0, 7); x.fill();
+            txt(x, '剪斷後：沿切線直線前進（俯視）', 12, 400, '#ffcc00', 13); return;
+        }
+        const bx = Cx + rp * Math.cos(S.phi), by = Cy - rp * Math.sin(S.phi);
+        x.strokeStyle = '#8a99ad'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(Cx, Cy); x.lineTo(bx, by); x.stroke();
+        txt(x, `r=${p.r.toFixed(3)} m`, Cx + 8, Cy - 10, '#9aa8bd', 12);
+        x.fillStyle = '#e0364f'; x.beginPath(); x.arc(bx, by, 10, 0, 7); x.fill(); x.strokeStyle = '#fff'; x.stroke();
+        if (el('chkVec').checked) {
+            const vx = -Math.sin(S.phi), vy = -Math.cos(S.phi) * -1;                                // 螢幕座標：y 向下
+            arrow(x, bx, by, bx + (-Math.sin(S.phi)) * 70, by - Math.cos(S.phi) * 70, '#4da3ff', 4); txt(x, `v=${p.v.toFixed(2)} m/s`, bx + (-Math.sin(S.phi)) * 70 + 6, by - Math.cos(S.phi) * 70 - 8, '#4da3ff', 13);
+            const al = Math.min(p.ac * 8, 90);
+            arrow(x, bx, by, bx - Math.cos(S.phi) * al, by + Math.sin(S.phi) * al, '#00e676', 4); txt(x, `a = ${p.ac.toFixed(2)} m/s²（指向圓心）`, 12, 400, '#00e676', 13);
+            const fl = Math.min(p.Fc * 40, 80);
+            arrow(x, bx, by, bx - Math.cos(S.phi) * fl, by + Math.sin(S.phi) * fl, '#ffe14d', 2.5, 8, [4, 3]);
+        }
+    }
+
+    function drawSide(p) {
+        const t = el('side'), x = t.getContext('2d'), W = 420;
+        x.clearRect(0, 0, W, W); x.fillStyle = '#0d121b'; x.fillRect(0, 0, W, W);
+        txt(x, '受力圖（側視）', 12, 18, '#c3d0e4', 14);
+        const px = 95, py = 52, s = 190 / 1.5;
+        const bx = px + s * p.r, by = py + s * p.h;
+        x.strokeStyle = 'rgba(140,160,190,.35)'; x.setLineDash([5, 5]); x.beginPath(); x.moveTo(px, py); x.lineTo(px, by + 70); x.stroke(); x.setLineDash([]);
+        x.strokeStyle = '#d0d6e2'; x.lineWidth = 2; x.beginPath(); x.moveTo(px, py); x.lineTo(bx, by); x.stroke();
+        x.fillStyle = '#c3d0e4'; x.beginPath(); x.arc(px, py, 5, 0, 7); x.fill();
+        x.strokeStyle = '#ffcc00'; x.lineWidth = 2; x.beginPath(); x.arc(px, py, 40, Math.PI / 2 - rad(p.theta), Math.PI / 2); x.stroke();
+        txt(x, 'θ', px + 12, py + 56, '#ffcc00', 15);
+        x.fillStyle = '#e0364f'; x.beginPath(); x.arc(bx, by, 11, 0, 7); x.fill(); x.strokeStyle = '#fff'; x.lineWidth = 1; x.stroke();
+        const k = 110 / Math.max(p.T, p.mg);                       // px / N
+        const tx = (px - bx) / Math.hypot(px - bx, py - by), ty = (py - by) / Math.hypot(px - bx, py - by);
+        arrow(x, bx, by, bx + tx * p.T * k, by + ty * p.T * k, '#ff4d6d', 4);
+        txt(x, `T = ${p.T.toFixed(2)} N`, bx + tx * p.T * k * 0.5 - 12, by + ty * p.T * k * 0.5 - 6, '#ff4d6d', 14, 'right');
+        arrow(x, bx, by, bx, by + p.mg * k, '#ff4d6d', 4); txt(x, `mg = ${p.mg.toFixed(2)} N`, bx + 12, by + p.mg * k * 0.6 + 6, '#ff4d6d', 14);
+        arrow(x, bx, by, bx - p.Fc * k, by, '#ffe14d', 4); txt(x, `F合 = ${p.Fc.toFixed(2)} N`, bx - p.Fc * k * 0.5, by - 18, '#ffe14d', 14, 'center');
+        // 分量（虛線）
+        arrow(x, bx, by, bx, by - p.T * Math.cos(p.th) * k, '#ff8aa0', 2, 8, [5, 4]);
+        txt(x, `T cosθ = ${(p.T * Math.cos(p.th)).toFixed(2)}`, bx + 12, by - p.T * Math.cos(p.th) * k * 0.55, '#ff8aa0', 12);
+        txt(x, `T cosθ = mg`, 12, 376, '#ff8aa0', 13);
+        txt(x, `T sinθ = ${(p.T * Math.sin(p.th)).toFixed(2)}`, 12, 392, '#ff8aa0', 13);
+        txt(x, `向心力 = F合 = mg tanθ = ${p.Fc.toFixed(2)} N`, 12, 408, '#ffe14d', 13);
+    }
+
+    // ===================== 圖表 =====================
+    function niceStep(range) { const t = range / 5, q = Math.pow(10, Math.floor(Math.log10(t))), n = t / q; return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * q; }
+    function drawGraph(p) {
+        const q = el('selGraph').value, cvs = el('gMain'), x = cvs.getContext('2d'), W = cvs.width, H = cvs.height, Lm = 62, R = 16, T = 34, B = 46, pw = W - Lm - R, ph = H - T - B;
+        const f = { period: th => solve(th, S.L, S.m).Tp, omega: th => solve(th, S.L, S.m).w, tension: th => solve(th, S.L, S.m).T, speed: th => solve(th, S.L, S.m).v }[q];
+        const names = { period: ['週期 Tp (s)', 'Tp = 2π√(L cosθ / g)：θ 越大週期越短（轉越快）'], omega: ['角速度 ω (rad/s)', 'ω = √(g / (L cosθ))：θ → 0 時 ω → √(g/L)，這是最小角速度'], tension: ['繩張力 T (N)', 'T = mg / cosθ：θ 越大張力越大，θ → 90° 時 T → ∞'], speed: ['速率 v (m/s)', 'v = √(g L sinθ tanθ)'] };
+        const pts = []; for (let th = TH_MIN; th <= TH_MAX + 1e-9; th += 1) pts.push({ x: th, y: f(th) });
+        const ymax = Math.max(...pts.map(a => a.y)) * 1.1, ymin = q === 'period' ? 0 : 0;
+        const X = v => Lm + (v - 0) / 80 * pw, Y = v => T + ph - (v - ymin) / (ymax - ymin) * ph;
+        x.clearRect(0, 0, W, H); x.fillStyle = '#0d121b'; x.fillRect(0, 0, W, H); x.font = '12px sans-serif';
+        const sy = niceStep(ymax - ymin), dy = Math.max(0, Math.ceil(-Math.log10(sy) - 1e-9));
+        for (let v = 0; v <= 80; v += 10) { x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(X(v), T); x.lineTo(X(v), T + ph); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(v + '°', X(v), T + ph + 16); }
+        for (let v = 0; v <= ymax; v += sy) { x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(Lm, Y(v)); x.lineTo(Lm + pw, Y(v)); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'right'; x.fillText(v.toFixed(dy), Lm - 6, Y(v) + 4); }
+        x.strokeStyle = '#5b6a82'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(Lm, T); x.lineTo(Lm, T + ph); x.lineTo(Lm + pw, T + ph); x.stroke();
+        x.fillStyle = '#c3d0e4'; x.font = 'bold 14px sans-serif'; x.textAlign = 'left'; x.fillText(names[q][0] + ' 隨 θ 的變化', Lm, 18);
+        x.font = '12px sans-serif'; x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText('擺線夾角 θ', Lm + pw / 2, H - 8);
+        x.save(); x.translate(14, T + ph / 2); x.rotate(-Math.PI / 2); x.fillText(names[q][0], 0, 0); x.restore();
+        x.strokeStyle = '#00d4ff'; x.lineWidth = 2.5; x.beginPath(); pts.forEach((a, i) => i ? x.lineTo(X(a.x), Y(a.y)) : x.moveTo(X(a.x), Y(a.y))); x.stroke();
+        const cur = f(p.theta);
+        x.setLineDash([4, 4]); x.strokeStyle = 'rgba(255,255,255,.4)'; x.lineWidth = 1; x.beginPath(); x.moveTo(X(p.theta), T + ph); x.lineTo(X(p.theta), Y(cur)); x.lineTo(Lm, Y(cur)); x.stroke(); x.setLineDash([]);
+        x.fillStyle = '#ffcc00'; x.beginPath(); x.arc(X(p.theta), Y(cur), 6, 0, 7); x.fill();
+        el('graphTitle').textContent = names[q][0] + ' 隨 θ 的變化'; el('graphNote').textContent = names[q][1] + '。（目前 L = ' + S.L.toFixed(2) + ' m, m = ' + S.m.toFixed(2) + ' kg）';
+    }
+
+    // ===================== 即時數據 =====================
+    function updateInfo(p) {
+        const m = (t, v, u, cl = '') => `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value ${cl}">${v}<span class="unit">${u}</span></div></div>`;
+        el('dash').innerHTML = m('夾角 θ', p.theta.toFixed(1), '°', 'c-yellow') + m('圓周半徑 r = L sinθ', p.r.toFixed(3), 'm', 'c-yellow') + m('角速度 ω', p.w.toFixed(3), 'rad/s', 'c-yellow') + m('週期 Tp', p.Tp.toFixed(3), 's', 'c-yellow') +
+            m('轉速', (p.w * 60 / (2 * Math.PI)).toFixed(1), 'rpm', 'c-yellow') + m('速率 v = ωr', p.v.toFixed(3), 'm/s', 'c-blue') + m('向心加速度 ω²r', p.ac.toFixed(3), 'm/s²', 'c-green') + m('繩張力 T', p.T.toFixed(3), 'N', 'c-red') +
+            m('重力 mg', p.mg.toFixed(3), 'N', 'c-red') + m('向心力 F合', p.Fc.toFixed(3), 'N', 'c-net');
+        const v1 = p.T * Math.cos(p.th), h1 = p.T * Math.sin(p.th), h2 = p.m * p.w * p.w * p.r;
+        el('eqV').innerHTML = `鉛直：T cosθ = mg<br>${v1.toFixed(4)} N ＝ ${p.mg.toFixed(4)} N <span class="ok">${Math.abs(v1 - p.mg) < 1e-9 ? '✓' : ''}</span>`;
+        el('eqH').innerHTML = `水平：T sinθ = m ω² r<br>${h1.toFixed(4)} N ＝ ${h2.toFixed(4)} N <span class="ok">${Math.abs(h1 - h2) < 1e-9 ? '✓' : ''}</span>`;
+        const st = el('status');
+        if (S.cut) {
+            const bp = ballPos(p), landed = bp.z <= FLOOR_Z() + 1e-9;
+            const dist = Math.hypot(bp.x - S.cut.x0, bp.y - S.cut.y0);
+            st.innerHTML = landed ? `球落地：水平射程 <b>${dist.toFixed(3)} m</b>（初速 ${p.v.toFixed(2)} m/s，沿切線方向）。` : `<b>繩子剪斷</b>：球以剪斷瞬間的速度 v = ${p.v.toFixed(2)} m/s（沿切線）做平拋運動，t = ${S.cut.t.toFixed(2)} s。`;
+            el('runState').textContent = landed ? '已落地' : '平拋中';
+        } else {
+            st.innerHTML = `球每 <b>${p.Tp.toFixed(2)} s</b> 繞一圈。向心加速度 a<sub>c</sub> = g tanθ = ${p.ac.toFixed(2)} m/s²（與質量無關）。` + (S.drive === 'omega' && thetaFromOmega(S.omega, S.L) > TH_MAX ? ' （θ 已達上限 80°）' : '');
+            el('runState').textContent = S.playing ? '轉動中' : '已暫停';
+        }
+    }
+
+    // ===================== 控制項 =====================
+    function updateOmegaRange() {
+        const lo = w0(S.L) * 1.005, hi = wOf(TH_MAX, S.L);
+        const sl = el('slOmega'); sl.min = lo.toFixed(3); sl.max = hi.toFixed(3);
+        S.omega = Math.max(lo, Math.min(hi, S.omega)); sl.value = S.omega;
+        el('omegaNote').textContent = `ω 至少要大於 √(g/L) = ${w0(S.L).toFixed(2)} rad/s，球才會離開鉛直位置。`;
+    }
+    function syncLabels() {
+        const p = P();
+        el('lblTheta').textContent = p.theta.toFixed(S.drive === 'omega' ? 1 : 0); el('lblOmega').textContent = p.w.toFixed(2);
+        el('lblL').textContent = S.L.toFixed(2); el('lblM').textContent = S.m.toFixed(2);
+        if (S.drive === 'omega') el('slTheta').value = p.theta; else { S.omega = p.w; el('slOmega').value = Math.max(+el('slOmega').min, Math.min(+el('slOmega').max, p.w)); }
+        el('grpTheta').classList.toggle('off', S.drive !== 'theta'); el('grpOmega').classList.toggle('off', S.drive !== 'omega');
+        el('slTheta').disabled = S.drive !== 'theta'; el('slOmega').disabled = S.drive !== 'omega';
+        el('rowTheta').classList.toggle('sel', S.drive === 'theta'); el('rowOmega').classList.toggle('sel', S.drive === 'omega');
+    }
+    function resetMotion() { S.phi = 0; S.t = 0; S.trail = []; S.cut = null; el('btnCut').disabled = false; el('btnPlay').textContent = S.playing ? '⏸ 暫停' : '▶ 播放'; }
+
+    document.querySelectorAll('input[name=drive]').forEach(r => r.addEventListener('change', e => { S.drive = e.target.value; if (S.drive === 'omega') { updateOmegaRange(); S.omega = wOf(S.theta, S.L); } syncLabels(); resetMotion(); }));
+    el('slTheta').addEventListener('input', e => { S.theta = +e.target.value; syncLabels(); resetMotion(); });
+    el('slOmega').addEventListener('input', e => { S.omega = +e.target.value; syncLabels(); resetMotion(); });
+    el('slL').addEventListener('input', e => { S.L = +e.target.value; updateOmegaRange(); syncLabels(); resetMotion(); });
+    el('slM').addEventListener('input', e => { S.m = +e.target.value; syncLabels(); });
+    el('selSpeed').addEventListener('change', e => { S.speed = +e.target.value; });
+    el('selGraph').addEventListener('change', () => { });
+    el('btnPlay').addEventListener('click', () => { S.playing = !S.playing; el('btnPlay').textContent = S.playing ? '⏸ 暫停' : '▶ 播放'; });
+    el('btnReset').addEventListener('click', () => { S.playing = true; resetMotion(); });
+    el('btnCut').addEventListener('click', () => {
+        if (S.cut) return; const p = P();
+        S.cut = { t: 0, x0: p.r * Math.cos(S.phi), y0: p.r * Math.sin(S.phi), z0: -p.h, vx: -p.v * Math.sin(S.phi), vy: p.v * Math.cos(S.phi) };
+        S.trail = [{ x: S.cut.x0, y: S.cut.y0, z: S.cut.z0 }]; S.playing = true; el('btnPlay').textContent = '⏸ 暫停'; el('btnCut').disabled = true;
+    });
+
+    // ===================== 動畫迴圈 =====================
+    let last = null;
+    function frame(ts) {
+        if (last === null) last = ts;
+        const dt = Math.min((ts - last) / 1000, 0.05) * S.speed; last = ts;
+        const p = P();
+        if (S.playing) {
+            if (S.cut) {
+                const bp0 = ballPos(p);
+                if (bp0.z > FLOOR_Z() + 1e-9) { S.cut.t += dt; const bp = ballPos(p); S.trail.push(bp); }
+            } else {
+                S.phi = (S.phi + p.w * dt) % (2 * Math.PI); S.t += dt;
+                const bp = ballPos(p); S.trail.push(bp); if (S.trail.length > 240) S.trail.shift();
+            }
+        }
+        drawScene(p); drawTop(p); drawSide(p); updateInfo(p); drawGraph(p);
+        requestAnimationFrame(frame);
+    }
+
+    window.__cp = { S, solve, thetaFromOmega, P, ballPos };
+    updateOmegaRange(); syncLabels();
+    requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
