@@ -104,7 +104,7 @@
 
     <div class="card">
         <div class="card-title"><span>實驗裝置（側視圖，磁棒沿軸線移動）</span><span id="runState" style="font-size:.85rem;color:var(--text-muted);"></span></div>
-        <div class="canvas-wrap"><canvas id="scene" width="760" height="330"></canvas></div>
+        <div class="canvas-wrap"><canvas id="scene" width="760" height="400"></canvas></div>
         <div class="legend">
             <span style="--c:var(--vel)">磁棒速度 v</span><span style="--c:var(--flux)">磁力線／磁通量 Φ</span><span style="--c:var(--ind)">感應磁場 B′</span><span style="--c:var(--emf)">感應電流 I</span><span style="--c:var(--force)">線圈對磁棒的磁力 F</span>
         </div>
@@ -220,7 +220,7 @@
     const zx = z => CX + z * PXM;
 
     function drawScene() {
-        c.clearRect(0, 0, 760, 330); c.fillStyle = '#080a0f'; c.fillRect(0, 0, 760, 330);
+        c.clearRect(0, 0, 760, 400); c.fillStyle = '#080a0f'; c.fillRect(0, 0, 760, 400);
         // 軌道
         c.strokeStyle = '#1b2433'; c.lineWidth = 2; c.beginPath(); c.moveTo(20, CY); c.lineTo(740, CY); c.stroke(); c.setLineDash([2, 7]); c.strokeStyle = '#2a3344'; c.beginPath(); c.moveTo(CX, 20); c.lineTo(CX, 300); c.stroke(); c.setLineDash([]);
         const I = cur(), Bdir = Math.sign(I) * (Math.abs(I) > 2e-6 ? 1 : 0);               // 感應磁場（線圈內）沿 +x(1) 或 −x(−1)
@@ -229,28 +229,42 @@
             c.strokeStyle = 'rgba(53,214,255,.55)'; c.lineWidth = 1.4;
             [0.03, 0.055, 0.09, 0.14].forEach(L => { for (const sy of [1, -1]) { c.beginPath(); let first = true; for (let th = 0.04; th < Math.PI - 0.04; th += 0.04) { const r = L * Math.sin(th) ** 2, x = S.p * r * Math.cos(th), y = r * Math.sin(th); const px = zx(S.z) + x * PXM, py = CY - sy * y * PXM; first ? c.moveTo(px, py) : c.lineTo(px, py); first = false; } c.stroke(); } });
         }
-        // 線圈（5 匝示意）
-        const ry = 52;
-        for (let k = -2; k <= 2; k++) { c.strokeStyle = Math.abs(I) > 2e-6 ? '#ffb020' : '#c98a3d'; c.lineWidth = 4; c.beginPath(); c.ellipse(CX + k * 9, CY, 9, ry, 0, 0, 7); c.stroke(); }
-        // 電流方向符號（上緣、下緣）：B′ 指向 +x → 上緣 ⊙（出紙面）、下緣 ⊗
-        if (Bdir !== 0) {
-            const sym = (x, y, out) => { c.fillStyle = '#ffb020'; c.beginPath(); c.arc(x, y, 11, 0, 7); c.fill(); c.strokeStyle = '#2a1500'; c.lineWidth = 2.5; if (out) { c.fillStyle = '#2a1500'; c.beginPath(); c.arc(x, y, 3.5, 0, 7); c.fill(); } else { c.beginPath(); c.moveTo(x - 6, y - 6); c.lineTo(x + 6, y + 6); c.moveTo(x + 6, y - 6); c.lineTo(x - 6, y + 6); c.stroke(); } };
-            sym(CX, CY - ry, Bdir > 0); sym(CX, CY + ry, Bdir < 0);
-            // 感應磁場箭頭（線圈內）
-            arrow(c, CX - Bdir * 34, CY, CX + Bdir * 34, CY, '#d28bff', 5, 14); txt(c, 'B′', CX, CY - 16, '#d28bff', 15, 'center');
-            // 線圈兩端磁極
-            const nRight = Bdir > 0; txt(c, nRight ? 'S' : 'N', CX - 36, CY + ry + 22, nRight ? '#6fa8ff' : '#ff6b81', 20, 'center'); txt(c, nRight ? 'N' : 'S', CX + 36, CY + ry + 22, nRight ? '#ff6b81' : '#6fa8ff', 20, 'center');
-        }
+        // 線圈：背面（暗）＋正面（亮）半圈，立體感；正面畫出電流流動方向
+        const ry = 58, rx = 13, nT = 7, sp = 11, glow = Math.min(1, Math.abs(I) / 0.02), active = Bdir !== 0;
+        const turnX = k => CX + (k - (nT - 1) / 2) * sp;
+        for (let k = 0; k < nT; k++) { c.strokeStyle = '#6b4f26'; c.lineWidth = 3; c.beginPath(); c.ellipse(turnX(k), CY, rx, ry, 0, -Math.PI / 2, Math.PI / 2); c.stroke(); }
         // 磁棒
         const mx = zx(S.z), L2 = 55, H = 20, nSide = S.p;                                      // N 極在 nSide（+1＝右側）
         const drawHalf = (x0, w, col, label) => { c.fillStyle = col; c.fillRect(x0, CY - H, w, 2 * H); c.fillStyle = '#fff'; c.font = 'bold 20px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(label, x0 + w / 2, CY + 1); };
         drawHalf(mx - L2, L2, nSide === 1 ? '#3b6fd1' : '#d1384f', nSide === 1 ? 'S' : 'N'); drawHalf(mx, L2, nSide === 1 ? '#d1384f' : '#3b6fd1', nSide === 1 ? 'N' : 'S');
         c.strokeStyle = '#e8eef8'; c.lineWidth = 2; c.strokeRect(mx - L2, CY - H, 2 * L2, 2 * H);
+        const wire = active ? `rgb(${Math.round(201 + 54 * glow)},${Math.round(138 + 40 * glow)},${Math.round(61 - 20 * glow)})` : '#c98a3d';
+        for (let k = 0; k < nT; k++) { c.strokeStyle = wire; c.lineWidth = 5.5; c.beginPath(); c.ellipse(turnX(k), CY, rx, ry, 0, Math.PI / 2, 3 * Math.PI / 2); c.stroke(); }
+        if (active) {                                                     // 電流流動：B′ 指向 +x 時，正面電流向下；否則向上
+            const ph = (Date.now() / 1000) * (0.35 + 0.9 * glow) * Bdir, pos = (k, u) => { const a = 3 * Math.PI / 2 - Math.PI * u; return [turnX(k) + rx * Math.cos(a), CY + ry * Math.sin(a)]; };
+            for (let k = 0; k < nT; k++) for (let i = 0; i < 3; i++) { const u = (((ph + i / 3) % 1) + 1) % 1, [x1, y1] = pos(k, u), [x2, y2] = pos(k, Math.min(1, u + 0.02)), ang = Math.atan2(y2 - y1, x2 - x1); c.save(); c.translate(x1, y1); c.rotate(ang); c.fillStyle = '#fff3c4'; c.beginPath(); c.moveTo(7, 0); c.lineTo(-5, -5); c.lineTo(-5, 5); c.closePath(); c.fill(); c.restore(); }
+            arrow(c, CX - Bdir * 40, CY, CX + Bdir * 40, CY, '#d28bff', 6, 16); txt(c, 'B′', CX + Bdir * 56, CY - 16, '#d28bff', 18, 'center');
+            const nRight = Bdir > 0; const cap = (x, isN) => { c.fillStyle = isN ? '#d1384f' : '#3b6fd1'; c.beginPath(); c.arc(x, CY, 15, 0, 7); c.fill(); c.strokeStyle = '#fff'; c.lineWidth = 2; c.stroke(); txt(c, isN ? 'N' : 'S', x, CY + 1, '#fff', 18, 'center'); };
+            cap(CX - 66, !nRight); cap(CX + 66, nRight);
+        }
+        // 三步判斷與「從磁棒側看線圈」正視圖
+        const ix = 110, iy = 345, ir = 36; c.fillStyle = '#0d121b'; c.strokeStyle = '#26324a'; c.lineWidth = 1.5; c.fillRect(10, 292, 740, 100); c.strokeRect(10, 292, 740, 100);
+        txt(c, '正視圖（從磁棒的左側往右看線圈）', 24, 306, '#9aa8bd', 12);
+        c.strokeStyle = active ? '#ffb020' : '#5a4a2a'; c.lineWidth = 6; c.beginPath(); c.arc(ix, iy + 6, ir, 0, 7); c.stroke();
+        if (active) {
+            const cw = Bdir > 0, a0 = -Math.PI / 2 + (cw ? 0.35 : -0.35), a1 = a0 + (cw ? 4.2 : -4.2);
+            c.strokeStyle = '#fff3c4'; c.lineWidth = 3; c.beginPath(); c.arc(ix, iy + 6, ir, a0, a1, !cw); c.stroke(); const ex = ix + ir * Math.cos(a1), ey = iy + 6 + ir * Math.sin(a1), tg = a1 + (cw ? Math.PI / 2 : -Math.PI / 2); c.fillStyle = '#fff3c4'; c.save(); c.translate(ex, ey); c.rotate(tg); c.beginPath(); c.moveTo(11, 0); c.lineTo(-6, -8); c.lineTo(-6, 8); c.closePath(); c.fill(); c.restore();
+            c.strokeStyle = '#d28bff'; c.fillStyle = '#d28bff'; c.lineWidth = 3; if (Bdir > 0) { c.beginPath(); c.moveTo(ix - 9, iy - 3); c.lineTo(ix + 9, iy + 15); c.moveTo(ix + 9, iy - 3); c.lineTo(ix - 9, iy + 15); c.stroke(); } else { c.beginPath(); c.arc(ix, iy + 6, 5, 0, 7); c.fill(); c.beginPath(); c.arc(ix, iy + 6, 11, 0, 7); c.stroke(); }
+            txt(c, `電流${Bdir > 0 ? '順時針' : '逆時針'}`, ix + 52, iy - 8, '#fff3c4', 14); txt(c, `B′ ${Bdir > 0 ? '⊗ 入' : '⊙ 出'}紙面`, ix + 52, iy + 14, '#d28bff', 14);
+        } else txt(c, '無感應電流', ix + 52, iy + 6, '#6a7a92', 14);
+        const dp0 = dPhidt(), inc0 = dp0 * Phi() > 0, mv = Math.abs(S.vz) > 0.01;
+        const l1 = mv ? `① 通過線圈向${Phi() >= 0 ? '右' : '左'}的磁通量 ${inc0 ? '增加' : '減少'}` : '① 磁棒靜止：磁通量沒有變化', l2 = mv ? `② 感應磁場 B′ 與原磁場${inc0 ? '反向' : '同向'}（阻礙變化）→ 指向${Bdir > 0 ? '右' : '左'}` : '② 沒有變化 → 沒有感應磁場', l3 = mv && active ? `③ 右手螺旋定則 → 從左側看，電流為${Bdir > 0 ? '順時針' : '逆時針'}；線圈左端為 ${Bdir > 0 ? 'S' : 'N'} 極` : '③ 沒有感應電流';
+        txt(c, l1, 300, 318, '#35d6ff', 15); txt(c, l2, 300, 343, '#d28bff', 15); txt(c, l3, 300, 368, '#ffb020', 15);
         // 速度與磁力箭頭（磁棒上方／下方）
-        if (Math.abs(S.vz) > 0.02) { arrow(c, mx, CY - H - 18, mx + Math.sign(S.vz) * Math.min(120, 40 + Math.abs(S.vz) * 120), CY - H - 18, '#4d8dff', 5, 14); txt(c, `v = ${Math.abs(S.vz).toFixed(2)} m/s`, mx, CY - H - 38, '#4d8dff', 14, 'center'); }
-        const F = force(); if (Math.abs(F) > 2e-6) { const fl = Math.min(110, 20 + Math.abs(F) * 4e4); arrow(c, mx, CY + H + 22, mx + Math.sign(F) * fl, CY + H + 22, '#ff4d6d', 5, 14); txt(c, `F = ${(Math.abs(F) * 1000).toFixed(2)} mN（${Math.sign(F) !== Math.sign(S.vz) ? '阻礙運動' : ''}）`, mx, CY + H + 44, '#ff4d6d', 14, 'center'); }
+        if (Math.abs(S.vz) > 0.02) { arrow(c, mx, CY - 78, mx + Math.sign(S.vz) * Math.min(120, 40 + Math.abs(S.vz) * 120), CY - 78, '#4d8dff', 5, 14); txt(c, `v = ${Math.abs(S.vz).toFixed(2)} m/s`, mx, CY - 98, '#4d8dff', 14, 'center'); }
+        const F = force(); if (Math.abs(F) > 2e-6) { const fl = Math.min(110, 20 + Math.abs(F) * 4e4); arrow(c, mx, CY + 76, mx + Math.sign(F) * fl, CY + 76, '#ff4d6d', 5, 14); txt(c, `F = ${(Math.abs(F) * 1000).toFixed(2)} mN（${Math.sign(F) !== Math.sign(S.vz) ? '阻礙運動' : ''}）`, mx, CY + 98, '#ff4d6d', 14, 'center'); }
         // 檢流計
-        const gx = 640, gy = 262; c.fillStyle = '#10151f'; c.strokeStyle = '#8fa3c4'; c.lineWidth = 3; c.beginPath(); c.arc(gx, gy, 42, Math.PI, 0); c.lineTo(gx + 42, gy + 12); c.lineTo(gx - 42, gy + 12); c.closePath(); c.fill(); c.stroke();
+        const gx = 670, gy = 252; c.fillStyle = '#10151f'; c.strokeStyle = '#8fa3c4'; c.lineWidth = 3; c.beginPath(); c.arc(gx, gy, 42, Math.PI, 0); c.lineTo(gx + 42, gy + 12); c.lineTo(gx - 42, gy + 12); c.closePath(); c.fill(); c.stroke();
         const ang = Math.max(-1, Math.min(1, I / 0.02)) * 1.15 - Math.PI / 2; c.strokeStyle = '#ffb020'; c.lineWidth = 3; c.beginPath(); c.moveTo(gx, gy); c.lineTo(gx + 36 * Math.cos(ang), gy + 36 * Math.sin(ang)); c.stroke();
         txt(c, 'G', gx, gy - 14, '#8fa3c4', 14, 'center'); txt(c, '−', gx - 30, gy - 10, '#6a7a92', 14, 'center'); txt(c, '+', gx + 30, gy - 10, '#6a7a92', 14, 'center'); txt(c, '檢流計（+：B′向右）', gx, gy + 30, '#9aa8bd', 12, 'center');
         txt(c, `磁棒位置 z = ${(S.z * 100).toFixed(1)} cm`, 20, 22, '#9aa8bd', 14); txt(c, 'N = ' + S.N + ' 匝，a = 3 cm，R = 20 Ω', 20, 44, '#9aa8bd', 13);
