@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>兩喇叭的聲波干涉 - 李捷物理實驗室</title>
+<style>
+        :root { --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432; --text-main: #f0f3f8; --text-muted: #9aa8bd; --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676;
+            --i1: #ffb020; --i2: #ff7ad9; --flux: #35d6ff; --ind: #d28bff; --vel: #4d8dff; }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6; }
+        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; } .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
+        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; } h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; } .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
+        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
+        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
+        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+        .mode-btn { flex: 1 1 220px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 10px 12px; font-size: .92rem; cursor: pointer; text-align: left; } .mode-btn b { display: block; color: var(--cyan); } .mode-btn.active { border-color: var(--cyan); background: #12303a; }
+        .mode-desc { font-size: .92rem; color: var(--text-muted); margin-bottom: 12px; }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; } .control-group.off { display: none; }
+        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; } .control-label b { font-family: monospace; font-size: 1.05rem; }
+        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
+        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
+        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
+        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; } .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; } button.btn.secondary { background: #3a465b; color: #fff; } button.btn.green { background: var(--green); color: #00210f; } button.btn.red { background: #ff6b81; color: #2a0008; } button.btn.orange { background: #ff9f43; color: #2a1500; }
+        button.btn:disabled { opacity: .4; cursor: not-allowed; } button.btn:not(:disabled):hover { filter: brightness(1.12); }
+        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; } canvas { display: block; width: 100%; height: auto; touch-action: pan-y; }
+        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; } .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #111622; font-size: 1rem; } .status b { color: var(--yellow); }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; } .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; } .meter-title { font-size: .82rem; color: var(--text-muted); } .meter-value { font-size: 1.25rem; font-weight: bold; font-family: monospace; } .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
+        .opt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px; margin-bottom: 10px; }
+        .opt { background: var(--bg-control); border: 2px solid #2c3749; border-radius: 8px; padding: 8px 10px; cursor: pointer; font-size: .95rem; color: var(--text-main); text-align: left; } .opt:hover { border-color: #4a6a9a; } .opt.sel { border-color: var(--yellow); background: #2b2a14; } .opt.ok { border-color: var(--green); } .opt.bad { border-color: #ff6b81; }
+        .opt b { color: var(--cyan); margin-right: 6px; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; } .fit-text b { color: var(--yellow); }
+        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; } summary { cursor: pointer; font-weight: bold; color: var(--cyan); } details ol, details ul { margin: 8px 0 2px; padding-left: 22px; } details li { margin-bottom: 4px; }
+        .assume { font-size: .88rem; color: var(--text-muted); } footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>🔊 兩喇叭的聲波干涉</h1>
+    <p class="subtitle">兩個相干聲源　｜　路徑差 |r₁ − r₂| = mλ → 腹點（最響）、(m+½)λ → 節點（最弱）</p>
+</header>
+<div class="container">
+    <div class="card">
+        <div class="card-title">操作模式</div>
+        <div class="mode-bar">
+            <button class="mode-btn active" data-mode="free"><b>① 自由探索</b>在畫面中點一下（或拖曳）放置聽者，看兩列聲波如何疊加</button>
+            <button class="mode-btn" data-mode="quiz"><b>② 五位聽者（講義第 8 題）</b>A～E 誰聽到的聲音最強、最弱？</button>
+            <button class="mode-btn" data-mode="scan"><b>③ 沿直線掃描</b>走過一排座位，音量如何起伏？</button>
+        </div>
+        <div class="mode-desc" id="modeDesc"></div>
+        <div class="controls-grid" id="ctl">
+            <div class="control-group"><div class="control-label"><span>聲音頻率 f</span><b style="color:var(--cyan)"><span id="lF">400</span> Hz</b></div><input type="range" id="sF" min="170" max="1360" step="10" value="400"><div class="sub-note">波長 λ = v / f，聲速 v = 340 m/s → λ = <span id="lLam">0.85</span> m</div></div>
+            <div class="control-group"><div class="control-label"><span>兩喇叭間距 d</span><b style="color:var(--yellow)"><span id="lD">2.0</span> m</b></div><input type="range" id="sD" min="0.5" max="5" step="0.1" value="2"><div class="sub-note">d / λ = <span id="lDL">2.35</span></div></div>
+            <div class="control-group"><div class="control-label"><span>兩喇叭的相位</span></div><select id="selPh"><option value="0">同相（相同方式發聲）</option><option value="1">反相（其中一個接反）</option></select></div>
+            <div class="control-group" id="grpScan"><div class="control-label"><span>掃描線位置（距喇叭）</span><b style="color:var(--green)"><span id="lXs">6.0</span> m</b></div><input type="range" id="sXs" min="2" max="11" step="0.5" value="6"></div>
+            <div class="control-group"><div class="control-label"><span>動畫速度（不是真實頻率）</span></div><select id="selSpd"><option value="0.15">很慢</option><option value="0.3" selected>慢</option><option value="0.6">中</option><option value="1">快</option></select></div>
+        </div>
+        <div class="check-row"><label><input type="checkbox" id="chkLines" checked> 顯示腹線（綠）與節線（紫）</label><label><input type="checkbox" id="chkWave" checked> 顯示聲波（暖色＝壓縮、冷色＝稀疏）</label></div>
+        <div class="btn-row"><button class="btn green" id="btnPlay">▶ 播放</button><button class="btn secondary" id="btnPause">⏸ 暫停</button><button class="btn secondary" id="btnReset">↺ 重設</button></div>
+    </div>
+
+    <div class="card" id="quizCard" style="display:none">
+        <div class="card-title">講義第 8 題（類似題）</div>
+        <div class="fit-text">兩聲源（喇叭）以相同的方式發出同頻率、同強度的聲波，間距 d = 2λ。A～E 為 5 位聽者。請問下列敘述何者正確？（音量會隨距離衰減）</div>
+        <div class="opt-grid" id="optGrid"></div>
+        <div class="btn-row"><button class="btn orange" id="btnReveal">逐一驗證（算出各聽者的音量）</button></div>
+        <div class="fit-text" id="quizMsg"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span id="sceneTitle">喇叭與聲場（俯視）</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div>
+        <div class="canvas-wrap"><canvas id="scene" width="760" height="420"></canvas></div>
+        <div class="legend"><span style="--c:#35d6ff">S₁ 的聲波</span><span style="--c:#ff9f43">S₂ 的聲波</span><span style="--c:#00e676">腹線（建設性）</span><span style="--c:#d28bff">節線（破壞性）</span></div>
+        <div class="status" id="status"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span id="grTitle">聽者處的聲壓</span></div>
+        <div class="graph-box"><canvas id="gr" width="760" height="260"></canvas></div>
+        <div class="fit-text" id="grNote"></div>
+    </div>
+
+    <div class="card"><div class="card-title">即時數據</div><div class="dashboard" id="dash"></div></div>
+
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary>
+            <ul>
+                <li>波長：<b>λ = v / f</b>（v：聲速 340 m/s；f：頻率，Hz）。</li>
+                <li>聽者到兩喇叭的距離 r₁、r₂，<b>路徑差 Δr = |r₁ − r₂|</b>。</li>
+                <li>兩喇叭<b>同相</b>：Δr = mλ（m = 0, 1, 2…）→ <b>建設性干涉</b>（腹點，聲音最大）；Δr = (m + ½)λ → <b>破壞性干涉</b>（節點，聲音最小）。<b>反相</b>時，兩種條件互換。</li>
+                <li>疊加的聲壓：<b>p = (1/r₁) cos(kr₁ − ωt) + (1/r₂) cos(kr₂ − ωt)</b>（k = 2π/λ；ω = 2πf）。合成振幅 <b>A = |p₁ + p₂|<sub>最大</sub> = √(A₁² + A₂² + 2A₁A₂ cos ψ)</b>，ψ = 2πΔr/λ。</li>
+                <li>聲強（單位面積的功率）正比於振幅的平方，距離越遠越小（約 ∝ 1/r²）。因此<b>腹點離喇叭越近越響</b>，不同腹線上的聲音大小也不同。</li>
+                <li>遠處（r ≫ d）：第 m 條腹線的方向 <b>d sinθ = mλ</b>；全部腹線條數 ≤ 2⌊d/λ⌋ + 1。</li>
+            </ul>
+            <p class="assume">理想化假設：兩個點聲源（球面波）、同頻率同強度、在水平面內（俯視圖中的二維平面）傳播；忽略牆壁反射與空氣吸收；聲速 340 m/s；畫面顏色與動畫時間經過放慢，只用來觀察形狀。</p>
+        </details>
+        <details><summary>建議講解順序</summary>
+            <ol>
+                <li>模式①：先把頻率調低（波長大、間距 d 小），畫面中只有一條腹線（正中央）；再調高頻率，腹線與節線條數增加。</li>
+                <li>在畫面上點一個聽者，看右下方的兩條聲壓曲線：同相疊加變大、反相疊加變小（甚至抵消）。</li>
+                <li>用「路徑差 = 幾個 λ」來判斷腹點、節點，並與畫面上的綠線、紫線對照。</li>
+                <li>模式②：講義第 8 題。先自己判斷再驗證：同在腹線上的 A 和 C 為什麼不一樣強？（距離不同）</li>
+                <li>模式③：沿直線走，音量忽大忽小（駐波般的亮暗條紋）。改變 d 與 f，條紋間距變化。</li>
+                <li>反相：兩個喇叭接線其中一個接反，中央線變成節線。</li>
+            </ol>
+        </details>
+        <details><summary>可以問學生的問題</summary>
+            <ul>
+                <li>兩喇叭正中間（在中垂線上）為什麼是腹點？（路徑差為 0）</li>
+                <li>降噪耳機如何利用破壞性干涉？（讓反相的聲波抵消噪音）</li>
+                <li>頻率加倍，節線變多還是變少？（變多，間隔變小）</li>
+                <li>為什麼家庭音響要求兩個喇叭接線方向一致？（接反會使中央音量降低，低頻特別明顯）</li>
+            </ul>
+        </details>
+        <details><summary>常見迷思</summary>
+            <ul>
+                <li><b>「所有腹點的聲音一樣大」</b>：腹點代表「干涉加強」，大小還受距離影響，離喇叭越近越大。</li>
+                <li><b>「節點是聲音『沒有傳到』」</b>：兩波都有到達，只是相互抵消；若移走一個喇叭，聲音就出現。</li>
+                <li><b>「聲音在節點消失，能量也消失了」</b>：能量重新分配到腹線的方向，總能量守恆。</li>
+                <li><b>「路徑差 = λ/2 一定是破壞性」</b>：只有兩聲源同相時才成立，反相時相反。</li>
+            </ul>
+        </details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+<script>
+(() => {
+    'use strict';
+    const el = id => document.getElementById(id), c = el('scene').getContext('2d'), TAU = 2 * Math.PI, V = 340;
+    const SC = 60, OX = 40, OY = 210, W2 = 380, H2 = 210;
+    const S = { mode: 'free', f: 400, d: 2, ph: 0, xs: 6, spd: 0.3, lines: true, wave: true, playing: true, t: 0, L: [6, 0.8], drag: false, quizSel: null, revealed: false };
+    const lam = () => V / S.f, k = () => TAU / lam();
+    const src = () => [[0, S.d / 2], [0, -S.d / 2]];
+    const px = X => OX + X * SC, py = Y => OY - Y * SC, wx = x => (x - OX) / SC, wy = y => (OY - y) / SC;
+    function geo(X, Y) { const s = src(), r1 = Math.max(0.12, Math.hypot(X - s[0][0], Y - s[0][1])), r2 = Math.max(0.12, Math.hypot(X - s[1][0], Y - s[1][1])); return { r1, r2 }; }
+    function amp(X, Y) { const { r1, r2 } = geo(X, Y), a1 = 1 / r1, a2 = 1 / r2, psi = k() * (r2 - r1) + S.ph * Math.PI; return { r1, r2, a1, a2, psi, A: Math.sqrt(a1 * a1 + a2 * a2 + 2 * a1 * a2 * Math.cos(psi)) }; }
+    // 疊加的聲壓（t：相位 ωt）
+    const pr = (X, Y, wt) => { const g = geo(X, Y); return Math.cos(k() * g.r1 - wt) / g.r1 + Math.cos(k() * g.r2 - wt + S.ph * Math.PI) / g.r2; };
+    // 場快取
+    let cache = null, ckey = ''; const off = document.createElement('canvas'); off.width = W2; off.height = H2; const octx = off.getContext('2d'), img = octx.createImageData(W2, H2);
+    function buildCache() {
+        const key = [S.f, S.d, S.ph].join('|'); if (key === ckey) return; ckey = key; const n = W2 * H2, r1 = new Float32Array(n), r2 = new Float32Array(n), line = new Uint8Array(n); const s = src(), kk = k(), L = lam();
+        for (let j = 0; j < H2; j++) for (let i = 0; i < W2; i++) { const X = wx(i * 2 + 1), Y = wy(j * 2 + 1), a = Math.max(0.12, Math.hypot(X - s[0][0], Y - s[0][1])), b = Math.max(0.12, Math.hypot(X - s[1][0], Y - s[1][1])); r1[j * W2 + i] = a; r2[j * W2 + i] = b; const u = ((b - a) / L + S.ph / 2) * 1; const fr = u - Math.round(u), fh = u - Math.floor(u) - 0.5; const gr = Math.abs((r1[j * W2 + i] - r2[j * W2 + i])); /* 梯度近似 ≤ 2 */ const tolG = 0.012; if (Math.abs(fr) < tolG * 1.0 && X > 0.05) line[j * W2 + i] = 1; else if (Math.abs(Math.abs(fr) - 0.5) < tolG && X > 0.05) line[j * W2 + i] = 2; }
+        cache = { r1, r2, line };
+    }
+    function drawField() {
+        buildCache(); const d = img.data, wt = S.t * TAU, kk = k(), ph = S.ph * Math.PI, { r1, r2, line } = cache, n = W2 * H2;
+        for (let i = 0; i < n; i++) {
+            let v = 0; if (S.wave) { const p = Math.cos(kk * r1[i] - wt) / r1[i] + Math.cos(kk * r2[i] - wt + ph) / r2[i]; v = Math.tanh(p * 2.2); }
+            let R = 12, G = 16, B = 26; if (v > 0) { R += v * 243; G += v * 126; B += v * 40; } else { R += -v * 40; G += -v * 118; B += -v * 230; }
+            const l = S.lines ? line[i] : 0; if (l === 1) { R = R * .35 + 0; G = G * .35 + 230 * .65; B = B * .35 + 118 * .65; } else if (l === 2) { R = R * .35 + 210 * .65; G = G * .35 + 139 * .65; B = B * .35 + 255 * .65; }
+            const q = i * 4; d[q] = R; d[q + 1] = G; d[q + 2] = B; d[q + 3] = 255;
+        }
+        octx.putImageData(img, 0, 0); c.imageSmoothingEnabled = true; c.drawImage(off, 0, 0, 760, 420);
+    }
+    function txt(s, x, y, col, size = 14, al = 'left') { c.save(); c.font = `bold ${size}px sans-serif`; c.fillStyle = col; c.textAlign = al; c.textBaseline = 'middle'; c.fillText(s, x, y); c.restore(); }
+    function speaker(X, Y, name, col) { const x = px(X), y = py(Y); c.fillStyle = '#d7deea'; c.strokeStyle = '#11151f'; c.lineWidth = 2; c.beginPath(); c.moveTo(x - 4, y - 6); c.lineTo(x + 8, y - 15); c.lineTo(x + 8, y + 15); c.lineTo(x - 4, y + 6); c.closePath(); c.fill(); c.stroke(); c.fillStyle = col; c.beginPath(); c.arc(x, y, 5, 0, 7); c.fill(); txt(name, x - 14, y, col, 16, 'right'); }
+    const QL = (() => { const dd = 2; const pts = [['A', 3, 3], ['B', 4, 3], ['C', 5, 5], ['D', 4.5, 4], ['E', 3.5, 4]]; return pts.map(([nm, a, b]) => { const y = (b * b - a * a) / (2 * dd), x = Math.sqrt(Math.max(0, a * a - (y - dd / 2) ** 2)); return { nm, r1: a, r2: b, x, y, rel: [a, b] }; }); })();
+    // 題目座標（單位：λ）：S₁ = (0, +1)λ、S₂ = (0, −1)λ，其中 A: r₁ = r₂ = 3λ…
+    function quizPts() { const L = lam(), dl = S.d / L; return QL.map(q => { const a = q.r1 * L, b = q.r2 * L, dd = 2 * L, y = (b * b - a * a) / (2 * dd), x = Math.sqrt(Math.max(0, a * a - (y - dd / 2) ** 2)); return { nm: q.nm, X: x, Y: y }; }); }
+    function listeners() { if (S.mode === 'free') return [{ nm: '聽者', X: S.L[0], Y: S.L[1] }]; if (S.mode === 'quiz') return quizPts(); const th = (S.t * 0.18) % 1, Y = -3.2 + th * 6.4; return [{ nm: '聽者', X: S.xs, Y }]; }
+    function drawScene() {
+        drawField(); const s = src(); speaker(0, s[0][1], 'S₁', '#35d6ff'); speaker(0, s[1][1], 'S₂', '#ff9f43');
+        if (S.mode === 'scan') { c.strokeStyle = '#00e676'; c.setLineDash([6, 5]); c.lineWidth = 2; c.beginPath(); c.moveTo(px(S.xs), 0); c.lineTo(px(S.xs), 420); c.stroke(); c.setLineDash([]); }
+        const ls = listeners(); ls.forEach(l => { const x = px(l.X), y = py(l.Y); if (S.mode !== 'scan' || true) { c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = 1.2; c.setLineDash([4, 4]); [s[0], s[1]].forEach((q, i) => { c.beginPath(); c.moveTo(px(q[0]), py(q[1])); c.lineTo(x, y); c.stroke(); }); c.setLineDash([]); } c.fillStyle = '#fff'; c.strokeStyle = '#111'; c.lineWidth = 3; c.beginPath(); c.arc(x, y, 8, 0, 7); c.fill(); c.stroke(); txt(l.nm, x + 12, y - 12, '#fff', 16); });
+        // 比例尺（λ）
+        const L = lam() * SC; c.strokeStyle = '#fff'; c.lineWidth = 3; c.beginPath(); c.moveTo(560, 400); c.lineTo(560 + L, 400); c.stroke(); txt(`λ = ${lam().toFixed(2)} m`, 560 + L / 2, 386, '#fff', 13, 'center');
+    }
+    function listenerGraph() {
+        const cv = el('gr'), x = cv.getContext('2d'), W = cv.width, H = cv.height, Lm = 62, R = 16, T = 30, B = 40, pw = W - Lm - R, ph = H - T - B;
+        x.fillStyle = '#0d121b'; x.fillRect(0, 0, W, H); x.font = '12px sans-serif';
+        if (S.mode === 'scan') { // 振幅–位置圖
+            const N = 300, ys = [], vs = []; let mx = 0; for (let i = 0; i <= N; i++) { const Y = -3.5 + 7 * i / N; ys.push(Y); const a = amp(S.xs, Y).A; vs.push(a); mx = Math.max(mx, a); } mx *= 1.1;
+            const PX = Y => Lm + (Y + 3.5) / 7 * pw, PY = v => T + ph - v / mx * ph; for (let kk = 0; kk <= 4; kk++) { const v = mx * kk / 4; x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(Lm, PY(v)); x.lineTo(Lm + pw, PY(v)); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'right'; x.fillText(v.toFixed(2), Lm - 6, PY(v) + 4); }
+            for (let Y = -3; Y <= 3; Y++) { x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(Y, PX(Y), T + ph + 15); x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(PX(Y), T); x.lineTo(PX(Y), T + ph); x.stroke(); }
+            x.strokeStyle = '#ffffff'; x.lineWidth = 2.6; x.beginPath(); vs.forEach((v, i) => i ? x.lineTo(PX(ys[i]), PY(v)) : x.moveTo(PX(ys[i]), PY(v))); x.stroke(); const ly = listeners()[0].Y, la = amp(S.xs, ly).A; x.fillStyle = '#ffcc00'; x.beginPath(); x.arc(PX(ly), PY(la), 7, 0, 7); x.fill();
+            x.fillStyle = '#c3d0e4'; x.font = 'bold 14px sans-serif'; x.textAlign = 'left'; x.fillText(`合成聲壓振幅（相對值）沿掃描線（x = ${S.xs} m）的變化`, Lm, 18); x.font = '12px sans-serif'; x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText('位置 y (m)', Lm + pw / 2, H - 4);
+            return;
+        }
+        // 波形圖
+        const l = S.mode === 'quiz' ? { X: quizPts()[0].X, Y: quizPts()[0].Y } : { X: S.L[0], Y: S.L[1] }; const a = amp(l.X, l.Y), pw3 = 3, mx = Math.max(a.a1 + a.a2, 1e-6) * 1.1;
+        const PX = tt => Lm + tt / pw3 * pw, PY = v => T + ph / 2 - v / mx * ph / 2;
+        for (let kk = -2; kk <= 2; kk++) { const v = mx * kk / 2; x.strokeStyle = kk ? '#1b2433' : '#5b6a82'; x.beginPath(); x.moveTo(Lm, PY(v)); x.lineTo(Lm + pw, PY(v)); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'right'; x.fillText(v.toFixed(2), Lm - 6, PY(v) + 4); }
+        for (let tt = 0; tt <= 3; tt += 0.5) { x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(PX(tt), T); x.lineTo(PX(tt), T + ph); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(tt, PX(tt), T + ph + 15); }
+        const kk = k(), curve = (fn, col, w) => { x.strokeStyle = col; x.lineWidth = w; x.beginPath(); for (let i = 0; i <= 300; i++) { const tt = i / 300 * pw3, v = fn(tt * TAU - S.t * 0); i ? x.lineTo(PX(tt), PY(v)) : x.moveTo(PX(tt), PY(v)); } x.stroke(); };
+        curve(w => a.a1 * Math.cos(kk * a.r1 - w), '#35d6ff', 2.2); curve(w => a.a2 * Math.cos(kk * a.r2 - w + S.ph * Math.PI), '#ff9f43', 2.2); curve(w => a.a1 * Math.cos(kk * a.r1 - w) + a.a2 * Math.cos(kk * a.r2 - w + S.ph * Math.PI), '#ffffff', 3.2);
+        const tn = (S.t % 3); x.strokeStyle = 'rgba(255,204,0,.7)'; x.setLineDash([5, 5]); x.beginPath(); x.moveTo(PX(tn), T); x.lineTo(PX(tn), T + ph); x.stroke(); x.setLineDash([]);
+        x.fillStyle = '#c3d0e4'; x.font = 'bold 14px sans-serif'; x.textAlign = 'left'; x.fillText('聽者處的聲壓：S₁（青）、S₂（橘）與合成（白）', Lm, 18); x.font = '12px sans-serif'; x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText('時間 t（單位：週期 T）', Lm + pw / 2, H - 4);
+    }
+    function dash() {
+        const m = (t, v, u, col = '#c3d0e4') => `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value" style="color:${col}">${v}<span class="unit">${u}</span></div></div>`;
+        const l = S.mode === 'quiz' ? quizPts()[0] : listeners()[0]; const a = amp(l.X, l.Y), dr = Math.abs(a.r1 - a.r2), u = dr / lam(); let state;
+        const uu = (a.r2 - a.r1) / lam() + S.ph / 2, fr = Math.abs(uu - Math.round(uu)); state = fr < 0.06 ? '腹點（建設性）' : Math.abs(fr - 0.5) < 0.06 ? '節點（破壞性）' : '介於之間';
+        el('dash').innerHTML = m('波長 λ', lam().toFixed(3), 'm', '#35d6ff') + m('r₁（到 S₁）', a.r1.toFixed(2), 'm', '#35d6ff') + m('r₂（到 S₂）', a.r2.toFixed(2), 'm', '#ff9f43') + m('路徑差 |r₁ − r₂|', dr.toFixed(3), 'm', '#ffcc00') + m('路徑差 ÷ λ', u.toFixed(3), '', '#ffcc00') + m('合成振幅（相對）', a.A.toFixed(3), '', '#ffffff') + m('單獨 S₁＋S₂ 振幅和', (a.a1 + a.a2).toFixed(3), '') + m('此處狀態', state, '', '#00e676');
+        el('status').innerHTML = S.mode === 'quiz' ? '五位聽者的位置是依「路徑差」設計的：A、C 在中垂線（Δr = 0），B 在第一條腹線（Δr = λ），D、E 在節線（Δr = ±½λ）。' : `聽者到兩喇叭的距離為 ${a.r1.toFixed(2)} m 與 ${a.r2.toFixed(2)} m，路徑差 ${u.toFixed(2)} λ（${S.ph ? '兩喇叭反相' : '兩喇叭同相'}）→ <b>${state}</b>。腹線最多 ${2 * Math.floor(S.d / lam()) + 1} 條（d/λ = ${(S.d / lam()).toFixed(2)}）。`;
+        el('runState').textContent = S.playing ? '播放中' : '暫停'; el('grNote').innerHTML = S.mode === 'scan' ? '圖中白線是合成振幅；峰在腹線、谷在節線。掃描線越遠、d 越小，條紋間距越大。' : '把兩條單獨的聲壓（青、橘）逐點相加，就得到白色合成波；同相時變大、反相時變小。';
+    }
+    function ui() { el('lF').textContent = S.f; el('lLam').textContent = lam().toFixed(2); el('lD').textContent = S.d.toFixed(1); el('lDL').textContent = (S.d / lam()).toFixed(2); el('lXs').textContent = S.xs.toFixed(1); }
+    function modeUI() {
+        const m = S.mode; document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === m)); el('quizCard').style.display = m === 'quiz' ? '' : 'none'; el('grpScan').style.display = m === 'scan' ? '' : 'none';
+        el('modeDesc').textContent = { free: '在聲場畫面上點一下或拖曳，放置聽者。調整頻率、間距與相位，看腹線（綠）與節線（紫）如何變化。', quiz: '兩喇叭間距 d = 2λ，頻率 400 Hz，同相。五位聽者的位置已依路徑差設計，先自己判斷，再驗證。', scan: '聽者沿著綠色虛線自動走過，下方圖顯示沿線的合成振幅。' }[m];
+        el('sceneTitle').textContent = '喇叭與聲場（俯視）'; el('grTitle').textContent = m === 'scan' ? '音量（合成振幅）–位置圖' : '聽者處的聲壓';
+        if (m === 'quiz') { S.f = 400; S.d = 2 * lam(); S.ph = 0; el('sF').value = 400; el('sD').value = S.d.toFixed(1); el('selPh').value = 0; ui(); el('sD').disabled = true; el('sF').disabled = true; el('selPh').disabled = true; } else { el('sD').disabled = false; el('sF').disabled = false; el('selPh').disabled = false; }
+        ckey = '';
+    }
+    const OPTS = ['A 聽到的聲音最強', 'A、C 聽到的聲音一樣強', 'B 聽到的聲音最弱', 'A 聽到的聲音最弱', 'B、E 聽到的聲音一樣強'];
+    function buildOpts() { el('optGrid').innerHTML = OPTS.map((t, i) => `<button class="opt" data-i="${i}"><b>(${'ABCDE'[i]})</b>${t}</button>`).join(''); el('optGrid').querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => { document.querySelectorAll('.opt').forEach(x => x.classList.remove('sel')); b.classList.add('sel'); S.quizSel = +b.dataset.i; })); }
+    function reveal() {
+        const pts = quizPts(), res = pts.map(p => ({ nm: p.nm, ...amp(p.X, p.Y) })), A = Object.fromEntries(res.map(r => [r.nm, r.A])), mx = Math.max(...res.map(r => r.A)), mn = Math.min(...res.map(r => r.A));
+        const truth = [A.A === mx && Math.abs(A.A - mx) < 1e-9, Math.abs(A.A - A.C) < 0.02 * mx, A.B === mn, A.A === mn, Math.abs(A.B - A.E) < 0.02 * mx];
+        el('quizMsg').innerHTML = '各聽者的合成振幅（相對值）：' + res.map(r => `<b>${r.nm}</b> = ${r.A.toFixed(3)}（Δr = ${Math.abs(r.r1 - r.r2) / lam() * 1 >= 0 ? (Math.abs(r.r1 - r.r2) / lam()).toFixed(2) : ''}λ）`).join('；') + '<br>' + truth.map((t, i) => `(${'ABCDE'[i]}) ${t ? '✔ 正確' : '✘ 錯誤'}`).join('　') + '<br>解：腹點（A、B、C）要比較誰離喇叭近，A 最近 → 最強；D、E 是節點 → 幾乎為零。<b>答案 (A)</b>。';
+        document.querySelectorAll('.opt').forEach((b, i) => { b.classList.toggle('ok', truth[i]); b.classList.toggle('bad', !truth[i]); });
+    }
+    document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.mode; S.t = 0; modeUI(); }));
+    el('sF').addEventListener('input', e => { S.f = +e.target.value; ui(); }); el('sD').addEventListener('input', e => { S.d = +e.target.value; ui(); }); el('selPh').addEventListener('change', e => { S.ph = +e.target.value; }); el('sXs').addEventListener('input', e => { S.xs = +e.target.value; ui(); }); el('selSpd').addEventListener('change', e => S.spd = +e.target.value);
+    el('chkLines').addEventListener('change', e => S.lines = e.target.checked); el('chkWave').addEventListener('change', e => S.wave = e.target.checked);
+    el('btnPlay').addEventListener('click', () => S.playing = true); el('btnPause').addEventListener('click', () => S.playing = false); el('btnReset').addEventListener('click', () => { S.t = 0; S.playing = true; }); el('btnReveal').addEventListener('click', reveal);
+    const cv = el('scene'); const place = e => { const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) * 760 / r.width, y = (e.clientY - r.top) * 420 / r.height; const X = Math.max(0.3, wx(x)), Y = wy(y); S.L = [X, Math.max(-3.4, Math.min(3.4, Y))]; };
+    cv.addEventListener('pointerdown', e => { if (S.mode !== 'free') return; S.drag = true; cv.setPointerCapture(e.pointerId); place(e); }); cv.addEventListener('pointermove', e => { if (S.drag) place(e); }); cv.addEventListener('pointerup', () => S.drag = false);
+    let last = null, fn = 0;
+    function frame(ts) { if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05); last = ts; if (S.playing) S.t += dt * S.spd * 2; drawScene(); if (!(fn++ % 2)) { listenerGraph(); dash(); } requestAnimationFrame(frame); }
+    window.__sp = { S, amp, quizPts, lam, reveal, pr };
+    buildOpts(); ui(); modeUI(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>波的 y–x 圖與 y–t 圖互換 - 李捷物理實驗室</title>
+<style>
+        :root { --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432; --text-main: #f0f3f8; --text-muted: #9aa8bd; --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676;
+            --i1: #ffb020; --i2: #ff7ad9; --flux: #35d6ff; --ind: #d28bff; --vel: #4d8dff; }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6; }
+        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; } .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
+        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; } h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; } .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
+        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
+        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
+        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+        .mode-btn { flex: 1 1 220px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 10px 12px; font-size: .92rem; cursor: pointer; text-align: left; } .mode-btn b { display: block; color: var(--cyan); } .mode-btn.active { border-color: var(--cyan); background: #12303a; }
+        .mode-desc { font-size: .92rem; color: var(--text-muted); margin-bottom: 12px; }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; } .control-group.off { display: none; }
+        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; } .control-label b { font-family: monospace; font-size: 1.05rem; }
+        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
+        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
+        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
+        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; } .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; } button.btn.secondary { background: #3a465b; color: #fff; } button.btn.green { background: var(--green); color: #00210f; } button.btn.red { background: #ff6b81; color: #2a0008; } button.btn.orange { background: #ff9f43; color: #2a1500; }
+        button.btn:disabled { opacity: .4; cursor: not-allowed; } button.btn:not(:disabled):hover { filter: brightness(1.12); }
+        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; } canvas { display: block; width: 100%; height: auto; touch-action: pan-y; }
+        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; } .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #111622; font-size: 1rem; } .status b { color: var(--yellow); }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; } .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; } .meter-title { font-size: .82rem; color: var(--text-muted); } .meter-value { font-size: 1.25rem; font-weight: bold; font-family: monospace; } .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
+        .opt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px; margin-bottom: 10px; }
+        .opt { background: var(--bg-control); border: 2px solid #2c3749; border-radius: 8px; padding: 8px 10px; cursor: pointer; font-size: .95rem; color: var(--text-main); text-align: left; } .opt:hover { border-color: #4a6a9a; } .opt.sel { border-color: var(--yellow); background: #2b2a14; } .opt.ok { border-color: var(--green); } .opt.bad { border-color: #ff6b81; }
+        .opt b { color: var(--cyan); margin-right: 6px; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; } .fit-text b { color: var(--yellow); }
+        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; } summary { cursor: pointer; font-weight: bold; color: var(--cyan); } details ol, details ul { margin: 8px 0 2px; padding-left: 22px; } details li { margin-bottom: 4px; }
+        .assume { font-size: .88rem; color: var(--text-muted); } footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>〰️ 波的 y–x 圖與 y–t 圖</h1>
+    <p class="subtitle">y–x 圖是「某一瞬間的照片」，y–t 圖是「某一點的影片」　｜　v = λ ÷ T = f λ</p>
+</header>
+<div class="container">
+    <div class="card">
+        <div class="card-title">操作模式</div>
+        <div class="mode-bar">
+            <button class="mode-btn active" data-mode="free"><b>① 同一列波的兩種圖</b>拖動 P 點、凍結快照，看 y–x 與 y–t 如何對應</button>
+            <button class="mode-btn" data-mode="quiz"><b>② 判斷傳播方向與波速</b>給你 y–x 圖與 P 點的 y–t 圖（課後題 8 類型）</button>
+            <button class="mode-btn" data-mode="ex14"><b>③ 範例 14（y–x 圖）</b>兩個時刻的波形，求波速</button>
+            <button class="mode-btn" data-mode="ex13"><b>④ 範例 13（y–t 圖）</b>兩點位移之和恆為零，求波速</button>
+        </div>
+        <div class="mode-desc" id="modeDesc"></div>
+        <div class="controls-grid" id="ctlFree">
+            <div class="control-group"><div class="control-label"><span>振幅 A</span><b style="color:var(--cyan)"><span id="lA">2.0</span> cm</b></div><input type="range" id="sA" min="0.5" max="3" step="0.1" value="2"></div>
+            <div class="control-group"><div class="control-label"><span>波長 λ</span><b style="color:var(--cyan)"><span id="lL">1.00</span> m</b></div><input type="range" id="sL" min="0.5" max="2" step="0.05" value="1"></div>
+            <div class="control-group"><div class="control-label"><span>週期 T</span><b style="color:var(--cyan)"><span id="lT">2.0</span> s</b></div><input type="range" id="sT" min="0.5" max="4" step="0.1" value="2"></div>
+            <div class="control-group"><div class="control-label"><span>觀察點 P 的位置 x<sub>P</sub></span><b style="color:var(--yellow)"><span id="lX">0.50</span> m</b></div><input type="range" id="sX" min="0" max="4" step="0.05" value="0.5"></div>
+            <div class="control-group"><div class="control-label"><span>傳播方向</span></div><select id="selDir"><option value="1">向右（+x）</option><option value="-1">向左（−x）</option></select></div>
+            <div class="control-group"><div class="control-label"><span>播放速度</span></div><select id="selSlow"><option value="0.25">0.25 倍</option><option value="0.5">0.5 倍</option><option value="1" selected>1 倍</option><option value="2">2 倍</option></select></div>
+        </div>
+        <div class="controls-grid" id="ctlEx14" style="display:none">
+            <div class="control-group"><div class="control-label"><span>波在 1 秒內前進的整波數 n</span><b style="color:var(--cyan)"><span id="lN14">2</span></b></div><input type="range" id="sN14" min="0" max="5" step="1" value="2"><div class="sub-note">波形向右平移 (n + ¼)λ 才會和圖中的虛線重合</div></div>
+            <div class="control-group"><div class="control-label"><span>傳播方向</span></div><select id="selDir14"><option value="1">向右（題目所述）</option><option value="-1">向左（試試看）</option></select></div>
+            <div class="control-group"><div class="control-label"><span>播放速度</span></div><select id="selSlow14"><option value="0.1">0.1 倍</option><option value="0.25" selected>0.25 倍</option><option value="0.5">0.5 倍</option><option value="1">1 倍</option></select></div>
+        </div>
+        <div class="controls-grid" id="ctlEx13" style="display:none">
+            <div class="control-group"><div class="control-label"><span>選擇答案選項（把波速代入）</span></div><select id="selOpt13"><option value="12">(A) 12 cm/s</option><option value="7.5" selected>(B) 7.5 cm/s</option><option value="5">(C) 5.0 cm/s</option><option value="2.5">(D) 2.5 cm/s</option><option value="1.5">(E) 1.5 cm/s</option></select></div>
+            <div class="control-group"><div class="control-label"><span>或自訂波速</span><b style="color:var(--cyan)"><span id="lV13">7.5</span> cm/s</b></div><input type="range" id="sV13" min="0.5" max="15" step="0.1" value="7.5"></div>
+        </div>
+        <div class="check-row" id="rowFree"><label><input type="checkbox" id="chkNext"> 顯示下一瞬間的波形（判斷 P 往上或往下）</label><label><input type="checkbox" id="chkRope" checked> 顯示 P 點的上下運動（紅點）</label></div>
+        <div class="btn-row"><button class="btn green" id="btnPlay">▶ 播放</button><button class="btn secondary" id="btnPause">⏸ 暫停</button><button class="btn secondary" id="btnReset">↺ 重設</button><button class="btn orange" id="btnSnap">📷 凍結快照</button><button class="btn secondary" id="btnClear">清除快照</button><button class="btn" id="btnNew" style="display:none">🎲 新題目</button></div>
+    </div>
+
+    <div class="card" id="quizCard" style="display:none">
+        <div class="card-title">作答（先看圖，再選擇）</div>
+        <div class="controls-grid">
+            <div class="control-group"><div class="control-label"><span>波的傳播方向</span></div><select id="qDir"><option value="">請選擇</option><option value="1">向右</option><option value="-1">向左</option></select></div>
+            <div class="control-group"><div class="control-label"><span>波速</span></div><select id="qV"></select></div>
+        </div>
+        <div class="btn-row"><button class="btn orange" id="btnCheck">檢查答案</button><button class="btn secondary" id="btnReveal">顯示解答與驗證動畫</button></div>
+        <div class="fit-text" id="quizMsg"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span id="gTitle1">y–x 圖</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div>
+        <div class="graph-box"><canvas id="gx" width="760" height="270"></canvas></div>
+        <div class="graph-box" style="margin-top:8px"><canvas id="gt" width="760" height="250"></canvas></div>
+        <div class="legend" id="legend"></div>
+        <div class="status" id="status"></div>
+    </div>
+
+    <div class="card" id="tableCard" style="display:none"><div class="card-title" id="tblTitle">各種 n 的可能性</div><div id="tbl"></div></div>
+
+    <div class="card"><div class="card-title">即時數據</div><div class="dashboard" id="dash"></div></div>
+
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary>
+            <ul>
+                <li>行進波：<b>y(x, t) = A sin[2π(x/λ ∓ t/T)]</b>（「−」：向右（+x）行進；「＋」：向左行進）。A：振幅，λ：波長（m），T：週期（s）。</li>
+                <li>波速：<b>v = λ / T = f λ</b>（f = 1/T，單位 Hz）。波速只由介質決定；改變 f，波長跟著變。</li>
+                <li><b>y–x 圖</b>：固定 t，看所有位置的位移；橫軸是位置，可以讀出 <b>λ</b>、A。<b>y–t 圖</b>：固定 x，看一個質點的位移隨時間；橫軸是時間，可以讀出 <b>T</b>、A。</li>
+                <li>質點的垂直速度：<b>v<sub>y</sub> = ∂y/∂t = −(±v)·∂y/∂x</b>。向右行進的波，y–x 圖「斜率為負」的位置，質點向上運動。</li>
+                <li>兩點相距 Δx：相位差 = 2πΔx/λ。位移總是相反 → Δx = (n + ½)λ；總是相同 → Δx = nλ。</li>
+            </ul>
+            <p class="assume">理想化假設：單一頻率的正弦行進波，無衰減；介質質點只作上下（橫向）運動；範例 13、14 的圖形以講義數值重建（範例 13：T = 0.4 s；範例 14：λ = 4 m）。</p>
+        </details>
+        <details><summary>建議講解順序</summary>
+            <ol>
+                <li>模式①：先暫停，只看 y–x 圖「像照片」，指出 λ；再看 P 點，y–t 圖「像影片」，指出 T。</li>
+                <li>勾「顯示下一瞬間的波形」：波形向右平移一點點，P 點就跟著往上（或下）→ 質點只上下動，波形向前傳。</li>
+                <li>按「凍結快照」，再播放一小段：兩條 y–x 曲線的水平間隔就是 vΔt。</li>
+                <li>模式②：學生自己判斷方向與波速，再看解答與驗證動畫。</li>
+                <li>模式③、④：範例 14 的多解性（n 整波）、範例 13 的相位差條件。</li>
+            </ol>
+        </details>
+        <details><summary>可以問學生的問題</summary>
+            <ul>
+                <li>y–x 圖的橫軸 1 個週期是什麼？（一個波長）y–t 圖呢？（一個週期）</li>
+                <li>向右行進的波，波峰「右邊」的質點接下來是向上還是向下？（向上，因為波峰要移過來）</li>
+                <li>範例 14：為什麼 t = 0 與 t = 1 秒的波形，無法直接得知波速？（可能多走了整數個波長）</li>
+                <li>範例 13：相距 1.5 cm 的兩點位移和恆為零，波長有哪些可能？</li>
+            </ul>
+        </details>
+        <details><summary>常見迷思</summary>
+            <ul>
+                <li><b>「y–t 圖的橫軸是位置」</b>：y–t 圖是同一個質點的位移對時間，橫軸是時間。</li>
+                <li><b>「波往右傳，質點也往右跑」</b>：質點只上下振動，沒有隨波前進。</li>
+                <li><b>「看 y–x 圖的斜率正負就能知道波的方向」</b>：必須和質點此刻上下運動（由 y–t 圖得知）一起判斷。</li>
+                <li><b>「λ = vT」只能用 y–t 圖」</b>：λ 要從 y–x 圖讀，T 要從 y–t 圖讀，兩張圖要互相搭配。</li>
+            </ul>
+        </details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+<script>
+(() => {
+    'use strict';
+    const el = id => document.getElementById(id), TAU = 2 * Math.PI;
+    const S = { mode: 'free', t: 0, playing: true, slow: 1, A: 2, lam: 1, T: 2, xP: 0.5, dir: 1, snap: null, next: false, rope: true,
+        n14: 2, dir14: 1, slow14: 0.25, v13: 7.5, quiz: null, qAns: null, revealed: false, slowQ: 0.5 };
+    const yx = (x, t, A, lam, T, dir) => A * Math.sin(TAU * (x / lam - dir * t / T));
+    // ===== 通用圖表 =====
+    function graph(cv, o) {
+        const x = cv.getContext('2d'), W = cv.width, H = cv.height, L = 64, R = 18, T = 34, B = 40, pw = W - L - R, ph = H - T - B;
+        const PX = v => L + (v - o.x0) / (o.x1 - o.x0) * pw, PY = v => T + ph / 2 - v / o.ymax * ph / 2;
+        x.fillStyle = '#0d121b'; x.fillRect(0, 0, W, H); x.font = '13px sans-serif';
+        for (let v = -Math.floor(o.ymax / o.sy) * o.sy; v <= o.ymax + 1e-9; v += o.sy) { x.strokeStyle = Math.abs(v) < 1e-9 ? '#6b7a92' : '#1b2433'; x.lineWidth = Math.abs(v) < 1e-9 ? 1.5 : 1; x.beginPath(); x.moveTo(L, PY(v)); x.lineTo(L + pw, PY(v)); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'right'; x.fillText(+v.toFixed(3), L - 6, PY(v) + 4); }
+        for (let v = Math.ceil(o.x0 / o.sx - 1e-9) * o.sx; v <= o.x1 + 1e-9; v += o.sx) { x.strokeStyle = '#1b2433'; x.lineWidth = 1; x.beginPath(); x.moveTo(PX(v), T); x.lineTo(PX(v), T + ph); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(+v.toFixed(3), PX(v), T + ph + 16); }
+        x.save(); x.beginPath(); x.rect(L, T, pw, ph); x.clip();
+        (o.vlines || []).forEach(v => { x.strokeStyle = v.color; x.setLineDash(v.dash || [5, 5]); x.lineWidth = v.w || 1.5; x.beginPath(); x.moveTo(PX(v.x), T); x.lineTo(PX(v.x), T + ph); x.stroke(); x.setLineDash([]); });
+        (o.curves || []).forEach(cu => { x.strokeStyle = cu.color; x.lineWidth = cu.w || 2.8; x.setLineDash(cu.dash || []); x.globalAlpha = cu.alpha || 1; x.beginPath(); const N = 500; for (let i = 0; i <= N; i++) { const v = o.x0 + (o.x1 - o.x0) * i / N, y = cu.fn(v); i ? x.lineTo(PX(v), PY(y)) : x.moveTo(PX(v), PY(y)); } x.stroke(); x.setLineDash([]); x.globalAlpha = 1; });
+        (o.dots || []).forEach(d => { x.fillStyle = d.color; x.beginPath(); x.arc(PX(d.x), PY(d.y), d.r || 7, 0, 7); x.fill(); if (d.label) { x.fillStyle = d.color; x.font = 'bold 15px sans-serif'; x.textAlign = 'center'; x.fillText(d.label, PX(d.x), PY(d.y) - 13); } });
+        x.restore();
+        (o.arrows || []).forEach(a => arrow(x, PX(a.x1), PY(a.y1), PX(a.x2), PY(a.y2), a.color, a.w || 3.5));
+        x.fillStyle = '#c3d0e4'; x.font = 'bold 15px sans-serif'; x.textAlign = 'left'; x.fillText(o.title, L, 20); x.font = '13px sans-serif'; x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(o.xl, L + pw / 2, H - 6); x.save(); x.translate(14, T + ph / 2); x.rotate(-Math.PI / 2); x.fillText(o.yl, 0, 0); x.restore();
+        return { PX, PY };
+    }
+    function arrow(x, x1, y1, x2, y2, col, w) { const Lh = Math.hypot(x2 - x1, y2 - y1); if (Lh < 2) return; const an = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(13, Lh * .6); x.save(); x.strokeStyle = col; x.fillStyle = col; x.lineWidth = w; x.lineCap = 'round'; x.beginPath(); x.moveTo(x1, y1); x.lineTo(x2 - Math.cos(an) * hl * .6, y2 - Math.sin(an) * hl * .6); x.stroke(); x.beginPath(); x.moveTo(x2, y2); x.lineTo(x2 - hl * Math.cos(an - .45), y2 - hl * Math.sin(an - .45)); x.lineTo(x2 - hl * Math.cos(an + .45), y2 - hl * Math.sin(an + .45)); x.closePath(); x.fill(); x.restore(); }
+    // ===== 各模式 =====
+    function newQuiz() {
+        const rnd = (a) => a[Math.floor(Math.random() * a.length)], lam = rnd([0.8, 1.0, 1.2, 1.5]), T = rnd([1, 2, 4]), dir = rnd([1, -1]);
+        let xP = 0.25 + Math.floor(Math.random() * 8) * lam / 8 + lam * rnd([0, 1]); const tc = rnd([20, 12, 8, 30]) + rnd([0, T / 4, T / 2]);
+        const vt = lam / T, set = [...new Set([vt, vt * 2, vt / 2, lam * T].map(v => +v.toFixed(3)))].sort((a, b) => a - b);
+        S.quiz = { lam, T, dir, xP, tc, A: 2, vt, opts: set }; S.qAns = null; S.revealed = false; S.t = tc; S.playing = false;
+        el('qV').innerHTML = '<option value="">請選擇</option>' + set.map(v => `<option value="${v}">${v} m/s</option>`).join(''); el('qDir').value = ''; el('quizMsg').innerHTML = '';
+    }
+    function cur() { if (S.mode === 'quiz') { const q = S.quiz; return { A: q.A, lam: q.lam, T: q.T, dir: q.dir, xP: q.xP, tc: q.tc }; } return { A: S.A, lam: S.lam, T: S.T, dir: S.dir, xP: S.xP }; }
+    function draw() {
+        if (S.mode === 'free' || S.mode === 'quiz') drawFreeQuiz(); else if (S.mode === 'ex14') drawEx14(); else drawEx13();
+    }
+    function drawFreeQuiz() {
+        const q = cur(), t = S.t, quiz = S.mode === 'quiz', hide = quiz && !S.revealed, xmax = quiz ? 3 : 4, tw = 4 * q.T, t0 = quiz ? q.tc - q.T : Math.floor(t / tw) * tw;
+        const fx = x => yx(x, t, q.A, q.lam, q.T, q.dir);
+        const yP = fx(q.xP);
+        const o = { x0: 0, x1: xmax, ymax: 3.4, sy: 1, sx: 0.5, title: quiz ? `y–x 圖：t = ${(quiz ? (hide ? q.tc : t) : t).toFixed(hide ? 1 : 2)} s 時的波形` : `y–x 圖：t = ${t.toFixed(2)} s 時的波形（像一張照片）`, xl: 'x (m)', yl: 'y (cm)', curves: [], vlines: [{ x: q.xP, color: 'rgba(255,204,0,.5)' }], dots: [], arrows: [] };
+        const showT = hide ? q.tc : t;
+        if (!quiz && S.snap) o.curves.push({ fn: x => yx(x, S.snap.t, q.A, q.lam, q.T, q.dir), color: '#9aa8bd', dash: [6, 5], w: 2.2 });
+        if (!quiz && S.next) o.curves.push({ fn: x => yx(x, t + q.T / 8, q.A, q.lam, q.T, q.dir), color: '#ffcc00', dash: [3, 4], w: 2.2, alpha: .9 });
+        o.curves.push({ fn: x => yx(x, showT, q.A, q.lam, q.T, q.dir), color: '#35d6ff' });
+        o.dots.push({ x: q.xP, y: yx(q.xP, showT, q.A, q.lam, q.T, q.dir), color: '#ff4d6d', r: 8, label: 'P' });
+        if (!hide) { const ay = yx(q.xP, showT, q.A, q.lam, q.T, q.dir), vyy = vyOf(q, showT); o.arrows.push({ x1: q.xP, y1: ay, x2: q.xP, y2: ay + Math.sign(vyy) * 1.0, color: '#4d8dff', w: 4 }); if (Math.abs(q.dir) && !quiz) o.arrows.push({ x1: 0.15, y1: -3, x2: 0.15 + 0.5 * q.dir, y2: -3, color: '#00e676', w: 4 }); }
+        graph(el('gx'), o);
+        // y–t
+        const yt = tt => yx(q.xP, tt, q.A, q.lam, q.T, q.dir), tx1 = quiz ? q.tc + 2 * q.T : t0 + tw;
+        const o2 = { x0: quiz ? q.tc - q.T : t0, x1: tx1, ymax: 3.4, sy: 1, sx: q.T / 2 >= 1 ? 1 : 0.5, title: `y–t 圖：P 點（x = ${q.xP.toFixed(2)} m）的位移隨時間（像一段影片）`, xl: 't (s)', yl: 'y (cm)', curves: [{ fn: yt, color: '#ff4d6d', w: 2.8 }], dots: [{ x: showT, y: yt(showT), color: '#ffcc00', r: 8 }], vlines: [{ x: showT, color: 'rgba(255,204,0,.5)' }] };
+        if (!quiz && S.snap) o2.vlines.push({ x: S.snap.t, color: '#9aa8bd' });
+        o2.dots.push();
+        graph(el('gt'), o2);
+        if (hide) o2.dots.length = 0;
+    }
+    const vyOf = (q, t) => vy(q, t);
+    function drawEx14() {
+        const lam = 4, A = 1, n = S.n14, d = S.dir14, shift = d > 0 ? (n + 0.25) * lam : -(n + 0.75) * lam, v = Math.abs(shift) / 1, T = lam / v, tcur = S.t;
+        const f = (x, t) => A * Math.cos(TAU * (x - d * shift / 1 * t) / lam), g = x => A * Math.cos(TAU * x / lam);
+        // 實線 t = 0；虛線 t = 1 s：圖形向右偏移 1 m（¼λ）→ y1(x) = cos(2π(x − 1)/4)
+        const o = { x0: 0, x1: 8, ymax: 1.4, sy: 0.5, sx: 1, title: `y–x 圖（實線：t = 0；虛線：t = 1 s；綠色：現在 t = ${tcur.toFixed(2)} s）`, xl: 'x (m)', yl: 'y (cm)', curves: [{ fn: x => A * Math.cos(TAU * x / lam), color: '#35d6ff' }, { fn: x => A * Math.cos(TAU * (x - 1) / lam), color: '#ffcc00', dash: [7, 5] }, { fn: x => A * Math.cos(TAU * (x - (d > 0 ? 1 : -1) * Math.abs(shift) * 0 - sgnShift() * tcur * Math.abs(shift)) / lam), color: '#00e676', w: 2.2, alpha: .95 }] };
+        function sgnShift() { return d > 0 ? 1 : -1; }
+        graph(el('gx'), o); const cx = el('gt'), ctx = cx.getContext('2d'); ctx.fillStyle = '#0d121b'; ctx.fillRect(0, 0, cx.width, cx.height);
+        ctx.fillStyle = '#c3d0e4'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'left'; ctx.fillText('讀圖：λ = 4 m；虛線是實線向右平移 1 m（¼ 個波長）', 22, 40);
+        ctx.font = '15px sans-serif'; ctx.fillStyle = '#9aa8bd'; ctx.fillText(`假設波向${d > 0 ? '右' : '左'}傳播：1 秒內實際平移 ${d > 0 ? `(n + ¼)λ = ${(n + .25) * lam}` : `(n + ¾)λ = ${(n + .75) * lam}`} m → v = ${v.toFixed(2)} m/s → T = λ/v = ${T.toFixed(3)} s`, 22, 74);
+        const ok = T > 0.4 && T < 0.5; ctx.fillStyle = ok ? '#00e676' : '#ff6b81'; ctx.font = 'bold 18px sans-serif'; ctx.fillText(ok ? `✔ 0.4 s < T = ${T.toFixed(3)} s < 0.5 s，符合條件！` : `✘ T = ${T.toFixed(3)} s 不在 0.4 ~ 0.5 s 之間`, 22, 112);
+        // 示意時間軸
+        const bx0 = 40, bx1 = 720, by = 190; ctx.strokeStyle = '#3a465b'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(bx0, by); ctx.lineTo(bx1, by); ctx.stroke(); ctx.fillStyle = '#00e676'; ctx.beginPath(); ctx.arc(bx0 + (bx1 - bx0) * Math.min(1, tcur), by, 10, 0, 7); ctx.fill(); ctx.fillStyle = '#8a99ad'; ctx.font = '14px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('t = 0', bx0, by + 28); ctx.fillText('t = 1 s', bx1, by + 28); ctx.fillText('動畫時間（綠色波形 = 該時刻的波）', 380, by + 28);
+        el('status').innerHTML = `從 y–x 圖只知道：1 秒後波形與原來相差 ¼λ（再加上任意整數個波長）。波速 = (n + ¼)λ ÷ 1 s，週期 T = λ ÷ v；再用 0.4 s < T < 0.5 s 篩選：<b>n = 2 → v = 9 m/s，T = 4/9 ≈ 0.444 s</b>。`;
+    }
+    function drawEx13() {
+        const T = 0.4, dx = 1.5, v = S.v13, lam = v * T, ratio = dx / lam;
+        const A = 1, ya = t => A * Math.sin(TAU * t / T), yb = t => A * Math.sin(TAU * (t / T + ratio * 1)) * 1;     // 乙：相位落後/超前 2πΔx/λ（取向右傳播：乙在甲的右側 → 乙落後）
+        const yb2 = t => A * Math.sin(TAU * (t / T - ratio));
+        const sum = t => ya(t) + yb2(t);
+        let maxSum = 0; for (let t = 0; t <= T; t += T / 400) maxSum = Math.max(maxSum, Math.abs(sum(t)));
+        const ok = maxSum < 1e-6 * 0 + 0.02;
+        const o = { x0: 0, x1: 1.2, ymax: 2.2, sy: 1, sx: 0.2, title: 'y–t 圖：甲（青）、乙（橘）與兩點位移之和（白）', xl: 't (s)', yl: '位移（相對值）', curves: [{ fn: ya, color: '#35d6ff' }, { fn: yb2, color: '#ff9f43' }, { fn: sum, color: '#ffffff', w: 3, dash: ok ? [] : [] }], vlines: [{ x: S.t % 1.2, color: 'rgba(255,204,0,.5)' }], dots: [{ x: S.t % 1.2, y: ya(S.t % 1.2), color: '#35d6ff', r: 7 }, { x: S.t % 1.2, y: yb2(S.t % 1.2), color: '#ff9f43', r: 7 }] };
+        graph(el('gt'), o);
+        const o2 = { x0: 0, x1: 6, ymax: 1.4, sy: 1, sx: 1, title: `y–x 圖（某一時刻）：λ = vT = ${lam.toFixed(3)} cm；甲、乙相距 1.5 cm = ${ratio.toFixed(3)} λ`, xl: 'x (cm)', yl: '位移（相對值）', curves: [{ fn: x => A * Math.sin(TAU * (x / lam - (S.t % 1.2) / T)) , color: '#4d8dff' }], vlines: [{ x: 1.5, color: '#35d6ff', dash: [] }, { x: 3, color: '#ff9f43', dash: [] }], dots: [{ x: 1.5, y: A * Math.sin(TAU * (1.5 / lam - (S.t % 1.2) / T)), color: '#35d6ff', label: '甲' }, { x: 3, y: A * Math.sin(TAU * (3 / lam - (S.t % 1.2) / T)), color: '#ff9f43', label: '乙' }] };
+        graph(el('gx'), o2);
+        const k = ratio - 0.5, isInt = Math.abs(k - Math.round(k)) < 1e-6 && k >= -1e-9;
+        el('status').innerHTML = `Δx ÷ λ = <b>${ratio.toFixed(3)}</b>：${isInt ? `等於 (n + ½)，n = ${Math.round(k)} → <b>兩點位移恆反相，和恆為零 ✔</b> 這個波速<b>可能</b>。` : `不是 (整數 + ½)，兩點位移之和<b>不恆為零</b>（白線不是水平線）✘ 不可能。`}`;
+        S._ok13 = isInt;
+    }
+    function table() {
+        const card = el('tableCard'); card.style.display = (S.mode === 'ex13' || S.mode === 'ex14') ? '' : 'none';
+        if (S.mode === 'ex13') { el('tblTitle').textContent = '範例 13：Δx = (n + ½)λ → 波速 v = λ/T 的所有可能值（T = 0.4 s）'; let h = '<table style="width:100%;border-collapse:collapse;font-size:.95rem"><tr style="color:#9aa8bd"><th>n</th><th>λ = 1.5 ÷ (n + ½)</th><th>v = λ ÷ 0.4</th><th>選項</th></tr>'; const L = { 12: 'A', 7.5: 'B', 5: 'C', 2.5: 'D', 1.5: 'E' }; for (let n = 0; n <= 5; n++) { const lam = 1.5 / (n + .5), v = lam / 0.4, key = Object.keys(L).find(k => Math.abs(k - v) < 1e-9); h += `<tr style="border-top:1px solid #222b3a;text-align:center"><td>${n}</td><td>${lam.toFixed(3)} cm</td><td style="color:${key ? '#00e676' : '#c3d0e4'}"><b>${v.toFixed(3)} cm/s</b></td><td>${key ? '(' + L[key] + ') ✔' : '—'}</td></tr>`; } h += '</table><div class="fit-text">答案：<b>(B)(D)(E)</b>（波速 7.5、2.5、1.5 cm/s）。</div>'; el('tbl').innerHTML = h; }
+        else if (S.mode === 'ex14') { el('tblTitle').textContent = '範例 14：不同 n 的波速與週期（向右傳播）'; let h = '<table style="width:100%;border-collapse:collapse;font-size:.95rem"><tr style="color:#9aa8bd"><th>n</th><th>1 s 內前進 (n + ¼)λ</th><th>v (m/s)</th><th>T = λ/v (s)</th><th>0.4 < T < 0.5？</th></tr>'; for (let n = 0; n <= 5; n++) { const v = (n + .25) * 4, T = 4 / v, ok = T > .4 && T < .5; h += `<tr style="border-top:1px solid #222b3a;text-align:center;color:${ok ? '#00e676' : '#c3d0e4'}"><td>${n}</td><td>${v} m</td><td>${v}</td><td>${T.toFixed(3)}</td><td>${ok ? '✔ 答案' : '✘'}</td></tr>`; } h += '</table><div class="fit-text">答案：<b>v = 9 m/s</b>（n = 2，T = 4/9 s）。若波向左，1 秒前進 (n + ¾)λ，v = 3, 7, 11 … m/s，沒有一個使 T 落在 0.4 ~ 0.5 s，所以題目必須指明方向。</div>'; el('tbl').innerHTML = h; }
+    }
+    function dash() {
+        const m = (t, v, u, col = '#c3d0e4') => `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value" style="color:${col}">${v}<span class="unit">${u}</span></div></div>`;
+        if (S.mode === 'free' || S.mode === 'quiz') { const q = cur(), hide = S.mode === 'quiz' && !S.revealed; if (hide) { el('dash').innerHTML = m('提示', '從圖讀出 λ、T', '', '#ffcc00'); return; } const t = S.t, y = yx(q.xP, t, q.A, q.lam, q.T, q.dir), vyv = vy(q, t); el('dash').innerHTML = m('波長 λ', q.lam.toFixed(2), 'm', '#35d6ff') + m('週期 T', q.T.toFixed(2), 's', '#35d6ff') + m('頻率 f', (1 / q.T).toFixed(3), 'Hz') + m('波速 v = λ/T', (q.lam / q.T).toFixed(3), 'm/s', '#4d8dff') + m('P 點位移 y', y.toFixed(2), 'cm', '#ff4d6d') + m('P 點垂直速度', vyv.toFixed(2), 'cm/s', '#4d8dff') + m('P 點運動', Math.abs(vyv) < 0.02 ? '在最高／最低點' : (vyv > 0 ? '向上' : '向下'), '', '#ffcc00') + m('傳播方向', q.dir > 0 ? '向右 →' : '← 向左', '', '#00e676'); }
+        else if (S.mode === 'ex14') { const d = S.dir14, v = d > 0 ? (S.n14 + .25) * 4 : (S.n14 + .75) * 4; el('dash').innerHTML = m('波長 λ', '4', 'm', '#35d6ff') + m('1 s 內前進', v.toFixed(2), 'm', '#4d8dff') + m('波速 v', v.toFixed(2), 'm/s', '#4d8dff') + m('週期 T', (4 / v).toFixed(3), 's', '#35d6ff') + m('頻率 f', (v / 4).toFixed(3), 'Hz'); }
+        else { const lam = S.v13 * 0.4; el('dash').innerHTML = m('週期 T（圖）', '0.4', 's', '#35d6ff') + m('波速 v', S.v13.toFixed(2), 'cm/s', '#4d8dff') + m('波長 λ = vT', lam.toFixed(3), 'cm', '#35d6ff') + m('Δx ÷ λ', (1.5 / lam).toFixed(3), '', '#ffcc00') + m('位移恆反相？', S._ok13 ? '是 ✔' : '否 ✘', '', S._ok13 ? '#00e676' : '#ff6b81'); }
+    }
+    function vy(q, t) { return -q.dir * TAU / q.T * q.A * Math.cos(TAU * (q.xP / q.lam - q.dir * t / q.T)); }
+    function setStatus() {
+        if (S.mode === 'free') { const q = cur(), vyv = vy(q, S.t); const up = vyv > 0.02, dn = vyv < -0.02; el('status').innerHTML = `P 點現在<b>${up ? '向上' : dn ? '向下' : '在最高／最低點（瞬間靜止）'}</b>運動。波形向<b>${q.dir > 0 ? '右' : '左'}</b>平移（綠色箭頭）；${(up || dn) ? `所以 P 點「${q.dir > 0 ? '左' : '右'}邊」的波形會平移過來，位移${up ? '較大（向上）' : '較小（向下）'}。` : ''} <b>y–x 圖讀 λ，y–t 圖讀 T</b>，v = λ/T = ${(q.lam / q.T).toFixed(2)} m/s。`; }
+        else if (S.mode === 'quiz') { if (!S.revealed) el('status').innerHTML = '請讀圖：（1）從 y–t 圖看 P 點在圖中時刻是向上還是向下運動；（2）搭配 y–x 圖判斷波的傳播方向；（3）從 y–x 圖讀 λ、y–t 圖讀 T，算 v = λ/T。'; else { const q = S.quiz, vyv = vy(q, q.tc), sl = -q.dir * Math.sign(vyv); el('status').innerHTML = `<b>解答：</b>在題目的時刻 t = ${q.tc} s，P 點向${vyv > 0 ? '上' : '下'}運動（y–t 圖在該時刻斜率${vyv > 0 ? '為正' : '為負'}）；y–x 圖在 P 點斜率為${sl > 0 ? '正' : '負'}。規則：向右行進的波，質點速度與 y–x 斜率<b>反號</b>；向左行進則<b>同號</b>。此題兩者${sl * vyv < 0 ? '反號' : '同號'} → 波向<b>${q.dir > 0 ? '右' : '左'}</b>。λ = ${q.lam} m，T = ${q.T} s → v = λ/T = <b>${(q.lam / q.T).toFixed(3)} m/s</b>。`; } }    }
+    function modeUI() {
+        const m = S.mode, show = (id, on) => el(id).style.display = on ? '' : 'none';
+        show('ctlFree', m === 'free'); show('ctlEx14', m === 'ex14'); show('ctlEx13', m === 'ex13'); show('rowFree', m === 'free'); show('quizCard', m === 'quiz'); show('btnSnap', m === 'free'); show('btnClear', m === 'free'); show('btnNew', m === 'quiz');
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
+        el('modeDesc').textContent = { free: '調整波長、週期、方向，拖動 P 點的位置。y–x 圖（上）是照片，y–t 圖（下）是 P 點的影片。', quiz: '題目只給「某一時刻的波形（y–x 圖）」與「P 點的振動（y–t 圖）」，請判斷傳播方向與波速。答對後可看驗證動畫。', ex14: '圖中實線為 t = 0 的波形、虛線為 t = 1 s 的波形，波向右行進。波可能走了不只 ¼ 個波長。', ex13: '甲、乙相距 1.5 cm，位移之和恆為零；甲點的 y–t 圖週期為 0.4 s。哪些波速可能？' }[m];
+        el('gTitle1').textContent = { free: '同一列波：y–x 與 y–t', quiz: '題目圖形', ex14: '範例 14：y–x 圖', ex13: '範例 13：y–t 圖與 y–x 圖' }[m];
+        el('legend').innerHTML = m === 'ex14' ? '<span style="--c:#35d6ff">t = 0 的波形（實線）</span><span style="--c:#ffcc00">t = 1 s 的波形（虛線）</span><span style="--c:#00e676">動畫中的波形</span>' : m === 'ex13' ? '<span style="--c:#35d6ff">甲點</span><span style="--c:#ff9f43">乙點</span><span style="--c:#ffffff">兩點位移之和</span>' : '<span style="--c:#35d6ff">y–x 波形</span><span style="--c:#ff4d6d">P 點／y–t 曲線</span><span style="--c:#4d8dff">質點速度（藍）</span><span style="--c:#00e676">波的傳播方向（綠）</span><span style="--c:#9aa8bd">快照</span>';
+        table();
+    }
+    function sync() { el('lA').textContent = S.A.toFixed(1); el('lL').textContent = S.lam.toFixed(2); el('lT').textContent = S.T.toFixed(1); el('lX').textContent = S.xP.toFixed(2); el('lN14').textContent = S.n14; el('lV13').textContent = S.v13.toFixed(1); }
+    document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.mode; S.t = 0; S.playing = true; S.snap = null; if (S.mode === 'quiz') newQuiz(); if (S.mode === 'ex14') S.slow = S.slow14; else S.slow = +el('selSlow').value; modeUI(); }));
+    [['sA', 'A'], ['sL', 'lam'], ['sT', 'T'], ['sX', 'xP']].forEach(([id, k]) => el(id).addEventListener('input', e => { S[k] = +e.target.value; S.snap = null; sync(); }));
+    el('selDir').addEventListener('change', e => { S.dir = +e.target.value; S.snap = null; }); el('selSlow').addEventListener('change', e => S.slow = +e.target.value);
+    el('chkNext').addEventListener('change', e => S.next = e.target.checked); el('chkRope').addEventListener('change', e => S.rope = e.target.checked);
+    el('sN14').addEventListener('input', e => { S.n14 = +e.target.value; S.t = 0; S.playing = true; sync(); }); el('selDir14').addEventListener('change', e => { S.dir14 = +e.target.value; S.t = 0; S.playing = true; }); el('selSlow14').addEventListener('change', e => S.slow = S.slow14 = +e.target.value);
+    el('sV13').addEventListener('input', e => { S.v13 = +e.target.value; sync(); }); el('selOpt13').addEventListener('change', e => { S.v13 = +e.target.value; el('sV13').value = S.v13; sync(); });
+    el('btnPlay').addEventListener('click', () => { S.playing = true; }); el('btnPause').addEventListener('click', () => S.playing = false); el('btnReset').addEventListener('click', () => { S.t = S.mode === 'quiz' ? S.quiz.tc : 0; S.playing = S.mode !== 'quiz'; if (S.mode === 'ex14') S.playing = true; });
+    el('btnSnap').addEventListener('click', () => { S.snap = { t: S.t }; }); el('btnClear').addEventListener('click', () => S.snap = null); el('btnNew').addEventListener('click', newQuiz);
+    el('btnCheck').addEventListener('click', () => { const q = S.quiz, d = el('qDir').value, v = el('qV').value; if (!d || !v) { el('quizMsg').innerHTML = '請先選擇方向與波速。'; return; } const okD = +d === q.dir, okV = Math.abs(+v - q.vt) < 1e-6; el('quizMsg').innerHTML = (okD ? '✔ 方向正確。' : '✘ 方向不對（提示：先判斷 P 點此刻向上或向下）。') + ' ' + (okV ? '✔ 波速正確。' : '✘ 波速不對（提示：λ 從 y–x 圖，T 從 y–t 圖）。'); });
+    el('btnReveal').addEventListener('click', () => { S.revealed = true; S.t = S.quiz.tc; S.playing = true; S.slow = S.slowQ; el('quizMsg').innerHTML = `解答：向<b>${S.quiz.dir > 0 ? '右' : '左'}</b>，v = ${S.quiz.vt.toFixed(3)} m/s（動畫以 0.5 倍速播放驗證）。`; });
+    let last = null, fn = 0;
+    function frame(ts) {
+        if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05) * S.slow; last = ts;
+        if (S.playing) { if (S.mode === 'ex14') { S.t += dt; if (S.t > 1.1) S.t = 0; } else if (S.mode === 'ex13') S.t += dt * 0.6; else if (S.mode === 'quiz') { if (S.revealed) S.t += dt; } else S.t += dt; }
+        draw(); if (!(fn++ % 3)) { setStatus(); dash(); el('runState').textContent = S.playing ? '播放中' : '暫停'; }
+        requestAnimationFrame(frame);
+    }
+    window.__wv = { S, yx, vy, newQuiz, cur };
+    newQuiz(); S.t = 0; S.playing = true; S.mode = 'free'; sync(); modeUI(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

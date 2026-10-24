@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>薄膜干涉 - 李捷物理實驗室</title>
+<style>
+        :root { --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432; --text-main: #f0f3f8; --text-muted: #9aa8bd; --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676;
+            --i1: #ffb020; --i2: #ff7ad9; --flux: #35d6ff; --ind: #d28bff; --vel: #4d8dff; }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6; }
+        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; } .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
+        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; } h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; } .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
+        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
+        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
+        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+        .mode-btn { flex: 1 1 220px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 10px 12px; font-size: .92rem; cursor: pointer; text-align: left; } .mode-btn b { display: block; color: var(--cyan); } .mode-btn.active { border-color: var(--cyan); background: #12303a; }
+        .mode-desc { font-size: .92rem; color: var(--text-muted); margin-bottom: 12px; }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; } .control-group.off { display: none; }
+        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; } .control-label b { font-family: monospace; font-size: 1.05rem; }
+        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
+        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
+        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
+        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; } .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; } button.btn.secondary { background: #3a465b; color: #fff; } button.btn.green { background: var(--green); color: #00210f; } button.btn.red { background: #ff6b81; color: #2a0008; } button.btn.orange { background: #ff9f43; color: #2a1500; }
+        button.btn:disabled { opacity: .4; cursor: not-allowed; } button.btn:not(:disabled):hover { filter: brightness(1.12); }
+        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; } canvas { display: block; width: 100%; height: auto; touch-action: pan-y; }
+        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; } .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #111622; font-size: 1rem; } .status b { color: var(--yellow); }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; } .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; } .meter-title { font-size: .82rem; color: var(--text-muted); } .meter-value { font-size: 1.25rem; font-weight: bold; font-family: monospace; } .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
+        .opt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px; margin-bottom: 10px; }
+        .opt { background: var(--bg-control); border: 2px solid #2c3749; border-radius: 8px; padding: 8px 10px; cursor: pointer; font-size: .95rem; color: var(--text-main); text-align: left; } .opt:hover { border-color: #4a6a9a; } .opt.sel { border-color: var(--yellow); background: #2b2a14; } .opt.ok { border-color: var(--green); } .opt.bad { border-color: #ff6b81; }
+        .opt b { color: var(--cyan); margin-right: 6px; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; } .fit-text b { color: var(--yellow); }
+        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; } summary { cursor: pointer; font-weight: bold; color: var(--cyan); } details ol, details ul { margin: 8px 0 2px; padding-left: 22px; } details li { margin-bottom: 4px; }
+        .assume { font-size: .88rem; color: var(--text-muted); } footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>🫧 薄膜干涉</h1>
+    <p class="subtitle">兩道反射光的光程差與反射的相位改變　｜　2 n d cosθ′ ＝ mλ 或 (m + ½)λ</p>
+</header>
+<div class="container">
+    <div class="card">
+        <div class="card-title">操作模式</div>
+        <div class="mode-bar">
+            <button class="mode-btn active" data-mode="mono"><b>① 單色光</b>調厚度與波長，看兩道反射光疊加（建設／破壞）</button>
+            <button class="mode-btn" data-mode="white"><b>② 白光與顏色</b>各色光反射率 R(λ)，合成後看到的顏色</button>
+            <button class="mode-btn" data-mode="wedge"><b>③ 楔形膜（垂直肥皂膜）</b>厚度由上往下漸增，出現彩色（或明暗）條紋</button>
+        </div>
+        <div class="mode-desc" id="modeDesc"></div>
+        <div class="controls-grid">
+            <div class="control-group"><div class="control-label"><span>薄膜種類</span></div><select id="selPre"><option value="soap">肥皂膜（空氣｜肥皂水 1.33｜空氣）</option><option value="oil">油膜（空氣｜油 1.50｜水 1.33）</option><option value="coat">鏡頭鍍膜（空氣｜MgF₂ 1.38｜玻璃 1.52）</option><option value="glass">玻璃上的高折射率膜（空氣｜1.80｜玻璃 1.52）</option><option value="custom">自訂折射率</option></select></div>
+            <div class="control-group" id="grpN"><div class="control-label"><span>n₁（上方）／ n<sub>f</sub>（薄膜）／ n₂（下方）</span></div><div style="display:flex;gap:6px"><input type="number" id="nN1" min="1" max="2.5" step="0.01" value="1.00" style="width:30%"><input type="number" id="nNf" min="1" max="2.5" step="0.01" value="1.33" style="width:30%"><input type="number" id="nN2" min="1" max="2.5" step="0.01" value="1.00" style="width:30%"></div></div>
+            <div class="control-group" id="grpD"><div class="control-label"><span>薄膜厚度 d</span><b style="color:var(--yellow)"><span id="lD">150</span> nm</b></div><input type="range" id="sD" min="0" max="1500" step="1" value="150"></div>
+            <div class="control-group" id="grpLam"><div class="control-label"><span>光的波長 λ（空氣中）</span><b id="lLam" style="color:#35d6ff">550 nm</b></div><input type="range" id="sLam" min="400" max="700" step="1" value="550"></div>
+            <div class="control-group"><div class="control-label"><span>入射角 θ</span><b style="color:var(--cyan)"><span id="lTh">0</span>°</b></div><input type="range" id="sTh" min="0" max="75" step="1" value="0"><div class="sub-note">0° ＝ 垂直入射（圖中為了看清楚，光線畫成略為傾斜）</div></div>
+            <div class="control-group" id="grpWedge"><div class="control-label"><span>楔形膜：最厚處厚度</span><b style="color:var(--yellow)"><span id="lDb">1200</span> nm</b></div><input type="range" id="sDb" min="300" max="2500" step="10" value="1200"><div class="control-label" style="margin-top:8px"><span>最薄處厚度</span><b style="color:var(--yellow)"><span id="lDt">0</span> nm</b></div><input type="range" id="sDt" min="0" max="400" step="5" value="0"></div>
+        </div>
+        <div class="check-row"><label id="rowAnim"><input type="checkbox" id="chkAnim"> 波形動畫</label><label id="rowDrain"><input type="checkbox" id="chkDrain"> 自動變薄（肥皂膜因重力流失）</label></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span id="sceneTitle">示意圖</span></div>
+        <div class="canvas-wrap"><canvas id="scene" width="760" height="380"></canvas></div>
+        <div class="status" id="status"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span id="grTitle">圖表</span></div>
+        <div class="graph-box"><canvas id="gr" width="760" height="260"></canvas></div>
+        <div class="fit-text" id="grNote"></div>
+    </div>
+
+    <div class="card"><div class="card-title">即時數據</div><div class="dashboard" id="dash"></div></div>
+
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary>
+            <ul>
+                <li>兩道反射光：<b>光線 1</b> 由薄膜上表面反射；<b>光線 2</b> 穿過薄膜，由下表面反射後回到上表面射出。兩者再疊加。</li>
+                <li>額外光程（光線 2 多走的路）：<b>2 n<sub>f</sub> d cosθ′</b>（n<sub>f</sub>：薄膜折射率；d：厚度，nm；θ′：薄膜內折射角，n₁ sinθ = n<sub>f</sub> sinθ′）。垂直入射時 = 2 n<sub>f</sub> d。</li>
+                <li>反射時的相位改變：光由<b>折射率小 → 大</b>的介質反射，反射波<b>相位改變 π（半波長）</b>；由大 → 小則<b>沒有</b>改變。</li>
+                <li>總相位差：<b>δ = (4π n<sub>f</sub> d cosθ′ / λ) + (π，若兩次反射中恰有一次相位改變 π)</b>，λ 為空氣中波長。</li>
+                <li>δ = 2πm → <b>建設性干涉（亮）</b>；δ = (2m+1)π → <b>破壞性干涉（暗）</b>。</li>
+                <li>兩次反射的「相位改變次數」為<b>奇數</b>（肥皂膜、浮在水上的油膜）：2 n<sub>f</sub> d cosθ′ = mλ → 暗；(m+½)λ → 亮。<br>為<b>偶數</b>（鏡頭鍍膜、玻璃上的膜）：2 n<sub>f</sub> d cosθ′ = mλ → 亮；(m+½)λ → 暗。</li>
+                <li>鏡頭增透膜：最薄的暗條件 d = λ／(4 n<sub>f</sub>)，且 n<sub>f</sub> = √(n₁n₂) 時兩道反射光振幅相等，可完全抵消。</li>
+            </ul>
+            <p class="assume">理想化假設：薄膜均勻、兩界面平行且平滑；以 s 偏振的菲涅耳反射率計算振幅，並計入多次反射（艾里公式）；圖中「兩道反射光」是前兩次反射的近似，用來說明相位關係；反射色以 6500 K 白光、CIE 1931 色彩匹配函數近似計算，亮度為方便觀看已放大，顏色僅供示意（實際顏色依螢幕而異）。</p>
+        </details>
+        <details><summary>建議講解順序</summary>
+            <ol>
+                <li>模式①：先選「肥皂膜」，d = 0：兩道反射光幾乎重合，但其中一道有 π 相位改變 → 反相 → 暗。這就是肥皂膜最上端為什麼是黑的。</li>
+                <li>慢慢增加 d：光程差增加，直到 2n<sub>f</sub>d = λ/2（波形同相）→ 亮；再到 2n<sub>f</sub>d = λ → 暗。</li>
+                <li>改成「鏡頭鍍膜」：兩次反射都有 π 相位改變，條件整個反過來：d = λ/(4n<sub>f</sub>) 時反射最少（增透）。</li>
+                <li>模式②：白光含各色，每個 d 會讓不同波長亮或暗，看到的是互補後的顏色。</li>
+                <li>模式③：厚度連續變化，同一種色光出現週期性亮暗條紋；白光出現彩色條紋，越厚越淡（各色條紋重疊）。</li>
+                <li>改變入射角：光程差變小 → 顏色偏向短波長（藍移）。</li>
+            </ol>
+        </details>
+        <details><summary>可以問學生的問題</summary>
+            <ul>
+                <li>d = 0 的肥皂膜為什麼看起來是黑的？（兩道反射光反相）</li>
+                <li>肥皂膜越薄顏色越…？越厚為什麼顏色變淡？（厚度很大時，各波長的亮暗位置錯開，疊加成白光）</li>
+                <li>鍍膜眼鏡看起來帶紫紅色，為什麼？（綠光附近被抵消，剩下紅與藍反射）</li>
+                <li>從斜的角度看肥皂泡，顏色會變嗎？（會，θ′ 改變，光程差改變）</li>
+                <li>為什麼薄膜干涉需要「薄」？（光的相干長度很短，太厚時兩道反射光不相干）</li>
+            </ul>
+        </details>
+        <details><summary>常見迷思</summary>
+            <ul>
+                <li><b>「只要兩道光有光程差 λ/2 就是暗」</b>：還要看反射時有沒有 π 的相位改變，兩者要一起算。</li>
+                <li><b>「光線在薄膜中波長不變」</b>：薄膜中波長 λ/n<sub>f</sub> 變短，所以光程差是 n<sub>f</sub> × 幾何路程。</li>
+                <li><b>「顏色是薄膜本身的顏色」</b>：肥皂水是無色的，顏色來自干涉（結構色）。</li>
+                <li><b>「透射光也會亮暗互補」</b>：能量守恆，反射變暗的波長，透射就變亮。</li>
+            </ul>
+        </details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+<script>
+(() => {
+    'use strict';
+    const el = id => document.getElementById(id), c = el('scene').getContext('2d'), TAU = 2 * Math.PI;
+    const S = { mode: 'mono', n1: 1, nf: 1.33, n2: 1, d: 150, lam: 550, th: 0, db: 1200, dt: 0, anim: true, drain: false, t: 0, drainD: 1200 };
+    const PRE = { soap: [1, 1.33, 1], oil: [1, 1.5, 1.33], coat: [1, 1.38, 1.52], glass: [1, 1.8, 1.52] };
+    // ===== 光學計算 =====
+    function fres(n1, nf, n2, thDeg) {
+        const s1 = Math.sin(thDeg * Math.PI / 180), s2 = Math.min(0.9999, n1 * s1 / nf), s3 = Math.min(0.9999, n1 * s1 / n2), c1 = Math.cos(thDeg * Math.PI / 180), c2 = Math.sqrt(1 - s2 * s2), c3 = Math.sqrt(1 - s3 * s3);
+        const r12 = (n1 * c1 - nf * c2) / (n1 * c1 + nf * c2), r23 = (nf * c2 - n2 * c3) / (nf * c2 + n2 * c3); return { r12, r23, c2, th2: Math.asin(s2) * 180 / Math.PI };
+    }
+    function Rexact(lam, d, f) { const be = 4 * Math.PI * S.nf * d * f.c2 / lam, cr = Math.cos(be), si = Math.sin(be), r12 = f.r12, r23 = f.r23; const nr = r12 + r23 * cr, ni = r23 * si, dr = 1 + r12 * r23 * cr, di = r12 * r23 * si; return (nr * nr + ni * ni) / (dr * dr + di * di); }
+    function Rtwo(lam, d, f) { const be = 4 * Math.PI * S.nf * d * f.c2 / lam, a2 = (1 - f.r12 * f.r12) * f.r23; const re = f.r12 + a2 * Math.cos(be), im = a2 * Math.sin(be); return re * re + im * im; }
+    const g = (l, m, s1, s2) => { const s = l < m ? s1 : s2, u = (l - m) / s; return Math.exp(-0.5 * u * u); };
+    const cmf = l => [1.056 * g(l, 599.8, 37.9, 31) + 0.362 * g(l, 442, 16, 26.7) - 0.065 * g(l, 501.1, 20.4, 26.2), 0.821 * g(l, 568.8, 46.9, 40.5) + 0.286 * g(l, 530.9, 16.3, 31.1), 1.217 * g(l, 437, 11.8, 36) + 0.681 * g(l, 459, 26, 13.8)];
+    const bb = l => Math.pow(l, -5) / (Math.exp(1.4388e7 / (l * 6500)) - 1);
+    const LAMS = []; for (let l = 380; l <= 740; l += 10) LAMS.push(l);
+    const CM = LAMS.map(cmf), IL = LAMS.map(bb);
+    const MX = [[3.2406, -1.5372, -0.4986], [-0.9689, 1.8758, 0.0415], [0.0557, -0.2040, 1.0570]];
+    const lin = X => MX.map(r => r[0] * X[0] + r[1] * X[1] + r[2] * X[2]);
+    const XW = [0, 0, 0]; LAMS.forEach((l, i) => { for (let k = 0; k < 3; k++) XW[k] += IL[i] * CM[i][k]; }); const RW = lin(XW);
+    const gam = v => { v = Math.max(0, Math.min(1, v)); return Math.round(255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055)); };
+    function colorFn(Rf, gain = 3) { const X = [0, 0, 0]; LAMS.forEach((l, i) => { const r = Rf(l); for (let k = 0; k < 3; k++) X[k] += IL[i] * CM[i][k] * r; }); const rgb = lin(X).map((v, k) => v / RW[k] * gain); return rgb.map(gam); }
+    function lamRGB(l) { let r = 0, gg = 0, b = 0; if (l < 440) { r = -(l - 440) / 60; b = 1; } else if (l < 490) { gg = (l - 440) / 50; b = 1; } else if (l < 510) { gg = 1; b = -(l - 510) / 20; } else if (l < 580) { r = (l - 510) / 70; gg = 1; } else if (l < 645) { r = 1; gg = -(l - 645) / 65; } else r = 1; const f = l < 420 ? 0.3 + 0.7 * (l - 380) / 40 : l > 700 ? 0.3 + 0.7 * (780 - l) / 80 : 1; return [r * f, gg * f, b * f].map(v => Math.round(255 * Math.pow(v, 0.8))); }
+    const odd = () => { const f = fres(S.n1, S.nf, S.n2, S.th); return (f.r12 < 0) !== (f.r23 < 0); };
+    // ===== 繪圖工具 =====
+    function arrow(x1, y1, x2, y2, col, w = 3, h = 10) { const L = Math.hypot(x2 - x1, y2 - y1); if (L < 2) return; const an = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(h, L * .6); c.save(); c.strokeStyle = col; c.fillStyle = col; c.lineWidth = w; c.lineCap = 'round'; c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2 - Math.cos(an) * hl * .6, y2 - Math.sin(an) * hl * .6); c.stroke(); c.beginPath(); c.moveTo(x2, y2); c.lineTo(x2 - hl * Math.cos(an - .45), y2 - hl * Math.sin(an - .45)); c.lineTo(x2 - hl * Math.cos(an + .45), y2 - hl * Math.sin(an + .45)); c.closePath(); c.fill(); c.restore(); }
+    function txt(s, x, y, col, size = 14, al = 'left') { c.save(); c.font = `bold ${size}px sans-serif`; c.fillStyle = col; c.textAlign = al; c.textBaseline = 'middle'; c.fillText(s, x, y); c.restore(); }
+    function line(x1, y1, x2, y2, col, w = 3, dash) { c.save(); c.strokeStyle = col; c.lineWidth = w; if (dash) c.setLineDash(dash); c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke(); c.restore(); }
+    // ----- 光線圖（左半）-----
+    function rays(x0, wid) {
+        const f = fres(S.n1, S.nf, S.n2, S.th), thv = Math.max(S.th, 16), s1 = Math.sin(thv * Math.PI / 180), c1 = Math.cos(thv * Math.PI / 180), s2 = Math.min(0.99, S.n1 * s1 / S.nf), t2 = Math.asin(s2), hpx = 26 + Math.min(S.mode === 'wedge' ? 1500 : S.d, 1500) / 1500 * 90, ytop = 140, ybot = ytop + hpx;
+        c.fillStyle = '#10182a'; c.fillRect(x0, 0, wid, ytop); c.fillStyle = 'rgba(80,160,255,.22)'; c.fillRect(x0, ytop, wid, hpx); c.fillStyle = '#1a2233'; c.fillRect(x0, ybot, wid, 380 - ybot);
+        line(x0, ytop, x0 + wid, ytop, '#8fa3c4', 2); line(x0, ybot, x0 + wid, ybot, '#8fa3c4', 2);
+        txt(`n₁ = ${S.n1.toFixed(2)}`, x0 + 10, ytop - 14, '#c3d0e4', 14); txt(`薄膜 n_f = ${S.nf.toFixed(2)}　厚度 d = ${S.mode === 'wedge' ? '（楔形）' : S.d.toFixed(0) + ' nm'}`, x0 + 10, ytop + hpx / 2, '#9ec5ff', 14); txt(`n₂ = ${S.n2.toFixed(2)}`, x0 + 10, ybot + 24, '#c3d0e4', 14);
+        const lc = S.mode === 'mono' ? lamRGB(S.lam) : [255, 255, 255], icol = `rgb(${lc[0]},${lc[1]},${lc[2]})`, P1 = [x0 + 120, ytop], L = 110;
+        line(P1[0] - L * s1, ytop - L * c1, P1[0], ytop, icol, 4); arrow(P1[0] - L * s1 * .5 - 2, ytop - L * c1 * .5 - 3, P1[0] - L * s1 * .5 + 2, ytop - L * c1 * .5 + 3, icol, 4, 12); txt('入射光', P1[0] - L * s1 - 4, ytop - L * c1 - 12, icol, 13, 'center');
+        const P2 = [P1[0] + hpx * Math.tan(t2), ybot], P3 = [P1[0] + 2 * hpx * Math.tan(t2), ytop];
+        line(P1[0], P1[1], P2[0], P2[1], 'rgba(255,255,255,.8)', 2.5); line(P2[0], P2[1], P3[0], P3[1], '#ff9f43', 3);
+        line(P1[0], ytop, P1[0] + L * s1, ytop - L * c1, '#35d6ff', 4); line(P3[0], ytop, P3[0] + L * s1, ytop - L * c1, '#ff9f43', 4);
+        arrow(P1[0] + L * s1 * .6, ytop - L * c1 * .6, P1[0] + L * s1 * .7, ytop - L * c1 * .7, '#35d6ff', 4, 12); arrow(P3[0] + L * s1 * .6, ytop - L * c1 * .6, P3[0] + L * s1 * .7, ytop - L * c1 * .7, '#ff9f43', 4, 12);
+        txt('━ 光線 1（上表面反射）', x0 + 200, 24, '#35d6ff', 13); txt('━ 光線 2（下表面反射）', x0 + 200, 46, '#ff9f43', 13);
+        if (f.r12 < 0) txt('π', P1[0] + 14, ytop - 14, '#ff6b81', 18); if (f.r23 < 0) txt('π', P2[0] + 14, ybot + 14, '#ff6b81', 18);
+        txt(f.r12 < 0 ? '上表面：n 小→大，相位改變 π' : '上表面：n 大→小，相位不變', x0 + 10, 330, f.r12 < 0 ? '#ff6b81' : '#9aa8bd', 13); txt(f.r23 < 0 ? '下表面：n 小→大，相位改變 π' : '下表面：n 大→小，相位不變', x0 + 10, 352, f.r23 < 0 ? '#ff6b81' : '#9aa8bd', 13);
+        return f;
+    }
+    // ----- 波形疊加（右半）-----
+    function wavePlot(f) {
+        const x0 = 420, w = 330, y0 = 20, h = 340; c.fillStyle = '#0d121b'; c.fillRect(x0, y0, w, h); c.strokeStyle = '#26324a'; c.strokeRect(x0, y0, w, h);
+        const a1 = Math.abs(f.r12), a2 = (1 - f.r12 * f.r12) * Math.abs(f.r23), mx = Math.max(a1 + a2, 1e-6), be = 4 * Math.PI * S.nf * S.d * f.c2 / S.lam, p1 = f.r12 < 0 ? Math.PI : 0, p2 = (f.r23 < 0 ? Math.PI : 0) - be, ph0 = S.anim ? -S.t * 3 : 0;
+        const rows = [['光線 1', a1, p1, '#35d6ff', 70], ['光線 2', a2, p2, '#ff9f43', 160], ['合成', 0, 0, '#ffffff', 280]];
+        txt('兩道反射光的位移（隨時間）', x0 + w / 2, y0 + 14, '#c3d0e4', 14, 'center');
+        rows.forEach(([nm, a, ph, col, cy]) => { line(x0 + 10, cy, x0 + w - 10, cy, '#3a465b', 1); txt(nm, x0 + 12, cy - 38, col, 13); c.strokeStyle = col; c.lineWidth = 2.8; c.beginPath(); for (let i = 0; i <= 200; i++) { const u = i / 200 * 2 * TAU, X = x0 + 10 + i / 200 * (w - 20); let y; if (nm === '合成') y = a1 * Math.sin(u + ph0 + p1) + a2 * Math.sin(u + ph0 + p2); else y = a * Math.sin(u + ph0 + ph); const Y = cy - y / mx * 44; i ? c.lineTo(X, Y) : c.moveTo(X, Y); } c.stroke(); });
+        const sumA = Math.sqrt(a1 * a1 + a2 * a2 + 2 * a1 * a2 * Math.cos(p2 - p1)); txt(`合成振幅 = ${(sumA / mx * 100).toFixed(0)}%（最大值 100%）`, x0 + w / 2, y0 + h - 24, sumA / mx > 0.9 ? '#00e676' : sumA / mx < 0.1 ? '#ff6b81' : '#ffcc00', 15, 'center');
+        const dl = (((p2 - p1) % TAU) + TAU) % TAU; txt(`兩道光的相位差 = ${(dl / Math.PI).toFixed(2)} π`, x0 + w / 2, y0 + 34, '#c3d0e4', 13, 'center');
+    }
+    function drawScene() {
+        c.clearRect(0, 0, 760, 380); c.fillStyle = '#080a0f'; c.fillRect(0, 0, 760, 380);
+        if (S.mode === 'mono') { const f = rays(0, 410); wavePlot(f); }
+        else if (S.mode === 'white') { const f = rays(0, 410); const col = colorFn(l => Rexact(l, S.d, f)); c.fillStyle = '#0d121b'; c.fillRect(430, 20, 320, 340); c.strokeStyle = '#26324a'; c.strokeRect(430, 20, 320, 340); txt('白光入射時，反射光的顏色', 590, 40, '#c3d0e4', 14, 'center'); c.fillStyle = `rgb(${col})`; c.beginPath(); c.arc(590, 170, 100, 0, 7); c.fill(); c.strokeStyle = '#3a465b'; c.lineWidth = 3; c.stroke(); txt(`RGB (${col.join(', ')})`, 590, 300, '#9aa8bd', 13, 'center'); txt('（亮度已放大，顏色僅供示意）', 590, 322, '#6a7a92', 12, 'center'); }
+        else drawWedge();
+    }
+    let wedgeCache = null, wedgeKey = '';
+    function drawWedge() {
+        const f = fres(S.n1, S.nf, S.n2, S.th), dt = S.dt, db = S.drain ? S.drainD : S.db, X0 = 30, Y0 = 20, W = 260, H = 340, key = [S.n1, S.nf, S.n2, S.th, dt, db, S.lam, S.wMode].join('|');
+        if (key !== wedgeKey) { const img = c.createImageData(W, H); for (let y = 0; y < H; y++) { const d = dt + (db - dt) * (y / (H - 1)); const col = S.mode === 'wedge' && S.wMono ? (() => { const r = Math.min(1, Rexact(S.lam, d, f) * 4), lc = lamRGB(S.lam); return lc.map(v => Math.round(v * Math.sqrt(r))); })() : colorFn(l => Rexact(l, d, f)); for (let x = 0; x < W; x++) { const i = (y * W + x) * 4; img.data[i] = col[0]; img.data[i + 1] = col[1]; img.data[i + 2] = col[2]; img.data[i + 3] = 255; } } wedgeCache = img; wedgeKey = key; }
+        c.putImageData(wedgeCache, X0, Y0); c.strokeStyle = '#8fa3c4'; c.lineWidth = 3; c.strokeRect(X0, Y0, W, H);
+        txt('上端（最薄）', X0 + W + 14, Y0 + 14, '#c3d0e4', 14); txt(`d = ${dt.toFixed(0)} nm`, X0 + W + 14, Y0 + 36, '#ffcc00', 14); txt('下端（最厚）', X0 + W + 14, Y0 + H - 36, '#c3d0e4', 14); txt(`d = ${db.toFixed(0)} nm`, X0 + W + 14, Y0 + H - 14, '#ffcc00', 14);
+        // 截面示意
+        c.fillStyle = '#10182a'; c.fillRect(420, 20, 330, 340); c.strokeStyle = '#26324a'; c.strokeRect(420, 20, 330, 340); txt('側視（楔形膜截面，厚度誇大）', 585, 40, '#c3d0e4', 14, 'center');
+        c.fillStyle = 'rgba(80,160,255,.45)'; c.beginPath(); c.moveTo(480, 70); c.lineTo(480 + 10 + (dt / 2500) * 40, 70); c.lineTo(480 + 10 + (db / 2500) * 120 + 20, 330); c.lineTo(480, 330); c.closePath(); c.fill(); c.strokeStyle = '#9ec5ff'; c.lineWidth = 2; c.stroke();
+        txt('膜在重力下上薄下厚', 500, 200, '#9ec5ff', 13); txt('白光反射：上端 d → 0 ⇒ 暗（若相位改變為奇數次）', 585, 355, '#9aa8bd', 12, 'center');
+        const bx = 470, by = 350; c.save(); c.restore();
+    }
+    // ===== 圖表 =====
+    function graph(cv, o) {
+        const x = cv.getContext('2d'), W = cv.width, H = cv.height, L = 62, R = 16, T = 30, B = 40, pw = W - L - R, ph = H - T - B, PX = v => L + (v - o.x0) / (o.x1 - o.x0) * pw, PY = v => T + ph - (v - o.y0) / (o.y1 - o.y0) * ph;
+        x.fillStyle = '#0d121b'; x.fillRect(0, 0, W, H); x.font = '12px sans-serif';
+        if (o.bg) { for (let px = 0; px < pw; px++) { const v = o.x0 + (o.x1 - o.x0) * px / pw, cl = lamRGB(v); x.fillStyle = `rgba(${cl[0]},${cl[1]},${cl[2]},.9)`; x.fillRect(L + px, T + ph + 2, 2, 8); } }
+        for (let k = 0; k <= 4; k++) { const v = o.y0 + (o.y1 - o.y0) * k / 4; x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(L, PY(v)); x.lineTo(L + pw, PY(v)); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'right'; x.fillText((v * 100).toFixed(1) + '%', L - 6, PY(v) + 4); }
+        for (let v = Math.ceil(o.x0 / o.sx) * o.sx; v <= o.x1 + 1e-9; v += o.sx) { x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(PX(v), T); x.lineTo(PX(v), T + ph); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(v, PX(v), T + ph + (o.bg ? 24 : 15)); }
+        x.save(); x.beginPath(); x.rect(L, T, pw, ph); x.clip();
+        o.curves.forEach(cu => { x.strokeStyle = cu.color; x.lineWidth = cu.w || 2.8; x.setLineDash(cu.dash || []); x.beginPath(); const N = 400; for (let i = 0; i <= N; i++) { const v = o.x0 + (o.x1 - o.x0) * i / N, y = cu.fn(v); i ? x.lineTo(PX(v), PY(y)) : x.moveTo(PX(v), PY(y)); } x.stroke(); x.setLineDash([]); });
+        if (o.mark !== undefined) { x.strokeStyle = 'rgba(255,204,0,.8)'; x.setLineDash([5, 5]); x.beginPath(); x.moveTo(PX(o.mark), T); x.lineTo(PX(o.mark), T + ph); x.stroke(); x.setLineDash([]); (o.dots || []).forEach(d => { x.fillStyle = d.c; x.beginPath(); x.arc(PX(o.mark), PY(d.y), 6, 0, 7); x.fill(); }); }
+        x.restore(); x.fillStyle = '#c3d0e4'; x.font = 'bold 14px sans-serif'; x.textAlign = 'left'; x.fillText(o.title, L, 18); x.font = '12px sans-serif'; x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(o.xl, L + pw / 2, H - 4); x.save(); x.translate(14, T + ph / 2); x.rotate(-Math.PI / 2); x.fillText('反射率 R', 0, 0); x.restore();
+        let k = 0; (o.legend || []).forEach(lg => { x.fillStyle = lg[1]; x.fillRect(L + pw - 150, T + 8 + k * 16, 14, 4); x.fillStyle = '#c3d0e4'; x.textAlign = 'left'; x.fillText(lg[0], L + pw - 130, T + 14 + k * 16); k++; });
+    }
+    function drawGraph() {
+        const f = fres(S.n1, S.nf, S.n2, S.th);
+        if (S.mode === 'mono') { const mx = Math.max(0.05, ...Array.from({ length: 150 }, (_, i) => Rexact(S.lam, i * 10, f))) * 1.15; graph(el('gr'), { x0: 0, x1: 1500, y0: 0, y1: mx, sx: 250, title: `反射率 R 隨厚度 d 變化（λ = ${S.lam} nm）`, xl: '厚度 d (nm)', curves: [{ fn: d => Rexact(S.lam, d, f), color: lamRGBcss(S.lam) }, { fn: d => Rtwo(S.lam, d, f), color: '#9aa8bd', dash: [4, 4], w: 1.8 }], mark: S.d, dots: [{ y: Rexact(S.lam, S.d, f), c: '#ffcc00' }], legend: [['精確（含多次反射）', lamRGBcss(S.lam)], ['兩道光近似', '#9aa8bd']] }); }
+        else if (S.mode === 'white') { const mx = Math.max(0.05, ...LAMS.map(l => Rexact(l, S.d, f))) * 1.2; graph(el('gr'), { x0: 400, x1: 700, y0: 0, y1: mx, sx: 50, bg: true, title: `反射率 R 隨波長 λ 變化（d = ${S.d} nm）`, xl: '波長 λ (nm)', curves: [{ fn: l => Rexact(l, S.d, f), color: '#ffffff' }] }); }
+        else { const db = S.drain ? S.drainD : S.db, mx = Math.max(0.05, ...Array.from({ length: 150 }, (_, i) => Rexact(S.wMono ? S.lam : 550, i * 10, f))) * 1.15; const cv = S.wMono ? [{ fn: d => Rexact(S.lam, d, f), color: lamRGBcss(S.lam) }] : [{ fn: d => Rexact(650, d, f), color: '#ff6b6b' }, { fn: d => Rexact(550, d, f), color: '#4dff88' }, { fn: d => Rexact(450, d, f), color: '#5b8dff' }]; graph(el('gr'), { x0: 0, x1: 2500, y0: 0, y1: mx, sx: 500, title: S.wMono ? `R–d 圖（λ = ${S.lam} nm）：楔形膜條紋的來源` : 'R–d 圖：紅（650）、綠（550）、藍（450 nm）各色光', xl: '厚度 d (nm)', curves: cv, legend: S.wMono ? [] : [['650 nm', '#ff6b6b'], ['550 nm', '#4dff88'], ['450 nm', '#5b8dff']] }); }
+    }
+    const lamRGBcss = l => { const c = lamRGB(l); return `rgb(${c[0]},${c[1]},${c[2]})`; };
+    function dash() {
+        const f = fres(S.n1, S.nf, S.n2, S.th), m = (t, v, u, col = '#c3d0e4') => `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value" style="color:${col}">${v}<span class="unit">${u}</span></div></div>`;
+        const dpath = 2 * S.nf * S.d * f.c2, od = odd(), ratio = dpath / S.lam, k = od ? ratio : ratio - 0.5, near = Math.abs(k - Math.round(k)) < 0.03 && k > -0.03;
+        const R = Rexact(S.lam, S.d, f);
+        let bs = '';
+        if (S.mode === 'mono') { const cons = od ? Math.abs(ratio - 0.5 - Math.round(ratio - 0.5)) < 0.04 : Math.abs(ratio - Math.round(ratio)) < 0.04, dest = od ? Math.abs(ratio - Math.round(ratio)) < 0.04 : Math.abs(ratio - 0.5 - Math.round(ratio - 0.5)) < 0.04; bs = cons ? '建設性（亮）' : dest ? '破壞性（暗）' : '介於之間'; }
+        el('dash').innerHTML = m('薄膜內折射角 θ′', f.th2.toFixed(1), '°', '#35d6ff') + m('額外光程 2 n_f d cosθ′', dpath.toFixed(0), 'nm', '#ff9f43') + m('光程差 ÷ λ', ratio.toFixed(3), '', '#ffcc00') + m('反射 π 相位改變次數', ((f.r12 < 0 ? 1 : 0) + (f.r23 < 0 ? 1 : 0)) + ' 次（' + (od ? '奇' : '偶') + '）', '', '#ff6b81') + (S.mode === 'mono' ? m('干涉結果', bs, '', '#00e676') + m('反射率 R', (R * 100).toFixed(2), '%', '#ffffff') + m('薄膜內波長 λ／n_f', (S.lam / S.nf).toFixed(1), 'nm') : m('d = λ／(4n_f)（λ=550）', (550 / 4 / S.nf).toFixed(1), 'nm'));
+        el('status').innerHTML = S.mode === 'mono' ? `反射時共有 <b>${(f.r12 < 0 ? 1 : 0) + (f.r23 < 0 ? 1 : 0)} 次</b> π 相位改變（${od ? '奇數次 → 光程差 mλ 為暗、(m+½)λ 為亮' : '偶數次 → 光程差 mλ 為亮、(m+½)λ 為暗'}）。目前光程差 = <b>${ratio.toFixed(2)} λ</b>，R = <b>${(R * 100).toFixed(1)}%</b>：<b>${bs}</b>。` : S.mode === 'white' ? `d = ${S.d} nm 的薄膜，在 R(λ) 圖中，反射率高的波長被我們看見，合成出圖中顏色；${od ? 'd → 0 時全部波長都是暗（黑色）' : 'd → 0 時反射率與厚度為 0 時相同（無薄膜效果）'}。` : `厚度由上往下連續增加：同一波長每增加 λ/(2n_f) ≈ ${(S.lam / 2 / S.nf).toFixed(0)} nm 就重複一次亮暗。${od ? '上端 d≈0 為黑色（反相）。' : '上端 d≈0 沒有明顯條紋。'}`;
+    }
+    function ui() { el('lD').textContent = S.d; el('lLam').textContent = S.lam + ' nm'; el('lLam').style.color = lamRGBcss(S.lam); el('lTh').textContent = S.th; el('lDb').textContent = S.db; el('lDt').textContent = S.dt; }
+    function modeUI() {
+        const m = S.mode; el('grpLam').style.display = (m === 'mono') ? '' : 'none'; if (m === 'wedge') el('grpLam').style.display = S.wMono ? '' : 'none'; el('grpD').style.display = m === 'wedge' ? 'none' : ''; el('grpWedge').style.display = m === 'wedge' ? '' : 'none'; el('rowAnim').style.display = m === 'mono' ? '' : 'none'; el('rowDrain').style.display = m === 'wedge' ? '' : 'none';
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
+        el('modeDesc').textContent = { mono: '選一種單色光，改變薄膜厚度 d。右圖顯示兩道反射光與它們的合成。', white: '白光含各種波長；每個厚度下，某些波長的反射被加強，某些被削弱，眼睛看到合成的顏色。', wedge: '垂直的肥皂膜因重力上薄下厚。可選白光或單色光；勾選「自動變薄」看條紋移動。' }[m];
+        el('sceneTitle').textContent = { mono: '光線與波形疊加', white: '光線與反射光顏色', wedge: '楔形薄膜（正視）與截面' }[m]; el('grTitle').textContent = { mono: 'R–d 圖', white: 'R–λ 圖', wedge: 'R–d 圖' }[m];
+        el('grNote').innerHTML = { mono: '實線是精確計算（含多次反射），虛線是兩道光的近似。反射率 R 為 0 表示完全抵消。', white: '彩色條表示波長的顏色。曲線愈高，該色光在反射光中愈強。', wedge: '楔形膜上，d 連續變化，R 隨 d 週期變化 → 條紋。白光時三色曲線的峰谷位置不同 → 彩色條紋；d 很大時三色峰谷錯開，混成接近白色。' }[m];
+        if (m === 'wedge' && !el('wMonoRow')) { const row = document.createElement('div'); row.className = 'check-row'; row.id = 'wMonoRow'; row.innerHTML = '<label><input type="checkbox" id="chkMono"> 單色光（用上方波長）</label>'; el('rowDrain').parentNode.appendChild(row); el('chkMono').addEventListener('change', e => { S.wMono = e.target.checked; wedgeKey = ''; modeUI(); }); }
+        if (el('wMonoRow')) el('wMonoRow').style.display = m === 'wedge' ? '' : 'none'; wedgeKey = '';
+    }
+    function setPre(k) { if (k !== 'custom') { [S.n1, S.nf, S.n2] = PRE[k]; el('nN1').value = S.n1; el('nNf').value = S.nf; el('nN2').value = S.n2; } wedgeKey = ''; }
+    document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.mode; modeUI(); }));
+    el('selPre').addEventListener('change', e => setPre(e.target.value));
+    ['nN1', 'nNf', 'nN2'].forEach((id, i) => el(id).addEventListener('input', e => { const v = Math.max(1, Math.min(2.5, +e.target.value || 1)); [S.n1, S.nf, S.n2][i]; if (i === 0) S.n1 = v; else if (i === 1) S.nf = v; else S.n2 = v; el('selPre').value = 'custom'; wedgeKey = ''; }));
+    el('sD').addEventListener('input', e => { S.d = +e.target.value; ui(); }); el('sLam').addEventListener('input', e => { S.lam = +e.target.value; ui(); }); el('sTh').addEventListener('input', e => { S.th = +e.target.value; ui(); });
+    el('sDb').addEventListener('input', e => { S.db = +e.target.value; S.drainD = S.db; ui(); }); el('sDt').addEventListener('input', e => { S.dt = +e.target.value; ui(); });
+    el('chkAnim').addEventListener('change', e => S.anim = e.target.checked); el('chkDrain').addEventListener('change', e => { S.drain = e.target.checked; S.drainD = S.db; });
+    let last = null, fn = 0;
+    function frame(ts) { if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05); last = ts; S.t += dt; if (S.drain) { S.drainD -= dt * 60; if (S.drainD < Math.max(S.dt + 100, 150)) S.drainD = S.db; } drawScene(); if (!(fn++ % 2)) { drawGraph(); dash(); } requestAnimationFrame(frame); }
+    window.__tf = { S, fres, Rexact, Rtwo, colorFn, odd };
+    el('chkAnim').checked = true; S.wMono = false; setPre('soap'); ui(); modeUI(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

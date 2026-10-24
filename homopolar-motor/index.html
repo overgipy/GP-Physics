@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>單極馬達 - 李捷物理實驗室</title>
+<style>
+        :root { --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432; --text-main: #f0f3f8; --text-muted: #9aa8bd; --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676;
+            --i1: #ffb020; --i2: #ff7ad9; --flux: #35d6ff; --ind: #d28bff; --vel: #4d8dff; }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6; }
+        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; } .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
+        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; } h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; } .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
+        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
+        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
+        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+        .mode-btn { flex: 1 1 220px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 10px 12px; font-size: .92rem; cursor: pointer; text-align: left; } .mode-btn b { display: block; color: var(--cyan); } .mode-btn.active { border-color: var(--cyan); background: #12303a; }
+        .mode-desc { font-size: .92rem; color: var(--text-muted); margin-bottom: 12px; }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; } .control-group.off { display: none; }
+        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; } .control-label b { font-family: monospace; font-size: 1.05rem; }
+        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
+        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
+        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
+        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; } .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; } button.btn.secondary { background: #3a465b; color: #fff; } button.btn.green { background: var(--green); color: #00210f; } button.btn.red { background: #ff6b81; color: #2a0008; } button.btn.orange { background: #ff9f43; color: #2a1500; }
+        button.btn:disabled { opacity: .4; cursor: not-allowed; } button.btn:not(:disabled):hover { filter: brightness(1.12); }
+        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; } canvas { display: block; width: 100%; height: auto; touch-action: pan-y; }
+        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; } .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #111622; font-size: 1rem; } .status b { color: var(--yellow); }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; } .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; } .meter-title { font-size: .82rem; color: var(--text-muted); } .meter-value { font-size: 1.25rem; font-weight: bold; font-family: monospace; } .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
+        .opt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px; margin-bottom: 10px; }
+        .opt { background: var(--bg-control); border: 2px solid #2c3749; border-radius: 8px; padding: 8px 10px; cursor: pointer; font-size: .95rem; color: var(--text-main); text-align: left; } .opt:hover { border-color: #4a6a9a; } .opt.sel { border-color: var(--yellow); background: #2b2a14; } .opt.ok { border-color: var(--green); } .opt.bad { border-color: #ff6b81; }
+        .opt b { color: var(--cyan); margin-right: 6px; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; } .fit-text b { color: var(--yellow); }
+        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; } summary { cursor: pointer; font-weight: bold; color: var(--cyan); } details ol, details ul { margin: 8px 0 2px; padding-left: 22px; } details li { margin-bottom: 4px; }
+        .assume { font-size: .88rem; color: var(--text-muted); } footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>🌀 單極馬達</h1>
+    <p class="subtitle">一顆電池、一塊磁鐵、一條銅線　｜　電流 × 磁場 → 磁力 → 轉動（開掌定則）</p>
+</header>
+<div class="container">
+    <div class="card">
+        <div class="card-title">實驗設定</div>
+        <div class="controls-grid">
+            <div class="control-group"><div class="control-label"><span>磁鐵朝上的磁極</span></div><select id="selMag"><option value="1">N 極朝上</option><option value="-1">S 極朝上</option></select></div>
+            <div class="control-group"><div class="control-label"><span>電池放置方式</span></div><select id="selBat"><option value="1">正極朝上（電流沿銅線向下流）</option><option value="-1">正極朝下（電流沿銅線向上流）</option></select></div>
+            <div class="control-group"><div class="control-label"><span>迴路總電阻 R</span><b style="color:var(--i1)"><span id="lblR">0.50</span> Ω</b></div><input type="range" id="slR" min="0.3" max="1.5" step="0.05" value="0.5"><div class="sub-note">電池 1.5 V，穩定時 I ≈ V ÷ R</div></div>
+            <div class="control-group"><div class="control-label"><span>磁鐵殘磁 B<sub>r</sub>（越大越強）</span><b style="color:var(--flux)"><span id="lblBr">1.2</span> T</b></div><input type="range" id="slBr" min="0.4" max="1.4" step="0.1" value="1.2"></div>
+            <div class="control-group"><div class="control-label"><span>轉動阻力（空氣與接觸）</span><b style="color:#c3d0e4"><span id="lblB">1.0</span> μN·m·s</b></div><input type="range" id="slB" min="0.3" max="3" step="0.1" value="1"></div>
+            <div class="control-group"><div class="control-label"><span>播放速度</span></div><select id="selSlow"><option value="0.05">0.05 倍（看清楚轉動）</option><option value="0.1" selected>0.1 倍</option><option value="0.3">0.3 倍</option><option value="1">1 倍（真實時間）</option></select></div>
+        </div>
+        <div class="btn-row"><button class="btn green" id="btnPlay">▶ 播放</button><button class="btn secondary" id="btnPause">⏸ 暫停</button><button class="btn secondary" id="btnReset">↺ 重設</button><button class="btn orange" id="btnFlip">翻轉磁鐵（N↔S）</button><button class="btn orange" id="btnFlipBat">翻轉電池</button></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span>側視（切面）與俯視</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div>
+        <div class="canvas-wrap"><canvas id="scene" width="760" height="430"></canvas></div>
+        <div class="legend"><span style="--c:var(--i1)">電流 I</span><span style="--c:var(--flux)">磁鐵的磁場 B</span><span style="--c:#ff4d6d">磁力 F（紅）</span><span style="--c:var(--vel)">轉動方向</span></div>
+        <div class="status" id="status"></div>
+    </div>
+
+    <div class="card"><div class="card-title">即時數據</div><div class="dashboard" id="dash"></div></div>
+
+    <div class="card">
+        <div class="card-title"><span>同步圖</span></div>
+        <div class="graph-box"><canvas id="g1" width="760" height="200"></canvas></div>
+        <div class="graph-box" style="margin-top:8px"><canvas id="g2" width="760" height="200"></canvas></div>
+        <div class="fit-text" id="energy"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">課堂練習（講義第 5 頁）</div>
+        <div class="fit-text" id="quizQ">問：磁鐵 N 極朝上、電池正極朝上時，銅線（俯視）會朝哪個方向轉？先用開掌定則判斷，再按「顯示答案」。</div>
+        <div class="btn-row" style="margin-top:8px"><button class="btn" id="btnAns">顯示答案</button></div>
+        <div class="fit-text" id="quizA"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary>
+            <ul>
+                <li>磁力：<b>F = I L B sinθ</b>，方向由開掌定則：拇指＝電流 I、四指＝磁場 B、掌心＝磁力 F。</li>
+                <li>關鍵：電流 I 與磁場 B 不能平行。銅線沿垂直方向流過電流，真正推動它的是磁鐵磁場的<b>徑向（向外或向內）分量 B<sub>r</sub></b>；磁場朝上的分量 B<sub>z</sub> 與垂直電流平行，不出力。</li>
+                <li>力矩：<b>τ = κ I</b>，其中 κ ＝ R∫B<sub>r</sub>dz ＋ ∫ r B<sub>z</sub>dr（單位 N·m／A，由磁鐵磁場數值積分求得）。</li>
+                <li>轉動：<b>J dω/dt = κ I − bω</b>（J：轉動慣量，b：阻力係數）。</li>
+                <li>反電動勢：轉動中的銅線切割磁力線，產生 <b>ε = κ ω</b>，方向阻礙轉動，所以 <b>I = (V − κω)／R</b>。</li>
+                <li>能量：<b>V I = I²R + τω</b>（電池供應功率 ＝ 熱 ＋ 機械功率）。</li>
+            </ul>
+            <p class="assume">理想化假設：磁鐵為均勻磁化的圓盤（半徑 12.5 mm、厚 6 mm），磁場以兩個端面的磁荷分布數值積分計算；電池 1.5 V、高 50 mm、半徑 7 mm，立在磁鐵正中央；銅線由電池頂端中心水平向外至半徑 11 mm，再垂直向下接觸磁鐵上表面，以頂端支點旋轉（質量約 1 g）；磁鐵與電池固定不動；忽略電池內電阻之外的接觸電壓；電流經磁鐵與電池的部分不計入力矩。</p>
+        </details>
+        <details><summary>建議講解順序</summary>
+            <ol>
+                <li>先讓學生看靜態裝置：電流從正極出發，沿哪條路回到負極？（銅線 → 磁鐵 → 電池負極）</li>
+                <li>側視切面圖看磁場方向：N 極朝上時，銅線所在位置的磁場向外散開（B<sub>r</sub> 向外）。</li>
+                <li>開掌：四指指向 B<sub>r</sub>（向外）、拇指向下（電流）→ 掌心指向「進入紙面」方向，由俯視圖看是<b>順時針</b>。</li>
+                <li>按下播放驗證。再翻轉磁鐵或電池，各翻轉一次轉向反過來，兩個都翻轉則轉向不變。</li>
+                <li>調 R、B<sub>r</sub>：觀察轉速與電流的關係。</li>
+            </ol>
+        </details>
+        <details><summary>可以問學生的問題</summary>
+            <ul>
+                <li>電流與磁場同時反向（兩個都翻轉），旋轉方向會怎樣？（不變）</li>
+                <li>為什麼磁場朝上、電流朝下，銅線不是被推向側面而是繞軸轉？（電流平行 B<sub>z</sub>，只有 B<sub>r</sub> 出力）</li>
+                <li>轉越快，電流為什麼會稍微變小？（反電動勢）</li>
+                <li>如果把磁鐵與電池一起轉、銅線固定，會怎樣？（反作用力：磁鐵與電池反向轉動，真實的單極馬達常是這種做法）</li>
+            </ul>
+        </details>
+        <details><summary>常見迷思</summary>
+            <ul>
+                <li><b>「磁場向上、電流向下，力應該水平指向側面」</b>：電流與 B<sub>z</sub> 平行，沒有力；起作用的是 B<sub>r</sub>。</li>
+                <li><b>「直流電不能讓馬達連續轉」</b>：一般線圈需要換向器；單極馬達電流方向與磁場始終不變，所以不需要換向。</li>
+                <li><b>「這是永動機」</b>：能量來自電池，V I = I²R ＋ τω。</li>
+            </ul>
+        </details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+<script>
+(() => {
+    'use strict';
+    const el = id => document.getElementById(id), c = el('scene').getContext('2d');
+    // ===== 幾何（SI）：磁鐵上表面 z=0，磁鐵 z∈[-th,0]，電池 z∈[0,Hb]，銅線半徑 Rw =====
+    const a = 0.0125, th = 0.006, Hb = 0.05, Rb = 0.007, Rw = 0.011, V = 1.5, J = 1.2e-7, Br0 = 1.2;
+    function Bfield(r, z) {                        // 磁鐵 N 極朝上（Br0 = 1.2 T）的磁場，r、z 單位 m；以兩端面磁荷積分
+        let br = 0, bz = 0; const nr = 24, np = 48;
+        for (const [zf, s] of [[0, 1], [-th, -1]]) for (let i = 0; i < nr; i++) { const rr = (i + .5) / nr * a, dA = rr * (a / nr) * (2 * Math.PI / np); for (let j = 0; j < np; j++) { const p = (j + .5) / np * 2 * Math.PI, dx = r - rr * Math.cos(p), dy = -rr * Math.sin(p), dz = z - zf, d2 = dx * dx + dy * dy + dz * dz, f = s * Br0 / (4 * Math.PI) * dA / (d2 * Math.sqrt(d2)); br += f * dx; bz += f * dz; } }
+        return [br, bz];
+    }
+    function kappaRaw() { let s = 0, h = 0; const n = 160; for (let i = 0; i < n; i++) { const z = (i + .5) / n * Hb; s += Bfield(Rw, z)[0] * (Hb / n); } for (let i = 0; i < n; i++) { const r = (i + .5) / n * Rw; h += r * Bfield(r, Hb)[1] * (Rw / n); } return { kr: Rw * s, kh: h }; }
+    const KR = kappaRaw(), KPOS = KR.kr + KR.kh;      // 對 Br0 = 1.2 T、N 極朝上、電流向下
+    const S = { mag: 1, bat: 1, R: 0.5, Br: 1.2, b: 1e-6, slow: 0.1, w: 0, phi: 0, t: 0, playing: true, hist: [], tot: { Ein: 0, Eheat: 0, Emech: 0, Efric: 0 } };
+    const kappa = () => -S.mag * KPOS * S.Br / Br0;       // τ = κ i，i：銅線電流向下為正（N 極朝上時 κ<0 → 順時針）
+    const Vs = () => S.bat * V;
+    const iNow = () => (Vs() - kappa() * S.w) / S.R;
+    function step(dt) { const k = kappa(), i = iNow(), tau = k * i, fr = S.b * S.w; S.w += (tau - fr) / J * dt; S.phi += S.w * dt; const i2 = iNow(); S.tot.Ein += Vs() * i2 * dt; S.tot.Eheat += i2 * i2 * S.R * dt; S.tot.Emech += (k * i2) * S.w * dt; S.t += dt; if (!S.hist.length || S.t - S.hist[S.hist.length - 1].t >= 0.01) { S.hist.push({ t: S.t, w: S.w, i: Math.abs(i2) }); if (S.hist.length > 3000) S.hist.shift(); } }
+    function reset() { S.w = 0; S.phi = 0; S.t = 0; S.hist = []; S.tot = { Ein: 0, Eheat: 0, Emech: 0, Efric: 0 }; S.playing = true; }
+    // ===== 繪圖 =====
+    function arrow(x1, y1, x2, y2, col, w = 3, h = 10) { const L = Math.hypot(x2 - x1, y2 - y1); if (L < 2) return; const an = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(h, L * .6); c.save(); c.strokeStyle = col; c.fillStyle = col; c.lineWidth = w; c.lineCap = 'round'; c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2 - Math.cos(an) * hl * .6, y2 - Math.sin(an) * hl * .6); c.stroke(); c.beginPath(); c.moveTo(x2, y2); c.lineTo(x2 - hl * Math.cos(an - .45), y2 - hl * Math.sin(an - .45)); c.lineTo(x2 - hl * Math.cos(an + .45), y2 - hl * Math.sin(an + .45)); c.closePath(); c.fill(); c.restore(); }
+    function txt(s, x, y, col, size = 14, al = 'left') { c.save(); c.font = `bold ${size}px sans-serif`; c.fillStyle = col; c.textAlign = al; c.textBaseline = 'middle'; c.fillText(s, x, y); c.restore(); }
+    function dot(x, y, r, col, cross) { c.save(); c.strokeStyle = col; c.fillStyle = col; c.lineWidth = 2.5; if (cross) { c.beginPath(); c.moveTo(x - r * .7, y - r * .7); c.lineTo(x + r * .7, y + r * .7); c.moveTo(x + r * .7, y - r * .7); c.lineTo(x - r * .7, y + r * .7); c.stroke(); c.beginPath(); c.arc(x, y, r, 0, 7); c.stroke(); } else { c.beginPath(); c.arc(x, y, r, 0, 7); c.stroke(); c.beginPath(); c.arc(x, y, r * .3, 0, 7); c.fill(); } c.restore(); }
+    const fieldCache = {};
+    function fieldAt(r, z) { const k = r.toFixed(4) + '_' + z.toFixed(4); return fieldCache[k] || (fieldCache[k] = Bfield(r, z)); }
+    function drawScene() {
+        c.clearRect(0, 0, 760, 430); c.fillStyle = '#080a0f'; c.fillRect(0, 0, 760, 430);
+        // ---------- 側視 ----------
+        const sc = 6200, ox = 220, oy = 335;      // 1 m = 6200 px（以磁鐵上表面中心為原點）
+        const X = r => ox + r * sc, Y = z => oy - z * sc;
+        txt('側視（切過銅線的平面）', 20, 22, '#9aa8bd', 13);
+        const nCol = S.mag > 0 ? ['#ff5a5a', 'N', '#4d8dff', 'S'] : ['#4d8dff', 'S', '#ff5a5a', 'N'];
+        c.fillStyle = nCol[0]; c.fillRect(X(-a), Y(0), 2 * a * sc, 0.003 * sc); c.fillStyle = '#7b8494'; c.fillRect(X(-a), Y(0) + 0.003 * sc, 2 * a * sc, (th - 0.006) * sc + 1); c.fillStyle = nCol[2]; c.fillRect(X(-a), Y(-th) - 0.003 * sc, 2 * a * sc, 0.003 * sc);
+        c.fillStyle = '#6a7384'; c.fillRect(X(-a), Y(0), 2 * a * sc, th * sc); c.fillStyle = nCol[0]; c.fillRect(X(-a), Y(0), 2 * a * sc, th * sc / 2); c.fillStyle = nCol[2]; c.fillRect(X(-a), Y(-th / 2), 2 * a * sc, th * sc / 2);
+        txt(nCol[1], X(0), Y(-th * .25), '#fff', 16, 'center'); txt(nCol[3], X(0), Y(-th * .75), '#fff', 16, 'center'); txt('磁鐵', X(-a) - 8, Y(-th / 2), '#c3d0e4', 14, 'right');
+        // 電池
+        c.fillStyle = '#b8923a'; c.fillRect(X(-Rb), Y(Hb), 2 * Rb * sc, Hb * sc); c.fillStyle = '#2d3445'; c.fillRect(X(-Rb), Y(Hb) + 18, 2 * Rb * sc, Hb * sc - 36);
+        const topSign = S.bat > 0 ? '＋' : '－'; txt(topSign, X(0), Y(Hb) + 9, S.bat > 0 ? '#ff6b81' : '#4d8dff', 16, 'center'); txt(S.bat > 0 ? '－' : '＋', X(0), Y(0) - 10, S.bat > 0 ? '#4d8dff' : '#ff6b81', 16, 'center'); txt('1.5 V 電池', X(-Rb) - 8, Y(Hb / 2), '#c3d0e4', 13, 'right');
+        // 磁場箭頭（取樣）
+        const bs = 140; for (const z of [0.004, 0.012, 0.025, 0.04]) for (const r of [0.016, 0.026, 0.038, -0.016, -0.026, -0.038, -0.011]) { const [br, bz] = fieldAt(Math.abs(r), z), sg = S.mag, bx = (r < 0 ? -br : br) * sg, by = bz * sg, m = Math.hypot(bx, by), L = Math.min(34, 8 + m * 150); if (m < 0.004) continue; arrow(X(r) - bx / m * L / 2, Y(z) + by / m * L / 2, X(r) + bx / m * L / 2, Y(z) - by / m * L / 2, `rgba(53,214,255,${Math.min(.95, .25 + m * 3)})`, 2, 7); }
+        // 銅線（側視：位於切面上）
+        c.strokeStyle = '#e08a3a'; c.lineWidth = 4; c.beginPath(); c.moveTo(X(0), Y(Hb) - 8); c.lineTo(X(0), Y(Hb)); c.lineTo(X(Rw), Y(Hb)); c.lineTo(X(Rw), Y(0)); c.stroke(); txt('銅線', X(Rw) + 8, Y(Hb) - 12, '#e08a3a', 14);
+        const i = iNow(), down = i > 0;     // 向下為正
+        // 電流箭頭
+        const aw = Math.abs(i) > 1e-4; if (aw) { arrow(X(Rw) + 12, down ? Y(0.035) : Y(0.005), X(Rw) + 12, down ? Y(0.005) : Y(0.035), '#ffb020', 5, 14); arrow(down ? X(0.002) : X(Rw) - 2, Y(Hb) - 12, down ? X(Rw) - 2 : X(0.002), Y(Hb) - 12, '#ffb020', 3, 9); txt('I', X(Rw) + 26, Y(0.02), '#ffb020', 16); }
+        // 磁力方向（圖面法向）：F = I L × B ，圓點＝出紙面
+        const [bR] = fieldAt(Rw, 0.01), sgnB = bR * S.mag;          // 銅線垂直段的 B_r（沿 +r 為正）
+        // 力沿 φ 方向：下流電流 × (+r) → −φ。切面在 φ=0 平面（x 向右為 +r，出紙面為 +y = +φ）
+        const fphi = -Math.sign(i) * Math.sign(sgnB);              // +1：出紙面
+        if (aw) { dot(X(Rw) - 26, Y(0.02), 11, '#ff4d6d', fphi < 0); txt(fphi > 0 ? 'F 出紙面' : 'F 入紙面', X(Rw) - 40, Y(0.02), '#ff4d6d', 13, 'right'); }
+        txt(`銅線處 B_r ${sgnB > 0 ? '向外 →' : '向內 ←'}`, X(Rw) + 12, Y(0.044), '#35d6ff', 13);
+        // ---------- 俯視 ----------
+        const px = 580, py = 215, ps = 5200; c.fillStyle = '#0d121b'; c.fillRect(420, 10, 330, 410); c.strokeStyle = '#26324a'; c.strokeRect(420, 10, 330, 410); txt('俯視（由上往下看）', 585, 28, '#9aa8bd', 13, 'center');
+        c.fillStyle = '#6a7384'; c.beginPath(); c.arc(px, py, a * ps, 0, 7); c.fill(); c.fillStyle = S.mag > 0 ? '#ff7a7a' : '#6a9bff'; c.globalAlpha = .45; c.beginPath(); c.arc(px, py, a * ps, 0, 7); c.fill(); c.globalAlpha = 1; txt(S.mag > 0 ? 'N' : 'S', px, py + a * ps + 16, '#c3d0e4', 13, 'center');
+        c.fillStyle = '#2d3445'; c.beginPath(); c.arc(px, py, Rb * ps, 0, 7); c.fill(); c.strokeStyle = '#b8923a'; c.lineWidth = 3; c.stroke();
+        const ang = -S.phi;      // 畫面 y 向下，逆時針（由上看）= 畫面上 −角
+        const wx = px + Rw * ps * Math.cos(ang), wy = py + Rw * ps * Math.sin(ang);
+        c.strokeStyle = '#e08a3a'; c.lineWidth = 5; c.beginPath(); c.moveTo(px, py); c.lineTo(wx, wy); c.stroke(); c.fillStyle = '#ffb020'; c.beginPath(); c.arc(wx, wy, 5, 0, 7); c.fill();
+        // 作用力與轉動方向
+        const phiHat = [Math.sin(ang) * -1, Math.cos(ang)];       // 畫面上對應 +φ（逆時針）之切線 = (sin(ang)... 見下
+        const tx = Math.sin(S.phi) * -1 * -1, ty = Math.cos(S.phi) * -1;   // 逆時針（由上看）單位向量：(-sinφ, cosφ) 在數學座標，翻轉 y → (-sinφ, -cosφ)
+        const ccw = [-Math.sin(S.phi), -Math.cos(S.phi)];
+        const tau = kappa() * i; if (Math.abs(tau) > 1e-9) arrow(wx, wy, wx + ccw[0] * Math.sign(tau) * 55, wy + ccw[1] * Math.sign(tau) * 55, '#ff4d6d', 4, 12);
+        // 轉動方向弧
+                txt(Math.abs(S.w) < 0.5 ? '尚未轉動' : (S.w > 0 ? '逆時針轉動' : '順時針轉動'), 585, 395, Math.abs(S.w) < 0.5 ? '#6a7a92' : '#4d8dff', 18, 'center');
+        const tlab = Math.sign(tau) > 0 ? '力矩：逆時針' : '力矩：順時針'; txt(tlab, 585, 50, '#ff4d6d', 14, 'center');
+        // 轉動箭頭（沿圓）
+        if (Math.abs(S.w) > 0.5) { const R2 = Rw * ps + 34, dirc = S.w > 0 ? -1 : 1; for (let k = 0; k < 3; k++) { const aa = ang + dirc * 0.0 + k * 2.1 + 0.5 * dirc, x1 = px + R2 * Math.cos(aa), y1 = py + R2 * Math.sin(aa), x2 = px + R2 * Math.cos(aa + dirc * 0.35), y2 = py + R2 * Math.sin(aa + dirc * 0.35); arrow(x1, y1, x2, y2, '#4d8dff', 3, 9); } }
+    }
+    function series(cv, key, title, col, unit, scale) {
+        const x = cv.getContext('2d'), W = cv.width, H = cv.height, L = 66, R = 14, T = 28, B = 32, pw = W - L - R, ph = H - T - B, x1 = Math.max(S.t, 0.5), x0 = Math.max(0, x1 - 1.5 * Math.max(1, x1 / 1.5));
+        let mx = 1e-9; S.hist.forEach(h => mx = Math.max(mx, Math.abs(h[key]) * scale)); mx *= 1.15;
+        x.fillStyle = '#0d121b'; x.fillRect(0, 0, W, H); const PX = v => L + (v - x0) / (x1 - x0) * pw, PY = v => T + ph - v / mx * ph;
+        x.font = '12px sans-serif'; for (let k = 0; k <= 4; k++) { const v = mx * k / 4; x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(L, PY(v)); x.lineTo(L + pw, PY(v)); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'right'; x.fillText(v.toFixed(v < 10 ? 2 : 0), L - 6, PY(v) + 4); }
+        const step = x1 - x0 > 8 ? 2 : x1 - x0 > 3 ? 1 : 0.5; for (let v = Math.ceil(x0 / step) * step; v <= x1; v += step) { x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(v.toFixed(1), PX(v), T + ph + 14); }
+        x.strokeStyle = col; x.lineWidth = 2.6; x.beginPath(); S.hist.forEach((h, i) => { const X = PX(h.t), Y = PY(Math.abs(h[key]) * scale); i ? x.lineTo(X, Y) : x.moveTo(X, Y); }); x.stroke();
+        x.fillStyle = '#c3d0e4'; x.font = 'bold 13px sans-serif'; x.textAlign = 'left'; x.fillText(title, L, 16); x.font = '12px sans-serif'; x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText('時間 t (s)', L + pw / 2, H - 4); x.save(); x.translate(13, T + ph / 2); x.rotate(-Math.PI / 2); x.fillText(unit, 0, 0); x.restore();
+    }
+    function dash() {
+        const i = iNow(), k = kappa(), tau = k * i, w = S.w, m = (t, v, u, col = '#c3d0e4') => `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value" style="color:${col}">${v}<span class="unit">${u}</span></div></div>`;
+        el('dash').innerHTML = m('電流 I', Math.abs(i).toFixed(3), 'A', '#ffb020') + m('力矩 τ', (Math.abs(tau) * 1e6).toFixed(1), 'μN·m', '#ff4d6d') + m('角速度 ω', Math.abs(w).toFixed(1), 'rad/s', '#4d8dff') + m('轉速', (Math.abs(w) / (2 * Math.PI) * 60).toFixed(0), 'rpm', '#4d8dff') + m('反電動勢 κω', (Math.abs(k * w) * 1e3).toFixed(3), 'mV', '#c3d0e4') + m('電池功率 VI', (Math.abs(Vs() * i)).toFixed(3), 'W', '#00e676') + m('機械功率 τω', (tau * w * 1e3).toFixed(3), 'mW', '#4d8dff') + m('熱功率 I²R', (i * i * S.R).toFixed(3), 'W', '#ffb020');
+        const BrSign = S.mag; el('status').innerHTML = `電流在銅線中沿<b>${i > 0 ? '向下' : '向上'}</b>流動；銅線處磁場的徑向分量 B<sub>r</sub> <b>${BrSign > 0 ? '向外' : '向內'}</b>。開掌：四指＝B<sub>r</sub>、拇指＝I → 掌心（磁力）使銅線由上往下看<b>${tau > 0 ? '逆時針' : '順時針'}</b>轉。`;
+        el('runState').textContent = S.playing ? '播放中' : '暫停';
+        el('energy').innerHTML = `累計能量：電池供應 <b>${S.tot.Ein.toFixed(4)} J</b> ＝ 熱 <b>${S.tot.Eheat.toFixed(4)} J</b> ＋ 機械功（用於加速與克服阻力）<b>${S.tot.Emech.toFixed(5)} J</b>（驗算差：${Math.abs(S.tot.Ein - S.tot.Eheat - S.tot.Emech).toExponential(1)} J）。κ ＝ ${(KPOS * 1e6).toFixed(1)} μN·m／A（B<sub>r</sub> = 1.2 T）。`;
+    }
+    function ui() { el('lblR').textContent = S.R.toFixed(2); el('lblBr').textContent = S.Br.toFixed(1); el('lblB').textContent = (S.b * 1e6).toFixed(1); }
+    el('selMag').addEventListener('change', e => { S.mag = +e.target.value; reset(); }); el('selBat').addEventListener('change', e => { S.bat = +e.target.value; reset(); });
+    el('slR').addEventListener('input', e => { S.R = +e.target.value; ui(); }); el('slBr').addEventListener('input', e => { S.Br = +e.target.value; ui(); }); el('slB').addEventListener('input', e => { S.b = +e.target.value * 1e-6; ui(); });
+    el('selSlow').addEventListener('change', e => S.slow = +e.target.value);
+    el('btnPlay').addEventListener('click', () => S.playing = true); el('btnPause').addEventListener('click', () => S.playing = false); el('btnReset').addEventListener('click', reset);
+    el('btnFlip').addEventListener('click', () => { S.mag *= -1; el('selMag').value = S.mag; reset(); }); el('btnFlipBat').addEventListener('click', () => { S.bat *= -1; el('selBat').value = S.bat; reset(); });
+    el('btnAns').addEventListener('click', () => { el('quizA').innerHTML = '<b>順時針（由上往下看）</b>：N 極朝上時，銅線處 B<sub>r</sub> 向外；電流向下；開掌（四指向外、拇指向下）掌心指向「入紙面」，在俯視圖中即順時針切線方向。再翻轉磁鐵或電池其中之一，轉向就會反過來。'; });
+    let last = null, fn = 0;
+    function frame(ts) { if (last === null) last = ts; let dt = Math.min((ts - last) / 1000, 0.05) * S.slow; last = ts; if (S.playing) while (dt > 1e-9) { const h = Math.min(0.0005, dt); step(h); dt -= h; } drawScene(); if (!(fn++ % 3)) { series(el('g1'), 'w', 'ω–t 圖（角速度）', '#4d8dff', 'ω (rad/s)', 1); series(el('g2'), 'i', 'I–t 圖（電流）', '#ffb020', 'I (A)', 1); dash(); } requestAnimationFrame(frame); }
+    window.__hm = { S, kappa, iNow, step, reset, KPOS, KR, Bfield };
+    ui(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
