@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>摩擦係數的測定 - 李捷物理實驗室</title>
+    <style>
+        :root {
+            --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432;
+            --text-main: #f0f3f8; --text-muted: #9aa8bd;
+            --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676; --blue: #4da3ff;
+            --red: #ff4d6d; --orange: #ff9f43;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px;
+            display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6;
+        }
+        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; }
+        .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
+        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; }
+        h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; }
+        .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
+        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
+        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
+        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+        .mode-btn { flex: 1 1 260px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 10px 12px; font-size: .95rem; cursor: pointer; text-align: left; }
+        .mode-btn b { display: block; color: var(--cyan); }
+        .mode-btn.active { border-color: var(--cyan); background: #12303a; }
+        .mode-desc { font-size: .92rem; color: var(--text-muted); margin-bottom: 12px; }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; }
+        .control-group.hidden { display: none; }
+        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; }
+        .control-label b { font-family: monospace; font-size: 1.05rem; }
+        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
+        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
+        input[type=range]:disabled { opacity: .4; cursor: not-allowed; }
+        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
+        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; }
+        .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; }
+        button.btn.secondary { background: #3a465b; color: #fff; }
+        button.btn.green { background: var(--green); color: #00210f; }
+        button.btn.orange { background: var(--orange); color: #2a1600; }
+        button.btn:disabled { opacity: .4; cursor: not-allowed; }
+        button.btn:not(:disabled):hover { filter: brightness(1.12); }
+        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; }
+        canvas { display: block; width: 100%; height: auto; }
+        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; font-size: 1rem; border: 1px solid #333; background: #111622; }
+        .status b { color: var(--yellow); }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)); gap: 10px; }
+        .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; }
+        .meter-title { font-size: .82rem; color: var(--text-muted); }
+        .meter-value { font-size: 1.3rem; font-weight: bold; font-family: monospace; }
+        .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
+        .c-blue { color: var(--blue); } .c-red { color: var(--red); } .c-green { color: var(--green); } .c-yellow { color: var(--yellow); } .c-orange { color: var(--orange); }
+        .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+        table { width: 100%; border-collapse: collapse; font-size: .88rem; font-family: monospace; }
+        th, td { border-bottom: 1px solid #263044; padding: 5px 5px; text-align: right; }
+        th { color: var(--text-muted); font-weight: normal; }
+        .table-scroll { max-height: 300px; overflow-y: auto; }
+        .fit-text { margin-top: 8px; font-size: .92rem; color: #c3d0e4; }
+        .fit-text b { color: var(--yellow); }
+        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+        summary { cursor: pointer; font-weight: bold; color: var(--cyan); }
+        details ol, details ul { margin: 8px 0 2px; padding-left: 22px; }
+        details li { margin-bottom: 4px; }
+        .assume { font-size: .88rem; color: var(--text-muted); }
+        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+        .lg-red::before { background: var(--red); } .lg-orange::before { background: var(--orange); } .lg-blue::before { background: var(--blue); } .lg-green::before { background: var(--green); }
+        footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
+    </style>
+</head>
+<body>
+
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>🧱 摩擦係數的測定</h1>
+    <p class="subtitle">靜摩擦係數 μ<sub>s</sub> 與動摩擦係數 μ<sub>k</sub>　｜　斜面法、水平拉力法</p>
+</header>
+
+<div class="container">
+
+    <div class="card">
+        <div class="card-title">實驗設定</div>
+        <div class="mode-bar">
+            <button class="mode-btn active" data-mode="incline"><b>方法一：斜面法</b>慢慢抬高斜面，物塊剛要滑動時 tan θ = μ<sub>s</sub></button>
+            <button class="mode-btn" data-mode="pull"><b>方法二：水平拉力法</b>用彈簧秤拉物塊，讀出最大靜摩擦力與動摩擦力</button>
+        </div>
+        <div class="mode-desc" id="modeDesc"></div>
+
+        <div class="controls-grid">
+            <div class="control-group">
+                <div class="control-label">接觸面材料</div>
+                <select id="selMat">
+                    <option value="custom">自訂（用下面滑桿）</option>
+                    <option value="wood">木塊—木板（0.50 / 0.40）</option>
+                    <option value="steel">鋼—鋼（0.74 / 0.57）</option>
+                    <option value="rubber">橡膠—水泥（1.00 / 0.80）</option>
+                    <option value="ice">冰—冰（0.10 / 0.03）</option>
+                </select>
+                <div class="sub-note">材料數值為教學用的示意值，實際依表面狀況而異。</div>
+            </div>
+            <div class="control-group">
+                <div class="control-label"><span>靜摩擦係數 μ<sub>s</sub></span> <b class="c-orange" id="lblMus">0.50</b></div>
+                <input type="range" id="slMus" min="0.05" max="1.2" step="0.01" value="0.5">
+            </div>
+            <div class="control-group">
+                <div class="control-label"><span>動摩擦係數 μ<sub>k</sub></span> <b class="c-orange" id="lblMuk">0.40</b></div>
+                <input type="range" id="slMuk" min="0.02" max="1.2" step="0.01" value="0.4">
+                <div class="sub-note">一般 μ<sub>k</sub> ≤ μ<sub>s</sub></div>
+            </div>
+            <div class="control-group" id="grpMass">
+                <div class="control-label">物塊質量 M <b class="c-yellow"><span id="lblM">0.50</span> kg</b></div>
+                <input type="range" id="slM" min="0.2" max="2.0" step="0.1" value="0.5">
+                <div class="sub-note" id="massNote">質量不影響 θ<sub>c</sub>（試試看）</div>
+            </div>
+            <div class="control-group" id="grpTheta">
+                <div class="control-label">斜面角度 θ <b class="c-yellow"><span id="lblTheta">0.0</span>°</b></div>
+                <input type="range" id="slTheta" min="0" max="60" step="0.1" value="0">
+            </div>
+            <div class="control-group hidden" id="grpF">
+                <div class="control-label">彈簧秤拉力 F <b class="c-red"><span id="lblF">0.00</span> N</b></div>
+                <input type="range" id="slF" min="0" max="15" step="0.01" value="0">
+                <div class="sub-note">可用手拉動滑桿，或按「緩慢加力」</div>
+            </div>
+            <div class="control-group hidden" id="grpArea">
+                <div class="control-label">物塊放法</div>
+                <select id="selArea"><option value="flat">平放（接觸面大）</option><option value="side">側放（接觸面小）</option></select>
+                <div class="sub-note">試試：接觸面積改變，最大靜摩擦力會變嗎？</div>
+            </div>
+            <div class="control-group">
+                <div class="control-label">播放速度</div>
+                <select id="selSpeed"><option value="1">1 倍</option><option value="2" selected>2 倍</option><option value="4">4 倍</option></select>
+            </div>
+        </div>
+        <div class="check-row">
+            <label><input type="checkbox" id="chkVec" checked> 顯示力向量</label>
+            <label id="lblComp"><input type="checkbox" id="chkComp" checked> 顯示重力分量（虛線）</label>
+            <label><input type="checkbox" id="chkNoise"> 加入讀數誤差（角度 ±0.3°、拉力 ±0.03 N）</label>
+        </div>
+        <div class="btn-row">
+            <button class="btn" id="btnRamp">▲ 緩慢抬高斜面</button>
+            <button class="btn orange" id="btnPush">👆 輕推一下</button>
+            <button class="btn secondary" id="btnReset">↺ 重設</button>
+            <button class="btn green" id="btnRecord" disabled>＋ 記錄這次數據</button>
+            <button class="btn secondary" id="btnAuto">⚡ 自動掃描 6 組</button>
+            <button class="btn secondary" id="btnUnknown">🎲 未知材料</button>
+            <button class="btn secondary" id="btnReveal" disabled>揭曉真實值</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span>實驗裝置</span><span id="runState" style="font-size:.85rem;color:var(--text-muted);">準備中</span></div>
+        <div class="canvas-wrap"><canvas id="scene" width="760" height="460"></canvas></div>
+        <div class="legend"><span class="lg-red">力（紅）</span><span class="lg-orange">摩擦力（橘）</span><span class="lg-blue">速度（藍）</span><span class="lg-green">加速度（綠）</span></div>
+        <div class="status" id="status"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">即時數據</div>
+        <div class="dashboard" id="dash"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title" id="graphTitle">摩擦力隨角度的變化</div>
+        <div class="graph-box"><canvas id="gMain" width="760" height="300"></canvas></div>
+        <div class="sub-note" id="graphNote"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title"><span>量測紀錄</span><button class="btn secondary" id="btnClear" style="padding:5px 12px;font-size:.85rem;">清除數據</button></div>
+        <div class="two-col">
+            <div>
+                <div class="table-scroll"><table><thead id="dataHead"></thead><tbody id="dataBody"></tbody></table></div>
+                <div class="fit-text" id="fitText"></div>
+            </div>
+            <div class="graph-box"><canvas id="gScatter" width="480" height="340"></canvas></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open>
+            <summary>核心公式（符號與單位）</summary>
+            <ul>
+                <li>最大靜摩擦力：<b>f<sub>s,max</sub> = μ<sub>s</sub>N</b>；動摩擦力：<b>f<sub>k</sub> = μ<sub>k</sub>N</b>　（f：N、N 為正向力：N、μ 無單位）</li>
+                <li><b>斜面法：</b>N = Mg cosθ，沿斜面的重力分量 Mg sinθ。物塊剛要滑動時 Mg sinθ<sub>c</sub> = μ<sub>s</sub> Mg cosθ<sub>c</sub>，所以 <b>μ<sub>s</sub> = tan θ<sub>c</sub></b>（與質量無關）。</li>
+                <li>斜面上滑動：<b>a = g(sinθ − μ<sub>k</sub> cosθ)</b>，所以 <b>μ<sub>k</sub> = tanθ − a ÷ (g cosθ)</b>；本程式以 a = 2s ÷ t² 由量測的位移 s、時間 t 求 a。</li>
+                <li><b>水平拉力法：</b>N = Mg。拉力 F 小於 μ<sub>s</sub>N 時物塊不動，f = F（靜摩擦力隨外力變大）；F 剛超過時滑動，滑動後 f = μ<sub>k</sub>N。等速拉動時 F = f<sub>k</sub>，所以 <b>μ<sub>k</sub> = F ÷ Mg</b>。</li>
+                <li>多次改變 M，作 F<sub>max</sub>–N 圖，斜率就是 μ<sub>s</sub>。</li>
+            </ul>
+            <p class="assume">理想化假設：μ<sub>s</sub>、μ<sub>k</sub> 為定值，與接觸面積、速度無關；彈簧秤與繩的質量不計；物塊視為質點；忽略空氣阻力。</p>
+        </details>
+        <details>
+            <summary>建議講解順序</summary>
+            <ol>
+                <li><b>方法二先做：</b>按「緩慢加力」，觀察拉力慢慢增加、物塊不動時摩擦力 f ＝ F（f–t 圖是斜直線），到最大值後突然變小，這個「尖峰」就是 f<sub>s,max</sub>。</li>
+                <li>滑動後把 F 調降，看 a 如何變成 0，此時 F ＝ f<sub>k</sub>。比較尖峰與等速拉力，說明 μ<sub>s</sub> &gt; μ<sub>k</sub>。</li>
+                <li>改變質量與放法：最大靜摩擦力與 N 成正比、與接觸面積無關。</li>
+                <li><b>方法一：</b>按「緩慢抬高斜面」，物塊一開始滑動就自動記錄 θ<sub>c</sub>，算出 μ<sub>s</sub> ＝ tanθ<sub>c</sub>；同一次滑動可再由 a 求出 μ<sub>k</sub>。</li>
+                <li>用「未知材料」讓學生當實驗員，最後按「揭曉真實值」對答案。</li>
+            </ol>
+        </details>
+        <details>
+            <summary>可以問學生的問題</summary>
+            <ul>
+                <li>物塊不動時，靜摩擦力的大小是多少？（等於外力沿接觸面的分量，不是 μ<sub>s</sub>N）</li>
+                <li>斜面法測出的 θ<sub>c</sub> 會因為物塊質量改變嗎？為什麼不會？</li>
+                <li>當 tanθ 介於 μ<sub>k</sub> 與 μ<sub>s</sub> 之間，物塊會不會自己滑？輕推一下呢？（先不會，輕推後會加速）</li>
+                <li>為什麼剛滑動的一瞬間，拉力會比等速時需要的拉力大？</li>
+                <li>實驗誤差來自哪裡？（角度讀數、判斷「剛要滑動」的時機、彈簧秤讀數）</li>
+            </ul>
+        </details>
+        <details>
+            <summary>常見迷思</summary>
+            <ul>
+                <li><b>「摩擦力永遠等於 μN」</b>：只有「剛要滑動」與「滑動中」才是。靜止時摩擦力由受力平衡決定。</li>
+                <li><b>「接觸面積越大，摩擦力越大」</b>：在課綱的理想模型中，摩擦力與接觸面積無關。</li>
+                <li><b>「μ 一定小於 1」</b>：不一定，橡膠與乾水泥可以大於 1。</li>
+                <li><b>「物塊越重越難在斜面上滑動」</b>：重力下滑分量與最大靜摩擦力都與 M 成正比，θ<sub>c</sub> 不變。</li>
+            </ul>
+        </details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script>
+(() => {
+    'use strict';
+    const G = 9.8;
+    const el = id => document.getElementById(id);
+    const cv = el('scene'), c = cv.getContext('2d');
+    const MATS = { wood: [0.5, 0.4], steel: [0.74, 0.57], rubber: [1.0, 0.8], ice: [0.1, 0.03] };
+    const MODE_DESC = {
+        incline: '方法一：把斜面慢慢抬高。物塊剛要滑動時的角度 θc 滿足 tanθc = μs；滑下來的加速度可再求出 μk。',
+        pull: '方法二：用彈簧秤水平拉物塊。拉力慢慢增加，尖峰的讀數是最大靜摩擦力 μsN；滑動後把拉力調到使物塊等速，讀數就是 μkN。'
+    };
+
+    // ===================== 狀態 =====================
+    const S = {
+        mode: 'incline', mus: 0.5, muk: 0.4, M: 0.5, speed: 2, hidden: false,
+        // 斜面
+        theta: 0, ramping: false, sliding: false, finished: false, u: 1.2, v: 0, a: 0, t: 0, fromRest: true, slipTheta: null, slipT: null, slideT: 0, slideS: 0,
+        trace: [],
+        // 水平
+        F: 0, fRamp: false, x: 0, f: 0, hist: [], tt: 0, slipF: null, steadyFk: null, steadyT: 0, area: 'flat',
+        data: { incline: [], pull: [] }
+    };
+    const U0 = 1.2, U_MIN = 0.12, L_INC = 1.4;     // 斜面：起點與終點位置（離轉軸的距離，m）
+
+    function g2(v) { return S.hidden ? '？' : v.toFixed(2); }
+    const noise = (amp) => el('chkNoise').checked ? (Math.random() + Math.random() - 1) * amp : 0;
+
+    // ===================== 物理（每個小步驟） =====================
+    function stepIncline(dt) {
+        const th = S.theta * Math.PI / 180;
+        if (S.ramping && !S.sliding && !S.finished) { S.theta = Math.min(60, S.theta + 1.5 * dt); if (S.theta >= 60) S.ramping = false; }
+        const t2 = S.theta * Math.PI / 180;
+        if (!S.sliding && !S.finished && Math.tan(t2) > S.mus + 1e-9) {
+            S.sliding = true; S.fromRest = true; S.slipTheta = S.theta; S.slideT = 0; S.slideS = 0; S.ramping = false;
+        }
+        if (S.sliding) {
+            const a = G * (Math.sin(t2) - S.muk * Math.cos(t2));
+            S.a = a; S.v += a * dt;
+            if (S.v <= 0 && a < 0) { S.v = 0; S.sliding = false; S.a = 0; return; }
+            const du = S.v * dt;
+            S.u -= du; S.slideT += dt; S.slideS += du;
+            if (S.u <= U_MIN) { S.u = U_MIN; S.sliding = false; S.finished = true; S.vEnd = S.v; S.v = 0; S.a = 0; S.finalA = 2 * S.slideS / (S.slideT * S.slideT); }
+        } else S.a = 0;
+        // 摩擦力（靜止時由平衡決定）
+        S.f = frictionIncline();
+        if (S.theta !== S.lastTraceTheta) { S.trace.push({ th: S.theta, f: S.f }); S.lastTraceTheta = S.theta; if (S.trace.length > 4000) S.trace.shift(); }
+    }
+    function frictionIncline() {
+        const t = S.theta * Math.PI / 180, W = S.M * G;
+        if (S.sliding) return S.muk * W * Math.cos(t);
+        return Math.min(W * Math.sin(t), S.mus * W * Math.cos(t));         // 靜止：f = Mg sinθ（不超過最大值）
+    }
+
+    function stepPull(dt) {
+        const N = S.M * G, fsmax = S.mus * N, fk = S.muk * N;
+        if (S.fRamp) { S.F = Math.min(15, S.F + 0.5 * dt); el('slF').value = S.F; if (S.F >= 15) S.fRamp = false; }
+        if (!S.sliding && S.F > fsmax + 1e-9) { S.sliding = true; S.v = 0; S.slipF = S.F; S.fRamp = false; S.steadyT = 0; S.steadyFk = null; }
+        if (S.sliding) {
+            const a = (S.F - fk) / S.M;
+            S.a = a; S.v += a * dt;
+            if (S.v <= 0) { S.v = 0; S.sliding = false; S.a = 0; S.f = Math.min(S.F, fsmax); }
+            else { S.x += S.v * dt; S.f = fk; }
+            if (S.sliding && Math.abs(a) < 0.03 && S.v > 0.05) { S.steadyT += dt; if (S.steadyT > 0.6) S.steadyFk = S.F; } else S.steadyT = 0;
+        } else { S.a = 0; S.f = Math.min(S.F, fsmax); }
+        S.tt += dt;
+        if (!S.lastH || S.tt - S.lastH >= 0.05) {
+            S.lastH = S.tt; S.hist.push({ t: S.tt, F: S.F, f: S.f }); if (S.hist.length > 1200) S.hist.shift();
+        }
+    }
+
+    // ===================== 繪圖工具 =====================
+    function arrow(x1, y1, x2, y2, color, w = 3, head = 10, dash = null) {
+        const len = Math.hypot(x2 - x1, y2 - y1); if (len < 2) return;
+        const a = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(head, len * .6);
+        c.save(); c.strokeStyle = color; c.fillStyle = color; c.lineWidth = w; c.lineCap = 'round'; if (dash) c.setLineDash(dash);
+        c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2 - Math.cos(a) * hl * .6, y2 - Math.sin(a) * hl * .6); c.stroke(); c.setLineDash([]);
+        c.beginPath(); c.moveTo(x2, y2); c.lineTo(x2 - hl * Math.cos(a - .45), y2 - hl * Math.sin(a - .45)); c.lineTo(x2 - hl * Math.cos(a + .45), y2 - hl * Math.sin(a + .45)); c.closePath(); c.fill(); c.restore();
+    }
+    function txt(s, x, y, color, size = 14, align = 'left', ctx = c) {
+        ctx.save(); ctx.font = `bold ${size}px sans-serif`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y); ctx.restore();
+    }
+
+    // ---------- 斜面 ----------
+    function drawIncline() {
+        const PX = 400, Hx = 700, Hy = 370, th = S.theta * Math.PI / 180;
+        const d = { x: -Math.cos(th), y: -Math.sin(th) }, n = { x: Math.sin(th), y: -Math.cos(th) };
+        const top = { x: Hx + d.x * L_INC * PX, y: Hy + d.y * L_INC * PX };
+        c.fillStyle = '#080a0f'; c.fillRect(0, 0, 760, 460);
+        c.fillStyle = '#1b2230'; c.fillRect(30, Hy, 720, 10);
+        c.fillStyle = '#10151f'; c.fillRect(30, Hy + 10, 720, 80);
+        // 斜面楔形
+        c.fillStyle = '#2a3344'; c.beginPath(); c.moveTo(Hx, Hy); c.lineTo(top.x, top.y); c.lineTo(top.x, Hy); c.closePath(); c.fill();
+        c.strokeStyle = '#8fa3c4'; c.lineWidth = 3; c.beginPath(); c.moveTo(Hx, Hy); c.lineTo(top.x, top.y); c.stroke();
+        // 角度弧與標示
+        c.strokeStyle = '#ffcc00'; c.lineWidth = 2; c.beginPath(); c.arc(Hx, Hy, 70, Math.PI, Math.PI + th); c.stroke();
+        txt(`θ = ${S.theta.toFixed(1)}°`, Hx - 118, Hy - 16 - Math.sin(th / 2) * 20, '#ffcc00', 18, 'center');
+        // 若已記錄 θc，標出
+        if (S.slipTheta !== null) {
+            const sh = S.slipTheta * Math.PI / 180;
+            c.save(); c.setLineDash([5, 5]); c.strokeStyle = 'rgba(255,204,0,.5)'; c.lineWidth = 1.5;
+            c.beginPath(); c.moveTo(Hx, Hy); c.lineTo(Hx - Math.cos(sh) * L_INC * PX, Hy - Math.sin(sh) * L_INC * PX); c.stroke(); c.restore();
+        }
+        // 物塊
+        const bw = 64, bh = 40, ctr = { x: Hx + d.x * S.u * PX + n.x * bh / 2, y: Hy + d.y * S.u * PX + n.y * bh / 2 };
+        const P = (a, b) => ({ x: ctr.x + d.x * a + n.x * b, y: ctr.y + d.y * a + n.y * b });
+        const pts = [P(-bw / 2, -bh / 2), P(bw / 2, -bh / 2), P(bw / 2, bh / 2), P(-bw / 2, bh / 2)];
+        c.fillStyle = '#34405a'; c.strokeStyle = '#a8bde0'; c.lineWidth = 2;
+        c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y)); c.closePath(); c.fill(); c.stroke();
+        txt('M', ctr.x, ctr.y, '#f0f3f8', 16, 'center');
+
+        if (el('chkVec').checked) {
+            const W = S.M * G, k = 62 / W, N = W * Math.cos(th), f = S.f;
+            arrow(ctr.x, ctr.y, ctr.x, ctr.y + W * k, '#ff4d6d', 4);                                     // mg
+            txt(`Mg=${W.toFixed(2)} N`, ctr.x + 8, ctr.y + W * k + 10, '#ff4d6d', 13);
+            arrow(ctr.x, ctr.y, ctr.x + n.x * N * k, ctr.y + n.y * N * k, '#ff4d6d', 4);                 // N
+            txt(`N=${N.toFixed(2)}`, ctr.x + n.x * N * k + 10, ctr.y + n.y * N * k - 6, '#ff4d6d', 13);
+            if (f > 0.005) { arrow(ctr.x, ctr.y, ctr.x + d.x * f * k, ctr.y + d.y * f * k, '#ff9f43', 4); txt(`f=${f.toFixed(2)}`, ctr.x + d.x * f * k - 8, ctr.y + d.y * f * k - 12, '#ff9f43', 13, 'right'); }
+            if (el('chkComp').checked) {
+                const ws = W * Math.sin(th), wn = W * Math.cos(th);
+                arrow(ctr.x, ctr.y, ctr.x - d.x * ws * k, ctr.y - d.y * ws * k, '#ff4d6d', 2, 8, [5, 4]);
+                arrow(ctr.x, ctr.y, ctr.x - n.x * wn * k, ctr.y - n.y * wn * k, '#ff4d6d', 2, 8, [5, 4]);
+                txt(`Mg sinθ=${ws.toFixed(2)}`, ctr.x - d.x * ws * k - 4, ctr.y - d.y * ws * k + 14, '#ff8aa0', 12, 'right');
+            }
+            if (S.v > 0.01) { arrow(ctr.x, ctr.y - 34, ctr.x - d.x * S.v * 40, ctr.y - 34 - d.y * S.v * 40, '#4da3ff', 4); }
+            if (S.sliding && S.a > 0.01) { arrow(ctr.x, ctr.y - 56, ctr.x - d.x * S.a * 25, ctr.y - 56 - d.y * S.a * 25, '#00e676', 4); }
+        }
+        // 題示
+        txt(`tanθ = ${Math.tan(th).toFixed(3)}`, 40, 30, '#c3d0e4', 18);
+        txt(S.hidden ? 'μs = ？' : `μs = ${S.mus.toFixed(2)}`, 40, 56, '#ff9f43', 16);
+    }
+
+    // ---------- 水平拉力 ----------
+    function drawPull() {
+        c.fillStyle = '#080a0f'; c.fillRect(0, 0, 760, 460);
+        const gy = 300, bx = 300, small = S.area === 'side';
+        const bw = small ? 56 : 120, bh = small ? 120 : 56;
+        // 桌面與移動標記
+        c.fillStyle = '#2a3344'; c.fillRect(0, gy, 760, 90);
+        c.fillStyle = '#3a465b';
+        const off = ((-S.x * 400) % 80 + 80) % 80;
+        for (let x = -80 + off; x < 780; x += 80) c.fillRect(x, gy + 6, 4, 18);
+        txt(`位移 x = ${S.x.toFixed(2)} m`, 750, gy + 60, '#9aa8bd', 15, 'right');
+        // 物塊
+        c.fillStyle = '#34405a'; c.strokeStyle = '#a8bde0'; c.lineWidth = 2; c.beginPath(); c.rect(bx - bw / 2, gy - bh, bw, bh); c.fill(); c.stroke();
+        txt('M', bx, gy - bh / 2, '#f0f3f8', 18, 'center');
+        // 彈簧秤與繩
+        const sx = bx + bw / 2;
+        c.strokeStyle = '#d0d6e2'; c.lineWidth = 3; c.beginPath(); c.moveTo(sx, gy - bh / 2); c.lineTo(sx + 40, gy - bh / 2); c.stroke();
+        c.fillStyle = '#e8eef8'; c.strokeStyle = '#8a99ad'; c.fillRect(sx + 40, gy - bh / 2 - 22, 120, 44); c.strokeRect(sx + 40, gy - bh / 2 - 22, 120, 44);
+        const rd = Math.max(0, S.F + (S.noiseF || 0));
+        txt(`${rd.toFixed(2)} N`, sx + 100, gy - bh / 2, '#0a0c10', 22, 'center');
+        c.strokeStyle = '#d0d6e2'; c.beginPath(); c.moveTo(sx + 160, gy - bh / 2); c.lineTo(sx + 195, gy - bh / 2); c.stroke();
+        txt('彈簧秤', sx + 100, gy - bh / 2 - 36, '#9aa8bd', 13, 'center');
+
+        if (el('chkVec').checked) {
+            const N = S.M * G, k = 70 / Math.max(N, 1e-9), f = S.f;
+            const cy = gy - bh / 2;
+            arrow(bx, cy, bx, cy + N * k, '#ff4d6d', 4); txt(`Mg=${N.toFixed(2)} N`, bx + 8, cy + N * k * 0.8 + 6, '#ff4d6d', 13);
+            arrow(bx, cy, bx, cy - N * k, '#ff4d6d', 4); txt(`N=${N.toFixed(2)} N`, bx + 8, cy - N * k - 4, '#ff4d6d', 13);
+            arrow(sx + 195, cy - 40, sx + 195 + S.F * k, cy - 40, '#ff4d6d', 5);
+            txt(`F=${S.F.toFixed(2)} N`, sx + 195, cy - 58, '#ff4d6d', 14);
+            if (f > 0.005) { arrow(bx - bw / 2, gy - 6, bx - bw / 2 - f * k, gy - 6, '#ff9f43', 5); txt(`f=${f.toFixed(2)} N`, bx - bw / 2 - f * k - 6, gy - 20, '#ff9f43', 14, 'right'); }
+            if (S.v > 0.01) { const vl = Math.min(S.v * 50, 150); arrow(bx, gy - bh - 30, bx + vl, gy - bh - 30, '#4da3ff', 4); txt(`v=${S.v.toFixed(2)} m/s`, bx + vl + 6, gy - bh - 30, '#4da3ff', 13); }
+            if (Math.abs(S.a) > 0.01) { const al = Math.max(-100, Math.min(S.a * 30, 100)); arrow(bx, gy - bh - 56, bx + al, gy - bh - 56, '#00e676', 4); txt(`a=${S.a.toFixed(2)} m/s²`, bx + Math.max(al, 0) + 6, gy - bh - 56, '#00e676', 13); }
+        }
+        txt(S.hidden ? 'μs = ？　μk = ？' : `μs = ${S.mus.toFixed(2)}　μk = ${S.muk.toFixed(2)}`, 40, 30, '#ff9f43', 16);
+        txt(`N = Mg = ${(S.M * G).toFixed(2)} N`, 40, 56, '#c3d0e4', 16);
+    }
+
+    // ===================== 通用繪圖：折線／散點 =====================
+    function niceStep(range) { const t = range / 5, p = Math.pow(10, Math.floor(Math.log10(t))), n = t / p; return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * p; }
+    function plot(cvs, o) {
+        const x = cvs.getContext('2d'), W = cvs.width, H = cvs.height, L = 58, R = 16, T = 34, B = 46, pw = W - L - R, ph = H - T - B;
+        const X = v => L + (v - o.xmin) / (o.xmax - o.xmin) * pw, Y = v => T + ph - (v - o.ymin) / (o.ymax - o.ymin) * ph;
+        x.clearRect(0, 0, W, H); x.fillStyle = '#0d121b'; x.fillRect(0, 0, W, H);
+        x.font = '12px sans-serif'; x.lineWidth = 1;
+        const sx = niceStep(o.xmax - o.xmin), sy = niceStep(o.ymax - o.ymin);
+        const dx = Math.max(0, Math.ceil(-Math.log10(sx) - 1e-9)), dy = Math.max(0, Math.ceil(-Math.log10(sy) - 1e-9));
+        for (let v = Math.ceil(o.xmin / sx) * sx; v <= o.xmax + 1e-9; v += sx) { x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(X(v), T); x.lineTo(X(v), T + ph); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(v.toFixed(dx), X(v), T + ph + 16); }
+        for (let v = Math.ceil(o.ymin / sy) * sy; v <= o.ymax + 1e-9; v += sy) { x.strokeStyle = '#1b2433'; x.beginPath(); x.moveTo(L, Y(v)); x.lineTo(L + pw, Y(v)); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'right'; x.fillText(v.toFixed(dy), L - 6, Y(v) + 4); }
+        x.strokeStyle = '#5b6a82'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(L, T); x.lineTo(L, T + ph); x.lineTo(L + pw, T + ph); x.stroke();
+        x.fillStyle = '#c3d0e4'; x.font = 'bold 14px sans-serif'; x.textAlign = 'left'; x.fillText(o.title, L, 18);
+        x.font = '12px sans-serif'; x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(o.xlabel, L + pw / 2, H - 8);
+        x.save(); x.translate(14, T + ph / 2); x.rotate(-Math.PI / 2); x.fillText(o.ylabel, 0, 0); x.restore();
+        (o.vlines || []).forEach(v => { x.save(); x.strokeStyle = v.color; x.setLineDash([5, 4]); x.lineWidth = 1.5; x.beginPath(); x.moveTo(X(v.x), T); x.lineTo(X(v.x), T + ph); x.stroke(); x.restore(); if (v.label) { x.fillStyle = v.color; x.font = 'bold 12px sans-serif'; x.textAlign = 'left'; x.fillText(v.label, X(v.x) + 4, T + 14); } });
+        (o.series || []).forEach(s => {
+            if (s.pts && s.pts.length > 1) { x.save(); x.strokeStyle = s.color; x.lineWidth = s.w || 2.5; if (s.dash) x.setLineDash(s.dash); x.beginPath(); s.pts.forEach((p, i) => i ? x.lineTo(X(p.x), Y(p.y)) : x.moveTo(X(p.x), Y(p.y))); x.stroke(); x.restore(); }
+            if (s.dots) s.dots.forEach(p => { x.fillStyle = s.color; x.beginPath(); x.arc(X(p.x), Y(p.y), 5, 0, 7); x.fill(); x.strokeStyle = '#0d121b'; x.lineWidth = 1; x.stroke(); });
+            if (s.name) { x.fillStyle = s.color; x.font = 'bold 12px sans-serif'; x.textAlign = 'right'; x.fillText(s.name, L + pw - 8, T + 14 + (s.row || 0) * 16); }
+        });
+    }
+    function fitLine(pts) {
+        const n = pts.length; if (n < 2) return null;
+        const sx = pts.reduce((s, p) => s + p.x, 0), sy = pts.reduce((s, p) => s + p.y, 0), sxx = pts.reduce((s, p) => s + p.x * p.x, 0), sxy = pts.reduce((s, p) => s + p.x * p.y, 0);
+        const den = n * sxx - sx * sx; if (Math.abs(den) < 1e-12) return null;
+        const m = (n * sxy - sx * sy) / den; return { m, b: (sy - m * sx) / n };
+    }
+
+    // ===================== 圖表 =====================
+    function drawMainGraph() {
+        const W = S.M * G;
+        if (S.mode === 'incline') {
+            el('graphTitle').textContent = '摩擦力 f 隨斜面角度 θ 的變化';
+            const series = [];
+            if (!S.hidden) {
+                const thC = Math.atan(S.mus) * 180 / Math.PI, th = [];
+                for (let d = 0; d <= 60; d += 0.5) { const t = d * Math.PI / 180; th.push({ x: d, y: d <= thC ? W * Math.sin(t) : S.muk * W * Math.cos(t) }); }
+                series.push({ pts: th.filter(p => p.x <= thC + 0.01), color: 'rgba(255,159,67,.45)', dash: [6, 5], w: 2 });
+                series.push({ pts: th.filter(p => p.x >= thC), color: 'rgba(255,159,67,.45)', dash: [6, 5], w: 2 });
+            }
+            series.push({ pts: S.trace.map(p => ({ x: p.th, y: p.f })), color: '#ff9f43', w: 3 });
+            series.push({ dots: [{ x: S.theta, y: S.f }], color: '#fff' });
+            const vl = S.slipTheta !== null ? [{ x: S.slipTheta, color: '#ffcc00', label: `θc = ${S.slipTheta.toFixed(1)}°` }] : [];
+            plot(el('gMain'), { title: 'f–θ 圖（實線：本次實驗；虛線：理論）', xlabel: '斜面角度 θ (°)', ylabel: '摩擦力 f (N)', xmin: 0, xmax: 60, ymin: 0, ymax: Math.max(W, 1) * 1.05, series, vlines: vl });
+            el('graphNote').textContent = '靜止時 f ＝ Mg sinθ（隨角度增加）；達到最大值 μsN 後物塊滑動，f 立刻降為 μkN，所以曲線會突然往下掉。';
+        } else {
+            el('graphTitle').textContent = '拉力 F 與摩擦力 f 隨時間的變化';
+            const t1 = Math.max(S.tt, 12), t0 = Math.max(0, t1 - 30);
+            const h = S.hist.filter(p => p.t >= t0);
+            plot(el('gMain'), { title: 'F–t、f–t 圖', xlabel: '時間 t (s)', ylabel: '力 (N)', xmin: t0, xmax: t0 + Math.max(12, t1 - t0), ymin: 0, ymax: Math.max(S.mus * W * 1.4, S.F * 1.1, 2),
+                series: [{ pts: h.map(p => ({ x: p.t, y: p.F })), color: '#ff4d6d', name: 'F（彈簧秤）', row: 0 }, { pts: h.map(p => ({ x: p.t, y: p.f })), color: '#ff9f43', name: 'f（摩擦力）', row: 1, w: 3 }],
+                vlines: S.hidden ? [] : [] });
+            el('graphNote').textContent = '不動時 f ＝ F（兩線重合）；F 超過最大靜摩擦力的瞬間，f 掉到 μkN（橘線突然下降，出現尖峰）；之後拉力若維持不變，物塊就加速。';
+        }
+    }
+
+    // ===================== 數據 =====================
+    function renderDash() {
+        const W = S.M * G, th = S.theta * Math.PI / 180;
+        const m = (t, v, u, cl = '') => `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value ${cl}">${v}<span class="unit">${u}</span></div></div>`;
+        if (S.mode === 'incline') {
+            el('dash').innerHTML = m('角度 θ', S.theta.toFixed(1), '°', 'c-yellow') + m('tan θ', Math.tan(th).toFixed(3), '', 'c-yellow') + m('Mg sinθ', (W * Math.sin(th)).toFixed(3), 'N', 'c-red') + m('正向力 N', (W * Math.cos(th)).toFixed(3), 'N', 'c-red') +
+                m('摩擦力 f', S.f.toFixed(3), 'N', 'c-orange') + m('最大靜摩擦力 μsN', S.hidden ? '？' : (S.mus * W * Math.cos(th)).toFixed(3), 'N', 'c-orange') + m('速度 v', S.v.toFixed(3), 'm/s', 'c-blue') + m('加速度 a', S.a.toFixed(3), 'm/s²', 'c-green');
+        } else {
+            el('dash').innerHTML = m('拉力 F', S.F.toFixed(3), 'N', 'c-red') + m('正向力 N = Mg', W.toFixed(3), 'N', 'c-red') + m('摩擦力 f', S.f.toFixed(3), 'N', 'c-orange') + m('最大靜摩擦力 μsN', S.hidden ? '？' : (S.mus * W).toFixed(3), 'N', 'c-orange') +
+                m('動摩擦力 μkN', S.hidden ? '？' : (S.muk * W).toFixed(3), 'N', 'c-orange') + m('速度 v', S.v.toFixed(3), 'm/s', 'c-blue') + m('加速度 a', S.a.toFixed(3), 'm/s²', 'c-green') + m('尖峰讀數', S.slipF === null ? '—' : S.slipF.toFixed(3), 'N', 'c-yellow');
+        }
+    }
+    function updateStatus() {
+        const st = el('status'), W = S.M * G;
+        let h = '', run = '準備中';
+        if (S.mode === 'incline') {
+            const th = Math.tan(S.theta * Math.PI / 180);
+            if (S.finished && S.slipTheta === null) { run = '已到底'; h = '物塊被輕推後一路滑到底。（輕推不是從靜止出發，不能用來求 μk；請重設後用「緩慢抬高斜面」。）'; }
+            else if (S.finished) { run = '已到底'; h = `物塊滑到底。<b>θc = ${S.slipTheta !== null ? S.slipTheta.toFixed(1) : '—'}°</b>，tanθc = ${S.slipTheta !== null ? Math.tan(S.slipTheta * Math.PI / 180).toFixed(3) : '—'}。按「記錄這次數據」。`; }
+            else if (S.sliding) { run = '滑動中'; h = `物塊滑動中，a = g(sinθ − μk cosθ) = ${S.a.toFixed(3)} m/s²。`; }
+            else if (S.ramping) { run = '抬高中'; h = `斜面抬高中… 物塊尚未滑動（靜摩擦力 f = Mg sinθ = ${S.f.toFixed(3)} N）。`; }
+            else if (S.v === 0 && S.slipTheta !== null && !S.finished) { run = '停住'; h = '物塊滑了一段後停住了（角度被調小，μk 比 tanθ 大）。'; }
+            else h = `按「緩慢抬高斜面」做實驗，或用滑桿手動改變角度。目前 tanθ = ${th.toFixed(3)}。`;
+        } else {
+            if (S.sliding) {
+                run = '滑動中';
+                if (S.steadyFk !== null) h = `<b>已達等速</b>（a ≈ 0）：F = ${S.steadyFk.toFixed(3)} N ＝ 動摩擦力 μkN。`;
+                else h = `物塊滑動中，a = (F − μkN) ÷ M = ${S.a.toFixed(3)} m/s²。把拉力調到使 a → 0，就是 μkN。`;
+            } else if (S.slipF !== null) { run = '已停住'; h = `剛才的尖峰讀數 F = ${S.slipF.toFixed(3)} N（最大靜摩擦力）。物塊目前靜止，f = F = ${S.f.toFixed(3)} N。`; }
+            else if (S.fRamp) { run = '加力中'; h = `拉力增加中，物塊不動：f = F = ${S.f.toFixed(3)} N。`; }
+            else h = '按「緩慢加力」，或用滑桿拉動彈簧秤，觀察物塊不動時的摩擦力。';
+        }
+        st.innerHTML = h; el('runState').textContent = run;
+        const can = S.mode === 'incline' ? (S.slipTheta !== null && S.finished) : S.slipF !== null;
+        el('btnRecord').disabled = !can;
+    }
+
+    function addIncline(d) { S.data.incline.push(d); if (S.data.incline.length > 30) S.data.incline.shift(); }
+    function recordIncline() {
+        const th = S.slipTheta + noise(0.3);
+        const a = S.finalA, thc = S.slipTheta * Math.PI / 180;
+        const muSe = Math.tan(th * Math.PI / 180);
+        const muKe = Math.tan(thc) - a / (G * Math.cos(thc)) + noise(0.01);
+        addIncline({ M: S.M, th, a, mus: muSe, muk: muKe, tmus: S.mus, tmuk: S.muk });
+    }
+    function recordPull() {
+        const N = S.M * G;
+        S.data.pull.push({ M: S.M, N, Fmax: S.slipF + noise(0.03), Fk: S.steadyFk !== null ? S.steadyFk + noise(0.03) : null, tmus: S.mus, tmuk: S.muk });
+        if (S.data.pull.length > 30) S.data.pull.shift();
+    }
+    function autoScan() {
+        if (S.mode === 'incline') {
+            [0.2, 0.5, 0.8, 1.2, 1.6, 2.0].forEach(M => {
+                const thc = Math.atan(S.mus), a = G * (Math.sin(thc) - S.muk * Math.cos(thc)), th = thc * 180 / Math.PI + noise(0.3);
+                addIncline({ M, th, a, mus: Math.tan(th * Math.PI / 180), muk: Math.tan(thc) - a / (G * Math.cos(thc)) + noise(0.01), tmus: S.mus, tmuk: S.muk });
+            });
+        } else {
+            [0.2, 0.5, 0.8, 1.2, 1.6, 2.0].forEach(M => { const N = M * G; S.data.pull.push({ M, N, Fmax: S.mus * N + noise(0.03), Fk: S.muk * N + noise(0.03), tmus: S.mus, tmuk: S.muk }); });
+        }
+        renderData();
+    }
+    function renderData() {
+        const rev = !S.hidden;
+        if (S.mode === 'incline') {
+            const D = S.data.incline;
+            el('dataHead').innerHTML = `<tr><th>#</th><th>M(kg)</th><th>θc(°)</th><th>μs=tanθc</th><th>a(m/s²)</th><th>μk</th>${rev ? '<th>真實 μs / μk</th>' : ''}</tr>`;
+            el('dataBody').innerHTML = D.map((d, i) => `<tr><td>${i + 1}</td><td>${d.M.toFixed(1)}</td><td>${d.th.toFixed(1)}</td><td>${d.mus.toFixed(3)}</td><td>${d.a.toFixed(3)}</td><td>${d.muk.toFixed(3)}</td>${rev ? `<td>${d.tmus.toFixed(2)} / ${d.tmuk.toFixed(2)}</td>` : ''}</tr>`).join('');
+            const n = D.length;
+            if (!n) el('fitText').textContent = '按「緩慢抬高斜面」，物塊滑到底後按「記錄這次數據」；或按「自動掃描」。';
+            else {
+                const avg = k => D.reduce((s, d) => s + d[k], 0) / n;
+                el('fitText').innerHTML = `共 ${n} 筆。平均 <b>μs ≈ ${avg('mus').toFixed(3)}</b>，平均 <b>μk ≈ ${avg('muk').toFixed(3)}</b>。` + (rev ? `（真實：${D[n - 1].tmus.toFixed(2)} / ${D[n - 1].tmuk.toFixed(2)}）` : '（真實值已隱藏，按「揭曉」對答案）') + '<br>質量不同，θc 幾乎相同，這就是 μs 與質量無關。';
+            }
+            plot(el('gScatter'), { title: '各次測得的 μs（θc 隨質量）', xlabel: '物塊質量 M (kg)', ylabel: 'μs = tanθc', xmin: 0, xmax: 2.2, ymin: 0, ymax: Math.max(1.2, ...D.map(d => d.mus * 1.1)),
+                series: [{ dots: D.map(d => ({ x: d.M, y: d.mus })), color: '#ff9f43', name: 'μs 估計值' }, { dots: D.map(d => ({ x: d.M, y: d.muk })), color: '#4da3ff', name: 'μk 估計值', row: 1 }] });
+        } else {
+            const D = S.data.pull;
+            el('dataHead').innerHTML = `<tr><th>#</th><th>M(kg)</th><th>N(N)</th><th>Fmax(N)</th><th>Fk(N)</th><th>μs</th><th>μk</th></tr>`;
+            el('dataBody').innerHTML = D.map((d, i) => `<tr><td>${i + 1}</td><td>${d.M.toFixed(1)}</td><td>${d.N.toFixed(2)}</td><td>${d.Fmax.toFixed(3)}</td><td>${d.Fk === null ? '—' : d.Fk.toFixed(3)}</td><td>${(d.Fmax / d.N).toFixed(3)}</td><td>${d.Fk === null ? '—' : (d.Fk / d.N).toFixed(3)}</td></tr>`).join('');
+            const p1 = D.map(d => ({ x: d.N, y: d.Fmax })), p2 = D.filter(d => d.Fk !== null).map(d => ({ x: d.N, y: d.Fk }));
+            const f1 = fitLine(p1), f2 = fitLine(p2);
+            if (!D.length) el('fitText').textContent = '按「緩慢加力」讓物塊滑動，再把拉力調到等速，按「記錄這次數據」；改變質量重複幾次，或按「自動掃描」。';
+            else el('fitText').innerHTML = (f1 ? `Fmax–N 直線斜率 <b>μs ≈ ${f1.m.toFixed(3)}</b>（截距 ${f1.b.toFixed(3)} N）` : '至少需要 2 筆才能擬合') + (f2 ? `；Fk–N 斜率 <b>μk ≈ ${f2.m.toFixed(3)}</b>` : '') +
+                (S.hidden ? '。（真實值已隱藏）' : `。真實值：μs = ${D[D.length - 1].tmus.toFixed(2)}，μk = ${D[D.length - 1].tmuk.toFixed(2)}`);
+            const xmax = Math.max(21, ...D.map(d => d.N * 1.1)), ymax = Math.max(8, ...D.map(d => d.Fmax * 1.15));
+            const series = [];
+            if (f1) series.push({ pts: [{ x: 0, y: f1.b }, { x: xmax, y: f1.m * xmax + f1.b }], color: 'rgba(255,159,67,.6)', dash: [6, 5], w: 1.8 });
+            if (f2) series.push({ pts: [{ x: 0, y: f2.b }, { x: xmax, y: f2.m * xmax + f2.b }], color: 'rgba(77,163,255,.6)', dash: [6, 5], w: 1.8 });
+            series.push({ dots: p1, color: '#ff9f43', name: 'Fmax（最大靜摩擦力）' }, { dots: p2, color: '#4da3ff', name: 'Fk（動摩擦力）', row: 1 });
+            plot(el('gScatter'), { title: '摩擦力—正向力圖', xlabel: '正向力 N (N)', ylabel: '摩擦力 (N)', xmin: 0, xmax, ymin: 0, ymax, series });
+        }
+    }
+
+    // ===================== 介面與事件 =====================
+    function resetRun() {
+        S.theta = 0; S.ramping = false; S.sliding = false; S.finished = false; S.u = U0; S.v = 0; S.a = 0; S.f = 0; S.slipTheta = null; S.trace = []; S.lastTraceTheta = null; S.finalA = null; S.slideT = 0; S.slideS = 0;
+        S.F = 0; S.fRamp = false; S.x = 0; S.tt = 0; S.hist = []; S.lastH = null; S.slipF = null; S.steadyFk = null; S.steadyT = 0;
+        el('slTheta').value = 0; el('slF').value = 0; el('btnRamp').textContent = S.mode === 'incline' ? '▲ 緩慢抬高斜面' : '→ 緩慢加力';
+        if (S.mode === 'incline') S.f = frictionIncline();
+        sync();
+    }
+    function syncLight() {
+        el('lblMus').textContent = g2(S.mus); el('lblMuk').textContent = g2(S.muk);
+        el('lblM').textContent = S.M.toFixed(2); el('lblTheta').textContent = S.theta.toFixed(1); el('lblF').textContent = S.F.toFixed(2);
+        renderDash(); updateStatus();
+    }
+    function sync() {
+        el('lblMus').textContent = g2(S.mus); el('lblMuk').textContent = g2(S.muk);
+        el('lblM').textContent = S.M.toFixed(2); el('lblTheta').textContent = S.theta.toFixed(1); el('lblF').textContent = S.F.toFixed(2);
+        ['slMus', 'slMuk', 'selMat'].forEach(id => el(id).disabled = S.hidden);
+        el('btnReveal').disabled = !S.hidden;
+        el('grpTheta').classList.toggle('hidden', S.mode !== 'incline'); el('grpF').classList.toggle('hidden', S.mode !== 'pull'); el('grpArea').classList.toggle('hidden', S.mode !== 'pull');
+        el('lblComp').style.display = S.mode === 'incline' ? '' : 'none';
+        el('btnPush').style.display = S.mode === 'incline' ? '' : 'none';
+        el('massNote').innerHTML = S.mode === 'incline' ? '質量不影響 θ<sub>c</sub>（試試看）' : 'N = Mg，改變質量就改變正向力';
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === S.mode));
+        el('modeDesc').textContent = MODE_DESC[S.mode];
+        el('btnRamp').textContent = S.mode === 'incline' ? (S.ramping ? '⏸ 暫停抬高' : '▲ 緩慢抬高斜面') : (S.fRamp ? '⏸ 暫停加力' : '→ 緩慢加力');
+        renderDash(); updateStatus(); renderData();
+    }
+    function setMu(mus, muk) { S.mus = mus; S.muk = Math.min(muk, mus); el('slMus').value = S.mus; el('slMuk').value = S.muk; }
+
+    document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.mode; resetRun(); }));
+    el('selMat').addEventListener('change', e => { if (MATS[e.target.value]) { setMu(...MATS[e.target.value]); resetRun(); } });
+    el('slMus').addEventListener('input', e => { S.mus = +e.target.value; if (S.muk > S.mus) { S.muk = S.mus; el('slMuk').value = S.muk; } el('selMat').value = 'custom'; resetRun(); });
+    el('slMuk').addEventListener('input', e => { S.muk = Math.min(+e.target.value, S.mus); el('slMuk').value = S.muk; el('selMat').value = 'custom'; resetRun(); });
+    el('slM').addEventListener('input', e => { S.M = +e.target.value; resetRun(); });
+    el('slTheta').addEventListener('input', e => { if (S.finished || S.sliding) { e.target.value = S.theta; return; } S.theta = +e.target.value; S.ramping = false; S.f = frictionIncline(); sync(); });
+    el('slF').addEventListener('input', e => { S.F = +e.target.value; S.fRamp = false; stepPull(0); sync(); });
+    el('selSpeed').addEventListener('change', e => { S.speed = +e.target.value; });
+    el('selArea').addEventListener('change', e => { S.area = e.target.value; });   // 只改變外觀：物理上 μ 與接觸面積無關
+    ['chkVec', 'chkComp'].forEach(id => el(id).addEventListener('change', () => { }));
+    el('btnRamp').addEventListener('click', () => {
+        if (S.mode === 'incline') { if (S.finished) return; S.ramping = !S.ramping; }
+        else { S.fRamp = !S.fRamp; }
+        sync();
+    });
+    el('btnPush').addEventListener('click', () => {
+        if (S.finished || S.sliding) return;
+        S.sliding = true; S.v = 0.3; S.fromRest = false; S.ramping = false; S.slideT = 0; S.slideS = 0; S.slipTheta = S.slipTheta;
+    });
+    el('btnReset').addEventListener('click', resetRun);
+    el('btnRecord').addEventListener('click', () => { if (S.mode === 'incline') recordIncline(); else recordPull(); renderData(); el('btnRecord').disabled = true; });
+    el('btnAuto').addEventListener('click', autoScan);
+    el('btnClear').addEventListener('click', () => { S.data[S.mode] = []; renderData(); });
+    el('btnUnknown').addEventListener('click', () => {
+        const s = Math.round((0.25 + Math.random() * 0.65) * 100) / 100, k = Math.max(0.05, Math.round(s * (0.6 + Math.random() * 0.3) * 100) / 100);
+        setMu(s, k); S.hidden = true; el('selMat').value = 'custom'; S.data = { incline: [], pull: [] }; resetRun();
+    });
+    el('btnReveal').addEventListener('click', () => { S.hidden = false; sync(); });
+
+    // ===================== 迴圈（固定小步長積分，確保數值穩定） =====================
+    let last = null;
+    const SUB = 0.002;
+    function frame(ts) {
+        if (last === null) last = ts;
+        let dt = Math.min((ts - last) / 1000, 0.05) * S.speed; last = ts;
+        const prevSliding = S.sliding, prevFinished = S.finished;
+        const active = S.mode === 'incline' ? (S.ramping || S.sliding || (!S.finished && Math.tan(S.theta * Math.PI / 180) > S.mus + 1e-9)) : (S.fRamp || S.sliding || S.F > S.mus * S.M * G + 1e-9);
+        if (active) {
+            while (dt > 1e-9) { const h = Math.min(SUB, dt); (S.mode === 'incline' ? stepIncline : stepPull)(h); dt -= h; }
+            if (S.mode === 'incline') el('slTheta').value = S.theta;
+            if (S.mode === 'pull') el('slF').value = S.F;
+            syncLight();
+            if (S.mode === 'incline' ? (prevSliding && !S.sliding) : (prevSliding !== S.sliding)) sync();
+        }
+        if (S.mode === 'pull' && S.F !== S.lastNF) { S.lastNF = S.F; S.noiseF = el('chkNoise').checked ? (Math.random() - .5) * 0.06 : 0; }
+        if (S.mode === 'incline') drawIncline(); else drawPull();
+        drawMainGraph();
+        requestAnimationFrame(frame);
+    }
+
+    window.__fr = { S, stepIncline, stepPull, resetRun, setMu };
+    resetRun();
+    requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
