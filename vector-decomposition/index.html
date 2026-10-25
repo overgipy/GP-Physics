@@ -1,0 +1,2844 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>高中物理力學向量與力矩分解快訓 App</title>
+  <meta name="description" content="高中物理力學：向量分解與力矩分解快訓，課堂練習、60 秒挑戰與英雄榜">
+  <style>
+@layer properties;
+@layer theme, base, components, utilities;
+@layer theme {
+:root, :host {
+--font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans', Arial,
+sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+--font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+monospace;
+--color-orange-50: oklch(98% 0.016 73.684);
+--color-amber-50: oklch(98.7% 0.022 95.277);
+--color-amber-100: oklch(96.2% 0.059 95.617);
+--color-amber-200: oklch(92.4% 0.12 95.746);
+--color-amber-300: oklch(87.9% 0.169 91.605);
+--color-amber-400: oklch(82.8% 0.189 84.429);
+--color-amber-500: oklch(76.9% 0.188 70.08);
+--color-amber-600: oklch(66.6% 0.179 58.318);
+--color-amber-700: oklch(55.5% 0.163 48.998);
+--color-amber-800: oklch(47.3% 0.137 46.201);
+--color-amber-900: oklch(41.4% 0.112 45.904);
+--color-emerald-50: oklch(97.9% 0.021 166.113);
+--color-emerald-100: oklch(95% 0.052 163.051);
+--color-emerald-200: oklch(90.5% 0.093 164.15);
+--color-emerald-300: oklch(84.5% 0.143 164.978);
+--color-emerald-400: oklch(76.5% 0.177 163.223);
+--color-emerald-500: oklch(69.6% 0.17 162.48);
+--color-emerald-600: oklch(59.6% 0.145 163.225);
+--color-emerald-700: oklch(50.8% 0.118 165.612);
+--color-indigo-50: oklch(96.2% 0.018 272.314);
+--color-indigo-100: oklch(93% 0.034 272.788);
+--color-indigo-300: oklch(78.5% 0.115 274.713);
+--color-indigo-500: oklch(58.5% 0.233 277.117);
+--color-indigo-600: oklch(51.1% 0.262 276.966);
+--color-indigo-700: oklch(45.7% 0.24 277.023);
+--color-indigo-900: oklch(35.9% 0.144 278.697);
+--color-indigo-950: oklch(25.7% 0.09 281.288);
+--color-rose-50: oklch(96.9% 0.015 12.422);
+--color-rose-100: oklch(94.1% 0.03 12.58);
+--color-rose-200: oklch(89.2% 0.058 10.001);
+--color-rose-300: oklch(81% 0.117 11.638);
+--color-rose-500: oklch(64.5% 0.246 16.439);
+--color-rose-600: oklch(58.6% 0.253 17.585);
+--color-rose-700: oklch(51.4% 0.222 16.935);
+--color-slate-50: oklch(98.4% 0.003 247.858);
+--color-slate-100: oklch(96.8% 0.007 247.896);
+--color-slate-200: oklch(92.9% 0.013 255.508);
+--color-slate-300: oklch(86.9% 0.022 252.894);
+--color-slate-400: oklch(70.4% 0.04 256.788);
+--color-slate-500: oklch(55.4% 0.046 257.417);
+--color-slate-600: oklch(44.6% 0.043 257.281);
+--color-slate-700: oklch(37.2% 0.044 257.287);
+--color-slate-800: oklch(27.9% 0.041 260.031);
+--color-slate-900: oklch(20.8% 0.042 265.755);
+--color-slate-950: oklch(12.9% 0.042 264.695);
+--color-white: #fff;
+--spacing: 0.25rem;
+--container-md: 28rem;
+--container-6xl: 72rem;
+--text-xs: 0.75rem;
+--text-xs--line-height: calc(1 / 0.75);
+--text-sm: 0.875rem;
+--text-sm--line-height: calc(1.25 / 0.875);
+--text-base: 1rem;
+--text-base--line-height: calc(1.5 / 1);
+--text-lg: 1.125rem;
+--text-lg--line-height: calc(1.75 / 1.125);
+--text-xl: 1.25rem;
+--text-xl--line-height: calc(1.75 / 1.25);
+--text-2xl: 1.5rem;
+--text-2xl--line-height: calc(2 / 1.5);
+--text-3xl: 1.875rem;
+--text-3xl--line-height: calc(2.25 / 1.875);
+--text-5xl: 3rem;
+--text-5xl--line-height: 1;
+--font-weight-medium: 500;
+--font-weight-bold: 700;
+--font-weight-black: 900;
+--tracking-wide: 0.025em;
+--tracking-wider: 0.05em;
+--leading-relaxed: 1.625;
+--radius-md: 0.375rem;
+--radius-lg: 0.5rem;
+--radius-xl: 0.75rem;
+--radius-2xl: 1rem;
+--blur-sm: 8px;
+--default-transition-duration: 150ms;
+--default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+--default-font-family: var(--font-sans);
+--default-mono-font-family: var(--font-mono);
+}
+}
+@layer base {
+*, ::after, ::before, ::backdrop, ::file-selector-button {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+border: 0 solid;
+}
+html, :host {
+line-height: 1.5;
+-webkit-text-size-adjust: 100%;
+tab-size: 4;
+font-family: var(--default-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji');
+font-feature-settings: var(--default-font-feature-settings, normal);
+font-variation-settings: var(--default-font-variation-settings, normal);
+-webkit-tap-highlight-color: transparent;
+}
+hr {
+height: 0;
+color: inherit;
+border-top-width: 1px;
+}
+abbr:where([title]) {
+-webkit-text-decoration: underline dotted;
+text-decoration: underline dotted;
+}
+h1, h2, h3, h4, h5, h6 {
+font-size: inherit;
+font-weight: inherit;
+}
+a {
+color: inherit;
+-webkit-text-decoration: inherit;
+text-decoration: inherit;
+}
+b, strong {
+font-weight: bolder;
+}
+code, kbd, samp, pre {
+font-family: var(--default-mono-font-family, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace);
+font-feature-settings: var(--default-mono-font-feature-settings, normal);
+font-variation-settings: var(--default-mono-font-variation-settings, normal);
+font-size: 1em;
+}
+small {
+font-size: 80%;
+}
+sub, sup {
+font-size: 75%;
+line-height: 0;
+position: relative;
+vertical-align: baseline;
+}
+sub {
+bottom: -0.25em;
+}
+sup {
+top: -0.5em;
+}
+table {
+text-indent: 0;
+border-color: inherit;
+border-collapse: collapse;
+}
+:-moz-focusring:where(:not(iframe)) {
+outline: auto;
+}
+progress {
+vertical-align: baseline;
+}
+summary {
+display: list-item;
+}
+ol, ul, menu {
+list-style: none;
+}
+img, svg, video, canvas, audio, iframe, embed, object {
+display: block;
+vertical-align: middle;
+}
+img, video {
+max-width: 100%;
+height: auto;
+}
+button, input, select, optgroup, textarea, ::file-selector-button {
+font: inherit;
+font-feature-settings: inherit;
+font-variation-settings: inherit;
+letter-spacing: inherit;
+color: inherit;
+border-radius: 0;
+background-color: transparent;
+opacity: 1;
+}
+:where(select:is([multiple], [size])) optgroup {
+font-weight: bolder;
+}
+:where(select:is([multiple], [size])) optgroup option {
+padding-inline-start: 20px;
+}
+::file-selector-button {
+margin-inline-end: 4px;
+}
+::placeholder {
+opacity: 1;
+}
+@supports (not (-webkit-appearance: -apple-pay-button))  or (contain-intrinsic-size: 1px) {
+::placeholder {
+color: currentcolor;
+@supports (color: color-mix(in lab, red, red)) {
+color: color-mix(in oklab, currentcolor 50%, transparent);
+}
+}
+}
+textarea {
+resize: vertical;
+}
+::-webkit-search-decoration {
+-webkit-appearance: none;
+}
+::-webkit-date-and-time-value {
+min-height: 1lh;
+text-align: inherit;
+}
+::-webkit-datetime-edit {
+display: inline-flex;
+}
+::-webkit-datetime-edit-fields-wrapper {
+padding: 0;
+}
+::-webkit-datetime-edit, ::-webkit-datetime-edit-year-field, ::-webkit-datetime-edit-month-field, ::-webkit-datetime-edit-day-field, ::-webkit-datetime-edit-hour-field, ::-webkit-datetime-edit-minute-field, ::-webkit-datetime-edit-second-field, ::-webkit-datetime-edit-millisecond-field, ::-webkit-datetime-edit-meridiem-field {
+padding-block: 0;
+}
+::-webkit-calendar-picker-indicator {
+line-height: 1;
+}
+:-moz-ui-invalid {
+box-shadow: none;
+}
+button, input:where([type='button'], [type='reset'], [type='submit']), ::file-selector-button {
+appearance: button;
+}
+::-webkit-inner-spin-button, ::-webkit-outer-spin-button {
+height: auto;
+}
+[hidden]:where(:not([hidden='until-found'])) {
+display: none !important;
+}
+}
+@layer utilities {
+.absolute {
+position: absolute;
+}
+.relative {
+position: relative;
+}
+.sticky {
+position: sticky;
+}
+.inset-0 {
+inset: 0px;
+}
+.top-0 {
+top: 0px;
+}
+.z-20 {
+z-index: 20;
+}
+.z-30 {
+z-index: 30;
+}
+.order-1 {
+order: 1;
+}
+.order-2 {
+order: 2;
+}
+.mx-auto {
+margin-inline: auto;
+}
+.mt-1 {
+margin-top: var(--spacing);
+}
+.mt-2\.5 {
+margin-top: calc(var(--spacing) * 2.5);
+}
+.mt-4 {
+margin-top: calc(var(--spacing) * 4);
+}
+.mb-1 {
+margin-bottom: var(--spacing);
+}
+.mb-1\.5 {
+margin-bottom: calc(var(--spacing) * 1.5);
+}
+.mb-2 {
+margin-bottom: calc(var(--spacing) * 2);
+}
+.mb-2\.5 {
+margin-bottom: calc(var(--spacing) * 2.5);
+}
+.mb-3 {
+margin-bottom: calc(var(--spacing) * 3);
+}
+.mb-4 {
+margin-bottom: calc(var(--spacing) * 4);
+}
+.mb-6 {
+margin-bottom: calc(var(--spacing) * 6);
+}
+.block {
+display: block;
+}
+.flex {
+display: flex;
+}
+.grid {
+display: grid;
+}
+.hidden {
+display: none;
+}
+.table {
+display: table;
+}
+.h-4 {
+height: calc(var(--spacing) * 4);
+}
+.h-6 {
+height: calc(var(--spacing) * 6);
+}
+.h-8 {
+height: calc(var(--spacing) * 8);
+}
+.h-10 {
+height: calc(var(--spacing) * 10);
+}
+.h-auto {
+height: auto;
+}
+.min-h-\[340px\] {
+min-height: 340px;
+}
+.min-h-screen {
+min-height: 100vh;
+}
+.w-4 {
+width: calc(var(--spacing) * 4);
+}
+.w-6 {
+width: calc(var(--spacing) * 6);
+}
+.w-10 {
+width: calc(var(--spacing) * 10);
+}
+.w-44 {
+width: calc(var(--spacing) * 44);
+}
+.w-48 {
+width: calc(var(--spacing) * 48);
+}
+.w-full {
+width: 100%;
+}
+.w-px {
+width: 1px;
+}
+.max-w-6xl {
+max-width: var(--container-6xl);
+}
+.max-w-\[580px\] {
+max-width: 580px;
+}
+.max-w-md {
+max-width: var(--container-md);
+}
+.flex-1 {
+flex: 1;
+}
+.border-collapse {
+border-collapse: collapse;
+}
+.transform {
+transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);
+}
+.cursor-pointer {
+cursor: pointer;
+}
+.resize {
+resize: both;
+}
+.grid-cols-1 {
+grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+.grid-cols-2 {
+grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.flex-col {
+flex-direction: column;
+}
+.flex-wrap {
+flex-wrap: wrap;
+}
+.items-center {
+align-items: center;
+}
+.justify-around {
+justify-content: space-around;
+}
+.justify-between {
+justify-content: space-between;
+}
+.justify-center {
+justify-content: center;
+}
+.gap-1 {
+gap: var(--spacing);
+}
+.gap-1\.5 {
+gap: calc(var(--spacing) * 1.5);
+}
+.gap-2 {
+gap: calc(var(--spacing) * 2);
+}
+.gap-3 {
+gap: calc(var(--spacing) * 3);
+}
+.gap-4 {
+gap: calc(var(--spacing) * 4);
+}
+.gap-6 {
+gap: calc(var(--spacing) * 6);
+}
+:where(.space-y-2 > :not(:last-child)) {
+--tw-space-y-reverse: 0;
+margin-block-start: calc(calc(var(--spacing) * 2) * var(--tw-space-y-reverse));
+margin-block-end: calc(calc(var(--spacing) * 2) * calc(1 - var(--tw-space-y-reverse)));
+}
+:where(.space-y-4 > :not(:last-child)) {
+--tw-space-y-reverse: 0;
+margin-block-start: calc(calc(var(--spacing) * 4) * var(--tw-space-y-reverse));
+margin-block-end: calc(calc(var(--spacing) * 4) * calc(1 - var(--tw-space-y-reverse)));
+}
+:where(.space-y-6 > :not(:last-child)) {
+--tw-space-y-reverse: 0;
+margin-block-start: calc(calc(var(--spacing) * 6) * var(--tw-space-y-reverse));
+margin-block-end: calc(calc(var(--spacing) * 6) * calc(1 - var(--tw-space-y-reverse)));
+}
+:where(.divide-y > :not(:last-child)) {
+--tw-divide-y-reverse: 0;
+border-bottom-style: var(--tw-border-style);
+border-top-style: var(--tw-border-style);
+border-top-width: calc(1px * var(--tw-divide-y-reverse));
+border-bottom-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
+}
+:where(.divide-slate-100 > :not(:last-child)) {
+border-color: var(--color-slate-100);
+}
+.overflow-hidden {
+overflow: hidden;
+}
+.overflow-visible {
+overflow: visible;
+}
+.overflow-x-auto {
+overflow-x: auto;
+}
+.rounded {
+border-radius: 0.25rem;
+}
+.rounded-2xl {
+border-radius: var(--radius-2xl);
+}
+.rounded-full {
+border-radius: calc(infinity * 1px);
+}
+.rounded-lg {
+border-radius: var(--radius-lg);
+}
+.rounded-md {
+border-radius: var(--radius-md);
+}
+.rounded-xl {
+border-radius: var(--radius-xl);
+}
+.border {
+border-style: var(--tw-border-style);
+border-width: 1px;
+}
+.border-2 {
+border-style: var(--tw-border-style);
+border-width: 2px;
+}
+.border-t {
+border-top-style: var(--tw-border-style);
+border-top-width: 1px;
+}
+.border-b {
+border-bottom-style: var(--tw-border-style);
+border-bottom-width: 1px;
+}
+.border-b-2 {
+border-bottom-style: var(--tw-border-style);
+border-bottom-width: 2px;
+}
+.border-amber-200 {
+border-color: var(--color-amber-200);
+}
+.border-amber-300 {
+border-color: var(--color-amber-300);
+}
+.border-emerald-200 {
+border-color: var(--color-emerald-200);
+}
+.border-emerald-300 {
+border-color: var(--color-emerald-300);
+}
+.border-emerald-500 {
+border-color: var(--color-emerald-500);
+}
+.border-indigo-100\/60 {
+border-color: color-mix(in srgb, oklch(93% 0.034 272.788) 60%, transparent);
+@supports (color: color-mix(in lab, red, red)) {
+border-color: color-mix(in oklab, var(--color-indigo-100) 60%, transparent);
+}
+}
+.border-rose-200 {
+border-color: var(--color-rose-200);
+}
+.border-rose-300 {
+border-color: var(--color-rose-300);
+}
+.border-rose-500 {
+border-color: var(--color-rose-500);
+}
+.border-slate-100 {
+border-color: var(--color-slate-100);
+}
+.border-slate-200 {
+border-color: var(--color-slate-200);
+}
+.border-slate-200\/80 {
+border-color: color-mix(in srgb, oklch(92.9% 0.013 255.508) 80%, transparent);
+@supports (color: color-mix(in lab, red, red)) {
+border-color: color-mix(in oklab, var(--color-slate-200) 80%, transparent);
+}
+}
+.border-slate-300 {
+border-color: var(--color-slate-300);
+}
+.border-slate-700 {
+border-color: var(--color-slate-700);
+}
+.bg-amber-50 {
+background-color: var(--color-amber-50);
+}
+.bg-amber-500 {
+background-color: var(--color-amber-500);
+}
+.bg-amber-600 {
+background-color: var(--color-amber-600);
+}
+.bg-emerald-50 {
+background-color: var(--color-emerald-50);
+}
+.bg-emerald-50\/70 {
+background-color: color-mix(in srgb, oklch(97.9% 0.021 166.113) 70%, transparent);
+@supports (color: color-mix(in lab, red, red)) {
+background-color: color-mix(in oklab, var(--color-emerald-50) 70%, transparent);
+}
+}
+.bg-emerald-600 {
+background-color: var(--color-emerald-600);
+}
+.bg-indigo-50\/40 {
+background-color: color-mix(in srgb, oklch(96.2% 0.018 272.314) 40%, transparent);
+@supports (color: color-mix(in lab, red, red)) {
+background-color: color-mix(in oklab, var(--color-indigo-50) 40%, transparent);
+}
+}
+.bg-indigo-100 {
+background-color: var(--color-indigo-100);
+}
+.bg-indigo-500 {
+background-color: var(--color-indigo-500);
+}
+.bg-indigo-600 {
+background-color: var(--color-indigo-600);
+}
+.bg-rose-50 {
+background-color: var(--color-rose-50);
+}
+.bg-rose-50\/70 {
+background-color: color-mix(in srgb, oklch(96.9% 0.015 12.422) 70%, transparent);
+@supports (color: color-mix(in lab, red, red)) {
+background-color: color-mix(in oklab, var(--color-rose-50) 70%, transparent);
+}
+}
+.bg-rose-100 {
+background-color: var(--color-rose-100);
+}
+.bg-rose-600\/80 {
+background-color: color-mix(in srgb, oklch(58.6% 0.253 17.585) 80%, transparent);
+@supports (color: color-mix(in lab, red, red)) {
+background-color: color-mix(in oklab, var(--color-rose-600) 80%, transparent);
+}
+}
+.bg-slate-50 {
+background-color: var(--color-slate-50);
+}
+.bg-slate-100 {
+background-color: var(--color-slate-100);
+}
+.bg-slate-200 {
+background-color: var(--color-slate-200);
+}
+.bg-slate-700 {
+background-color: var(--color-slate-700);
+}
+.bg-slate-800 {
+background-color: var(--color-slate-800);
+}
+.bg-slate-900 {
+background-color: var(--color-slate-900);
+}
+.bg-slate-900\/85 {
+background-color: color-mix(in srgb, oklch(20.8% 0.042 265.755) 85%, transparent);
+@supports (color: color-mix(in lab, red, red)) {
+background-color: color-mix(in oklab, var(--color-slate-900) 85%, transparent);
+}
+}
+.bg-white {
+background-color: var(--color-white);
+}
+.bg-gradient-to-r {
+--tw-gradient-position: to right in oklab;
+background-image: linear-gradient(var(--tw-gradient-stops));
+}
+.from-amber-50 {
+--tw-gradient-from: var(--color-amber-50);
+--tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+}
+.from-indigo-900 {
+--tw-gradient-from: var(--color-indigo-900);
+--tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+}
+.via-slate-900 {
+--tw-gradient-via: var(--color-slate-900);
+--tw-gradient-via-stops: var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-via) var(--tw-gradient-via-position), var(--tw-gradient-to) var(--tw-gradient-to-position);
+--tw-gradient-stops: var(--tw-gradient-via-stops);
+}
+.to-indigo-950 {
+--tw-gradient-to: var(--color-indigo-950);
+--tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+}
+.to-orange-50 {
+--tw-gradient-to: var(--color-orange-50);
+--tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+}
+.p-1 {
+padding: var(--spacing);
+}
+.p-2 {
+padding: calc(var(--spacing) * 2);
+}
+.p-4 {
+padding: calc(var(--spacing) * 4);
+}
+.p-5 {
+padding: calc(var(--spacing) * 5);
+}
+.p-6 {
+padding: calc(var(--spacing) * 6);
+}
+.px-2 {
+padding-inline: calc(var(--spacing) * 2);
+}
+.px-2\.5 {
+padding-inline: calc(var(--spacing) * 2.5);
+}
+.px-3 {
+padding-inline: calc(var(--spacing) * 3);
+}
+.px-3\.5 {
+padding-inline: calc(var(--spacing) * 3.5);
+}
+.px-4 {
+padding-inline: calc(var(--spacing) * 4);
+}
+.px-5 {
+padding-inline: calc(var(--spacing) * 5);
+}
+.px-6 {
+padding-inline: calc(var(--spacing) * 6);
+}
+.px-8 {
+padding-inline: calc(var(--spacing) * 8);
+}
+.py-0\.5 {
+padding-block: calc(var(--spacing) * 0.5);
+}
+.py-1 {
+padding-block: var(--spacing);
+}
+.py-1\.5 {
+padding-block: calc(var(--spacing) * 1.5);
+}
+.py-2 {
+padding-block: calc(var(--spacing) * 2);
+}
+.py-3 {
+padding-block: calc(var(--spacing) * 3);
+}
+.py-3\.5 {
+padding-block: calc(var(--spacing) * 3.5);
+}
+.py-4 {
+padding-block: calc(var(--spacing) * 4);
+}
+.py-5 {
+padding-block: calc(var(--spacing) * 5);
+}
+.py-10 {
+padding-block: calc(var(--spacing) * 10);
+}
+.pt-3 {
+padding-top: calc(var(--spacing) * 3);
+}
+.text-center {
+text-align: center;
+}
+.text-left {
+text-align: left;
+}
+.font-mono {
+font-family: var(--font-mono);
+}
+.text-2xl {
+font-size: var(--text-2xl);
+line-height: var(--tw-leading, var(--text-2xl--line-height));
+}
+.text-3xl {
+font-size: var(--text-3xl);
+line-height: var(--tw-leading, var(--text-3xl--line-height));
+}
+.text-5xl {
+font-size: var(--text-5xl);
+line-height: var(--tw-leading, var(--text-5xl--line-height));
+}
+.text-base {
+font-size: var(--text-base);
+line-height: var(--tw-leading, var(--text-base--line-height));
+}
+.text-lg {
+font-size: var(--text-lg);
+line-height: var(--tw-leading, var(--text-lg--line-height));
+}
+.text-sm {
+font-size: var(--text-sm);
+line-height: var(--tw-leading, var(--text-sm--line-height));
+}
+.text-xl {
+font-size: var(--text-xl);
+line-height: var(--tw-leading, var(--text-xl--line-height));
+}
+.text-xs {
+font-size: var(--text-xs);
+line-height: var(--tw-leading, var(--text-xs--line-height));
+}
+.text-\[11px\] {
+font-size: 11px;
+}
+.leading-relaxed {
+--tw-leading: var(--leading-relaxed);
+line-height: var(--leading-relaxed);
+}
+.font-black {
+--tw-font-weight: var(--font-weight-black);
+font-weight: var(--font-weight-black);
+}
+.font-bold {
+--tw-font-weight: var(--font-weight-bold);
+font-weight: var(--font-weight-bold);
+}
+.font-medium {
+--tw-font-weight: var(--font-weight-medium);
+font-weight: var(--font-weight-medium);
+}
+.tracking-wide {
+--tw-tracking: var(--tracking-wide);
+letter-spacing: var(--tracking-wide);
+}
+.tracking-wider {
+--tw-tracking: var(--tracking-wider);
+letter-spacing: var(--tracking-wider);
+}
+.text-amber-400 {
+color: var(--color-amber-400);
+}
+.text-amber-500 {
+color: var(--color-amber-500);
+}
+.text-amber-600 {
+color: var(--color-amber-600);
+}
+.text-amber-800 {
+color: var(--color-amber-800);
+}
+.text-amber-900 {
+color: var(--color-amber-900);
+}
+.text-emerald-400 {
+color: var(--color-emerald-400);
+}
+.text-emerald-600 {
+color: var(--color-emerald-600);
+}
+.text-emerald-700 {
+color: var(--color-emerald-700);
+}
+.text-indigo-300 {
+color: var(--color-indigo-300);
+}
+.text-indigo-600 {
+color: var(--color-indigo-600);
+}
+.text-indigo-700 {
+color: var(--color-indigo-700);
+}
+.text-rose-700 {
+color: var(--color-rose-700);
+}
+.text-slate-300 {
+color: var(--color-slate-300);
+}
+.text-slate-400 {
+color: var(--color-slate-400);
+}
+.text-slate-500 {
+color: var(--color-slate-500);
+}
+.text-slate-600 {
+color: var(--color-slate-600);
+}
+.text-slate-700 {
+color: var(--color-slate-700);
+}
+.text-slate-800 {
+color: var(--color-slate-800);
+}
+.text-slate-950 {
+color: var(--color-slate-950);
+}
+.text-white {
+color: var(--color-white);
+}
+.uppercase {
+text-transform: uppercase;
+}
+.italic {
+font-style: italic;
+}
+.accent-indigo-600 {
+accent-color: var(--color-indigo-600);
+}
+.shadow {
+--tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 1px 2px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+}
+.shadow-inner {
+--tw-shadow: inset 0 2px 4px 0 var(--tw-shadow-color, rgb(0 0 0 / 0.05));
+box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+}
+.shadow-lg {
+--tw-shadow: 0 10px 15px -3px var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 4px 6px -4px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+}
+.shadow-md {
+--tw-shadow: 0 4px 6px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 2px 4px -2px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+}
+.shadow-sm {
+--tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 1px 2px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+}
+.shadow-amber-500\/30 {
+--tw-shadow-color: color-mix(in srgb, oklch(76.9% 0.188 70.08) 30%, transparent);
+@supports (color: color-mix(in lab, red, red)) {
+--tw-shadow-color: color-mix(in oklab, color-mix(in oklab, var(--color-amber-500) 30%, transparent) var(--tw-shadow-alpha), transparent);
+}
+}
+.backdrop-blur-sm {
+--tw-backdrop-blur: blur(var(--blur-sm));
+-webkit-backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
+backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,) var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,) var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,);
+}
+.transition {
+transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to, opacity, box-shadow, transform, translate, scale, rotate, filter, -webkit-backdrop-filter, backdrop-filter, display, content-visibility, overlay, pointer-events;
+transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+transition-duration: var(--tw-duration, var(--default-transition-duration));
+}
+.transition-all {
+transition-property: all;
+transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+transition-duration: var(--tw-duration, var(--default-transition-duration));
+}
+.select-none {
+-webkit-user-select: none;
+user-select: none;
+}
+@media (hover: hover) {
+.group-hover\:text-indigo-500:is(:where(.group):hover *) {
+color: var(--color-indigo-500);
+}
+.group-hover\:text-indigo-700:is(:where(.group):hover *) {
+color: var(--color-indigo-700);
+}
+.hover\:scale-105:hover {
+--tw-scale-x: 105%;
+--tw-scale-y: 105%;
+--tw-scale-z: 105%;
+scale: var(--tw-scale-x) var(--tw-scale-y);
+}
+.hover\:border-indigo-500:hover {
+border-color: var(--color-indigo-500);
+}
+.hover\:bg-amber-100:hover {
+background-color: var(--color-amber-100);
+}
+.hover\:bg-amber-400:hover {
+background-color: var(--color-amber-400);
+}
+.hover\:bg-amber-700:hover {
+background-color: var(--color-amber-700);
+}
+.hover\:bg-emerald-100:hover {
+background-color: var(--color-emerald-100);
+}
+.hover\:bg-emerald-700:hover {
+background-color: var(--color-emerald-700);
+}
+.hover\:bg-indigo-50:hover {
+background-color: var(--color-indigo-50);
+}
+.hover\:bg-indigo-50\/60:hover {
+background-color: color-mix(in srgb, oklch(96.2% 0.018 272.314) 60%, transparent);
+}
+@supports (color: color-mix(in lab, red, red)) {
+.hover\:bg-indigo-50\/60:hover {
+background-color: color-mix(in oklab, var(--color-indigo-50) 60%, transparent);
+}
+}
+.hover\:bg-rose-50:hover {
+background-color: var(--color-rose-50);
+}
+.hover\:bg-rose-100:hover {
+background-color: var(--color-rose-100);
+}
+.hover\:bg-rose-600:hover {
+background-color: var(--color-rose-600);
+}
+.hover\:bg-slate-50:hover {
+background-color: var(--color-slate-50);
+}
+.hover\:bg-slate-200:hover {
+background-color: var(--color-slate-200);
+}
+.hover\:bg-slate-800:hover {
+background-color: var(--color-slate-800);
+}
+.hover\:text-rose-600:hover {
+color: var(--color-rose-600);
+}
+.hover\:text-white:hover {
+color: var(--color-white);
+}
+.hover\:underline:hover {
+text-decoration-line: underline;
+}
+}
+.focus\:ring-2:focus {
+--tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
+box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+}
+.focus\:ring-amber-500:focus {
+--tw-ring-color: var(--color-amber-500);
+}
+.focus\:ring-indigo-500:focus {
+--tw-ring-color: var(--color-indigo-500);
+}
+.focus\:outline-none:focus {
+--tw-outline-style: none;
+outline-style: none;
+}
+@media (width >= 48rem) {
+.md\:min-h-\[390px\] {
+min-height: 390px;
+}
+.md\:p-4 {
+padding: calc(var(--spacing) * 4);
+}
+.md\:p-5 {
+padding: calc(var(--spacing) * 5);
+}
+.md\:text-3xl {
+font-size: var(--text-3xl);
+line-height: var(--tw-leading, var(--text-3xl--line-height));
+}
+.md\:text-base {
+font-size: var(--text-base);
+line-height: var(--tw-leading, var(--text-base--line-height));
+}
+.md\:text-lg {
+font-size: var(--text-lg);
+line-height: var(--tw-leading, var(--text-lg--line-height));
+}
+.md\:text-xl {
+font-size: var(--text-xl);
+line-height: var(--tw-leading, var(--text-xl--line-height));
+}
+}
+@media (width >= 64rem) {
+.lg\:order-1 {
+order: 1;
+}
+.lg\:order-2 {
+order: 2;
+}
+.lg\:col-span-4 {
+grid-column: span 4 / span 4;
+}
+.lg\:col-span-8 {
+grid-column: span 8 / span 8;
+}
+.lg\:col-span-12 {
+grid-column: span 12 / span 12;
+}
+.lg\:grid-cols-12 {
+grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+}
+}
+@layer base {
+*, ::after, ::before, ::backdrop {
+border-color: #e5e7eb;
+}
+}
+@property --tw-rotate-x {
+syntax: "*";
+inherits: false;
+}
+@property --tw-rotate-y {
+syntax: "*";
+inherits: false;
+}
+@property --tw-rotate-z {
+syntax: "*";
+inherits: false;
+}
+@property --tw-skew-x {
+syntax: "*";
+inherits: false;
+}
+@property --tw-skew-y {
+syntax: "*";
+inherits: false;
+}
+@property --tw-space-y-reverse {
+syntax: "*";
+inherits: false;
+initial-value: 0;
+}
+@property --tw-divide-y-reverse {
+syntax: "*";
+inherits: false;
+initial-value: 0;
+}
+@property --tw-border-style {
+syntax: "*";
+inherits: false;
+initial-value: solid;
+}
+@property --tw-gradient-position {
+syntax: "*";
+inherits: false;
+}
+@property --tw-gradient-from {
+syntax: "<color>";
+inherits: false;
+initial-value: #0000;
+}
+@property --tw-gradient-via {
+syntax: "<color>";
+inherits: false;
+initial-value: #0000;
+}
+@property --tw-gradient-to {
+syntax: "<color>";
+inherits: false;
+initial-value: #0000;
+}
+@property --tw-gradient-stops {
+syntax: "*";
+inherits: false;
+}
+@property --tw-gradient-via-stops {
+syntax: "*";
+inherits: false;
+}
+@property --tw-gradient-from-position {
+syntax: "<length-percentage>";
+inherits: false;
+initial-value: 0%;
+}
+@property --tw-gradient-via-position {
+syntax: "<length-percentage>";
+inherits: false;
+initial-value: 50%;
+}
+@property --tw-gradient-to-position {
+syntax: "<length-percentage>";
+inherits: false;
+initial-value: 100%;
+}
+@property --tw-leading {
+syntax: "*";
+inherits: false;
+}
+@property --tw-font-weight {
+syntax: "*";
+inherits: false;
+}
+@property --tw-tracking {
+syntax: "*";
+inherits: false;
+}
+@property --tw-shadow {
+syntax: "*";
+inherits: false;
+initial-value: 0 0 #0000;
+}
+@property --tw-shadow-color {
+syntax: "*";
+inherits: false;
+}
+@property --tw-shadow-alpha {
+syntax: "<percentage>";
+inherits: false;
+initial-value: 100%;
+}
+@property --tw-inset-shadow {
+syntax: "*";
+inherits: false;
+initial-value: 0 0 #0000;
+}
+@property --tw-inset-shadow-color {
+syntax: "*";
+inherits: false;
+}
+@property --tw-inset-shadow-alpha {
+syntax: "<percentage>";
+inherits: false;
+initial-value: 100%;
+}
+@property --tw-ring-color {
+syntax: "*";
+inherits: false;
+}
+@property --tw-ring-shadow {
+syntax: "*";
+inherits: false;
+initial-value: 0 0 #0000;
+}
+@property --tw-inset-ring-color {
+syntax: "*";
+inherits: false;
+}
+@property --tw-inset-ring-shadow {
+syntax: "*";
+inherits: false;
+initial-value: 0 0 #0000;
+}
+@property --tw-ring-inset {
+syntax: "*";
+inherits: false;
+}
+@property --tw-ring-offset-width {
+syntax: "<length>";
+inherits: false;
+initial-value: 0px;
+}
+@property --tw-ring-offset-color {
+syntax: "*";
+inherits: false;
+initial-value: #fff;
+}
+@property --tw-ring-offset-shadow {
+syntax: "*";
+inherits: false;
+initial-value: 0 0 #0000;
+}
+@property --tw-backdrop-blur {
+syntax: "*";
+inherits: false;
+}
+@property --tw-backdrop-brightness {
+syntax: "*";
+inherits: false;
+}
+@property --tw-backdrop-contrast {
+syntax: "*";
+inherits: false;
+}
+@property --tw-backdrop-grayscale {
+syntax: "*";
+inherits: false;
+}
+@property --tw-backdrop-hue-rotate {
+syntax: "*";
+inherits: false;
+}
+@property --tw-backdrop-invert {
+syntax: "*";
+inherits: false;
+}
+@property --tw-backdrop-opacity {
+syntax: "*";
+inherits: false;
+}
+@property --tw-backdrop-saturate {
+syntax: "*";
+inherits: false;
+}
+@property --tw-backdrop-sepia {
+syntax: "*";
+inherits: false;
+}
+@property --tw-scale-x {
+syntax: "*";
+inherits: false;
+initial-value: 1;
+}
+@property --tw-scale-y {
+syntax: "*";
+inherits: false;
+initial-value: 1;
+}
+@property --tw-scale-z {
+syntax: "*";
+inherits: false;
+initial-value: 1;
+}
+@layer properties {
+@supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
+*, ::before, ::after, ::backdrop {
+--tw-rotate-x: initial;
+--tw-rotate-y: initial;
+--tw-rotate-z: initial;
+--tw-skew-x: initial;
+--tw-skew-y: initial;
+--tw-space-y-reverse: 0;
+--tw-divide-y-reverse: 0;
+--tw-border-style: solid;
+--tw-gradient-position: initial;
+--tw-gradient-from: #0000;
+--tw-gradient-via: #0000;
+--tw-gradient-to: #0000;
+--tw-gradient-stops: initial;
+--tw-gradient-via-stops: initial;
+--tw-gradient-from-position: 0%;
+--tw-gradient-via-position: 50%;
+--tw-gradient-to-position: 100%;
+--tw-leading: initial;
+--tw-font-weight: initial;
+--tw-tracking: initial;
+--tw-shadow: 0 0 #0000;
+--tw-shadow-color: initial;
+--tw-shadow-alpha: 100%;
+--tw-inset-shadow: 0 0 #0000;
+--tw-inset-shadow-color: initial;
+--tw-inset-shadow-alpha: 100%;
+--tw-ring-color: initial;
+--tw-ring-shadow: 0 0 #0000;
+--tw-inset-ring-color: initial;
+--tw-inset-ring-shadow: 0 0 #0000;
+--tw-ring-inset: initial;
+--tw-ring-offset-width: 0px;
+--tw-ring-offset-color: #fff;
+--tw-ring-offset-shadow: 0 0 #0000;
+--tw-backdrop-blur: initial;
+--tw-backdrop-brightness: initial;
+--tw-backdrop-contrast: initial;
+--tw-backdrop-grayscale: initial;
+--tw-backdrop-hue-rotate: initial;
+--tw-backdrop-invert: initial;
+--tw-backdrop-opacity: initial;
+--tw-backdrop-saturate: initial;
+--tw-backdrop-sepia: initial;
+--tw-scale-x: 1;
+--tw-scale-y: 1;
+--tw-scale-z: 1;
+}
+}
+}
+</style>
+  <style>
+    body {
+      font-family: 'Noto Sans TC', 'Microsoft JhengHei', 'PingFang TC', 'Heiti TC', sans-serif;
+      background-color: #f8fafc;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    /* iOS Safari：body 設了 user-select:none 會讓輸入框打不了字，需特別還原 */
+    input, textarea {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+    .math-font {
+      font-family: 'STIX Two Math', 'Cambria Math', 'Times New Roman', 'Noto Serif TC', 'PMingLiU', serif;
+    }
+    #physics-svg text {
+      font-family: 'Cambria Math', 'Times New Roman', 'Noto Sans TC', 'Microsoft JhengHei', 'PingFang TC', serif;
+    }
+    .btn-option {
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-option:active {
+      transform: scale(0.97);
+    }
+    .canvas-container {
+      background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col">
+
+  <!-- 頂部導覽列 -->
+  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center font-black text-xl shadow-inner">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19L19 5M10 5h9v9"/></svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg md:text-xl tracking-wide">高中物理｜力學向量與力矩分解快訓</h1>
+          <p class="text-xs text-slate-400">03-1 平移平衡 ・ 03-2 力矩與力臂 ・ 03-3 靜力平衡 ・ 經典力學</p>
+        </div>
+      </div>
+
+      <!-- 模式切換按鈕 -->
+      <div class="flex bg-slate-800 p-1 rounded-xl border border-slate-700">
+        <button id="tab-practice" onclick="switchMode('practice')" class="px-4 py-1.5 rounded-lg text-sm font-bold transition bg-indigo-600 text-white shadow">
+          📖 課堂練習模式
+        </button>
+        <button id="tab-challenge" onclick="switchMode('challenge')" class="px-4 py-1.5 rounded-lg text-sm font-bold transition text-slate-300 hover:text-white">
+          ⚡ 60秒極限挑戰
+        </button>
+        <button id="tab-leaderboard" onclick="switchMode('leaderboard')" class="px-4 py-1.5 rounded-lg text-sm font-bold transition text-slate-300 hover:text-white">
+          🏆 英雄榜
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主內容區 -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-5 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- 左側/上方：分類篩選與題庫控制面板 (佔 4 欄) -->
+    <aside id="sidebar-panel" class="order-2 lg:order-1 lg:col-span-4 space-y-4">
+      <!-- 單元篩選卡片 -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-bold text-slate-800 flex items-center gap-2">
+            <span>📚 題庫單元篩選</span>
+            <span id="active-count-badge" class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold">載入中</span>
+          </h2>
+          <button onclick="toggleAllCategories()" class="text-xs text-indigo-600 hover:underline font-medium">全選/全不選</button>
+        </div>
+
+        <div class="space-y-2 text-sm" id="category-filters"></div>
+
+        <!-- 指定特定題型下拉選單 (方便老師上課直接指定講解) -->
+        <div class="mt-4 pt-3 border-t border-slate-100">
+          <label class="block text-xs font-bold text-slate-500 mb-1.5">🎯 課堂指定題型（或維持隨機抽題）：</label>
+          <select id="model-selector" onchange="selectSpecificModel(this.value)" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="random">🎲 依勾選單元隨機出題 (含隨機翻轉/換角)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 教師課堂即時遙控器 (只在練習模式顯示) -->
+      <div id="teacher-controls" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+        <h3 class="font-bold text-slate-800 text-sm mb-2.5 flex items-center gap-1.5">
+          <span>🛠️ 課堂講解即時變換控制</span>
+        </h3>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="flipCurrentQuestion()" class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+            ⇄ 左右鏡像對調
+          </button>
+          <button onclick="toggleThetaPos()" class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-bold text-xs transition">
+            ∠ 切換 θ 標示位置
+          </button>
+          <button onclick="toggleTargetAxis()" class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition">
+            🎯 改問另一分力/力臂
+          </button>
+          <button onclick="toggleHintLines()" id="btn-hint-toggle" class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold text-xs transition">
+            📐 顯示幾何角度推導
+          </button>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-2.5 leading-relaxed">
+          💡 提示：上課時可固定同一題，按「切換 θ 標示位置」讓同學觀察為何答案瞬間從 sinθ 變成 cosθ！
+        </p>
+      </div>
+
+      <!-- 練習統計資訊 -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex items-center justify-around text-center">
+        <div>
+          <div class="text-xs text-slate-400 font-medium">答對題數</div>
+          <div id="stat-correct" class="text-2xl font-black text-emerald-600">0</div>
+        </div>
+        <div class="h-8 w-px bg-slate-200"></div>
+        <div>
+          <div class="text-xs text-slate-400 font-medium">目前連擊</div>
+          <div id="stat-streak" class="text-2xl font-black text-amber-500">0 🔥</div>
+        </div>
+        <div class="h-8 w-px bg-slate-200"></div>
+        <div>
+          <div class="text-xs text-slate-400 font-medium">正確率</div>
+          <div id="stat-rate" class="text-2xl font-black text-indigo-600">--%</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 右側/主舞台：SVG 向量畫布與作答區 (佔 8 欄) -->
+    <section id="quiz-stage" class="order-1 lg:order-2 lg:col-span-8 flex flex-col gap-4">
+
+      <!-- 挑戰模式計時狀態列 (預設隱藏) -->
+      <div id="challenge-hud" class="hidden bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 text-white rounded-2xl p-4 shadow-lg flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="text-center">
+            <div class="text-[11px] text-indigo-300 uppercase tracking-wider">剩餘時間</div>
+            <div id="timer-display" class="text-3xl font-black text-amber-400 font-mono">60.0s</div>
+          </div>
+          <div class="h-8 w-px bg-slate-700"></div>
+          <div class="text-center">
+            <div class="text-[11px] text-indigo-300 uppercase tracking-wider">挑戰積分</div>
+            <div id="score-display" class="text-3xl font-black text-white font-mono">0</div>
+          </div>
+          <div class="h-8 w-px bg-slate-700"></div>
+          <div class="text-center">
+            <div class="text-[11px] text-indigo-300 uppercase tracking-wider">Combo</div>
+            <div id="combo-display" class="text-2xl font-black text-emerald-400">x0</div>
+          </div>
+        </div>
+        <button onclick="stopChallengeEarly()" class="px-3 py-1.5 rounded-lg bg-rose-600/80 hover:bg-rose-600 text-xs font-bold transition">
+          結束挑戰
+        </button>
+      </div>
+
+      <!-- 題目與繪圖主卡片 -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+        <!-- 題目標題列 -->
+        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span id="q-unit-badge" class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-indigo-100 text-indigo-700">03-1 力與平移平衡</span>
+            <h2 id="q-title" class="font-bold text-slate-800 text-base md:text-lg">單擺重力切線與法線分解</h2>
+          </div>
+          <span id="q-variant-tag" class="text-xs font-medium text-slate-500 bg-white px-2.5 py-1 rounded-lg border border-slate-200">
+            隨機視角
+          </span>
+        </div>
+
+        <!-- 題幹敘述 -->
+        <div class="px-5 py-3 bg-indigo-50/40 border-b border-indigo-100/60">
+          <p id="q-prompt" class="text-sm md:text-base text-slate-700 font-medium leading-relaxed"></p>
+        </div>
+
+        <!-- 動態 SVG 物理向量畫布 -->
+        <div class="relative canvas-container flex items-center justify-center p-2 md:p-4 min-h-[340px] md:min-h-[390px]">
+          <svg id="physics-svg" viewBox="0 0 600 380" class="w-full max-w-[580px] h-auto select-none overflow-visible"></svg>
+
+          <!-- 挑戰賽開始前遮罩 -->
+          <div id="challenge-start-overlay" class="hidden absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col items-center justify-center text-white p-6 text-center z-20">
+            <div class="text-5xl mb-3">⚡</div>
+            <h3 class="text-2xl font-black mb-2">60 秒極限向量分解挑戰賽</h3>
+            <p class="text-sm text-slate-300 max-w-md mb-6 leading-relaxed">
+              隨機抽出各單元力學向量與力矩圖形（包含隨機翻轉與變換 <span class="math-font italic">θ</span> 位置）。<br>
+              連續答對可累積 Combo 加成，答錯將扣 2 秒！準備好測試你的物理直覺了嗎？
+            </p>
+            <button onclick="startChallengeGame()" class="px-8 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-lg shadow-lg shadow-amber-500/30 transition transform hover:scale-105">
+              🚀 立即開始 60 秒計時！
+            </button>
+          </div>
+        </div>
+
+        <!-- 二選一作答按鈕區 -->
+        <div class="p-4 md:p-5 bg-slate-50 border-t border-slate-200">
+          <div class="grid grid-cols-2 gap-4">
+            <button id="btn-opt-sin" onclick="submitAnswer('sin')" class="btn-option py-4 px-6 rounded-2xl bg-white hover:bg-indigo-50 border-2 border-slate-300 hover:border-indigo-500 shadow-sm flex flex-col items-center justify-center gap-1 group">
+              <span class="text-xs font-bold text-slate-400 group-hover:text-indigo-500">選項 (A) — 對邊正弦</span>
+              <span id="label-opt-sin" class="text-2xl md:text-3xl font-black text-slate-800 group-hover:text-indigo-700 math-font tracking-wide">mg sin θ</span>
+            </button>
+
+            <button id="btn-opt-cos" onclick="submitAnswer('cos')" class="btn-option py-4 px-6 rounded-2xl bg-white hover:bg-indigo-50 border-2 border-slate-300 hover:border-indigo-500 shadow-sm flex flex-col items-center justify-center gap-1 group">
+              <span class="text-xs font-bold text-slate-400 group-hover:text-indigo-500">選項 (B) — 鄰邊餘弦</span>
+              <span id="label-opt-cos" class="text-2xl md:text-3xl font-black text-slate-800 group-hover:text-indigo-700 math-font tracking-wide">mg cos θ</span>
+            </button>
+          </div>
+
+          <!-- 答題回饋與幾何解析區 (練習模式顯示) -->
+          <div id="feedback-box" class="hidden mt-4 p-4 rounded-xl border transition-all">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <div id="feedback-title" class="font-black text-base flex items-center gap-2"></div>
+              <button onclick="nextQuestion()" class="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm shadow transition flex items-center gap-1.5">
+                <span>下一題</span>
+                <span>➔</span>
+              </button>
+            </div>
+            <p id="feedback-explanation" class="text-sm text-slate-700 leading-relaxed"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 英雄榜區塊 (預設隱藏，佔滿 12 欄) -->
+    <section id="leaderboard-stage" class="hidden lg:col-span-12 space-y-6">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-2xl font-black text-slate-800 flex items-center gap-2">
+              🏆 物理向量分解快訓・風雲英雄榜
+            </h2>
+            <p class="text-sm text-slate-500 mt-1">紀錄 60 秒極限挑戰賽的高分留名紀錄（儲存在本機瀏覽器中，可匯出 CSV）</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportLeaderboardCSV()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm">
+              📥 匯出成績單 (CSV)
+            </button>
+            <button onclick="clearLeaderboard()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 text-xs font-bold transition">
+              🗑️ 清空紀錄
+            </button>
+          </div>
+        </div>
+
+        <!-- 成績登錄表單 (挑戰賽結束後自動彈出) -->
+        <div id="score-submit-card" class="hidden mb-6 p-5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300">
+          <h3 class="font-black text-lg text-amber-900 mb-1">🎉 挑戰完成！請登錄你的大名</h3>
+          <p id="final-score-summary" class="text-sm text-amber-800 mb-4 font-medium"></p>
+          <div class="flex flex-wrap items-center gap-3">
+            <input type="text" id="player-class" maxlength="20" placeholder="班級座號 (例: 205-12)" class="px-3.5 py-2 rounded-xl border border-amber-300 bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 w-44">
+            <input type="text" id="player-name" maxlength="20" placeholder="姓名 / 暱稱" class="px-3.5 py-2 rounded-xl border border-amber-300 bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 w-48">
+            <button onclick="savePlayerScore()" class="px-6 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm shadow transition">
+              ✅ 登錄英雄榜
+            </button>
+          </div>
+        </div>
+
+        <!-- 排行榜表格 -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b-2 border-slate-200 text-xs font-bold text-slate-500 uppercase">
+                <th class="py-3 px-4">名次</th>
+                <th class="py-3 px-4">班級座號</th>
+                <th class="py-3 px-4">姓名</th>
+                <th class="py-3 px-4">挑戰總分</th>
+                <th class="py-3 px-4">答對 / 總題數 (正確率)</th>
+                <th class="py-3 px-4">最高連擊</th>
+                <th class="py-3 px-4">達成時間</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-tbody" class="divide-y divide-slate-100 text-sm"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+// =========================================================================
+// 繪圖引擎：SVG 向量分解圖（支援左右鏡像，文字永遠保持正向）
+// =========================================================================
+const D2R = Math.PI / 180;
+const MIN_FONT = 16; // SVG 內文字的最小字級（以 600 寬的畫布座標計）
+
+// 手機上畫布被縮小，字會跟著變小：讓螢幕上的字至少約 13px
+function minFont() {
+  const svg = document.getElementById('physics-svg');
+  const w = svg ? svg.getBoundingClientRect().width : 0;
+  return w > 0 ? Math.max(MIN_FONT, 13 * 600 / w) : MIN_FONT;
+}
+
+// 'F_s' → F<sub>s</sub>（給 HTML 用）
+function symHtml(s) {
+  return String(s).replace(/_([A-Za-z0-9]+)/g, '<sub>$1</sub>');
+}
+
+function tx(x) {
+  // 左右鏡像：以 x = 300 為對稱軸
+  return currentState.flip === 1 ? (600 - x) : x;
+}
+
+function createSvgEl(tag, attrs = {}) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  return el;
+}
+
+function ensureDefs(svg) {
+  if (svg.querySelector('defs')) return;
+  const defs = createSvgEl('defs');
+  [
+    { id: 'arrow-main', color: '#0f172a' },
+    { id: 'arrow-target', color: '#e11d48' },
+    { id: 'arrow-other', color: '#64748b' },
+    { id: 'arrow-gray', color: '#64748b' }
+  ].forEach(({ id, color }) => {
+    const marker = createSvgEl('marker', {
+      id, viewBox: '0 0 10 10', refX: '8', refY: '5',
+      markerWidth: '6', markerHeight: '6', orient: 'auto-start-reverse'
+    });
+    marker.appendChild(createSvgEl('path', { d: 'M 0 1.5 L 9 5 L 0 8.5 z', fill: color }));
+    defs.appendChild(marker);
+  });
+  svg.appendChild(defs);
+}
+
+function drawLine(svg, x1, y1, x2, y2, stroke = '#334155', width = 2, dash = '') {
+  const attrs = { x1: tx(x1), y1, x2: tx(x2), y2, stroke, 'stroke-width': width, 'stroke-linecap': 'round' };
+  if (dash) attrs['stroke-dasharray'] = dash;
+  svg.appendChild(createSvgEl('line', attrs));
+}
+
+function drawArrow(svg, x1, y1, x2, y2, stroke = '#0f172a', width = 3.5, markerId = 'arrow-main', dash = '') {
+  ensureDefs(svg);
+  const attrs = {
+    x1: tx(x1), y1, x2: tx(x2), y2, stroke, 'stroke-width': width,
+    'marker-end': `url(#${markerId})`, 'stroke-linecap': 'round'
+  };
+  if (dash) attrs['stroke-dasharray'] = dash;
+  svg.appendChild(createSvgEl('line', attrs));
+}
+
+function drawCircle(svg, cx, cy, r, fill = '#dbeafe', stroke = '#1e40af') {
+  svg.appendChild(createSvgEl('circle', { cx: tx(cx), cy, r, fill, stroke, 'stroke-width': 2.5 }));
+}
+
+function drawEllipse(svg, cx, cy, rx, ry, stroke = '#cbd5e1', dash = '5,4') {
+  svg.appendChild(createSvgEl('ellipse', {
+    cx: tx(cx), cy, rx, ry, fill: 'none', stroke, 'stroke-width': 2, 'stroke-dasharray': dash
+  }));
+}
+
+function drawPolygon(svg, pts, fill = '#e2e8f0', stroke = '#334155', width = 2.5) {
+  svg.appendChild(createSvgEl('polygon', {
+    points: pts.map(([x, y]) => `${tx(x)},${y}`).join(' '),
+    fill, stroke, 'stroke-width': width, 'stroke-linejoin': 'round'
+  }));
+}
+
+function drawBox(svg, x, y, w, h, label = '') {
+  const realX = currentState.flip === 1 ? (600 - x - w) : x;
+  svg.appendChild(createSvgEl('rect', {
+    x: realX, y, width: w, height: h, rx: 5, fill: '#e2e8f0', stroke: '#334155', 'stroke-width': 2.5
+  }));
+  if (label) drawText(svg, x + w / 2, y + h / 2 + 6, label, '#1e293b', 17, true);
+}
+
+// 以中心點 (cx, cy) 旋轉 deg 度（螢幕上順時針為正）的矩形，鏡像時角度自動反向
+function drawRotRect(svg, cx, cy, w, h, deg, fill = '#dbeafe', stroke = '#1d4ed8') {
+  const g = createSvgEl('g', {
+    transform: `translate(${tx(cx)}, ${cy}) rotate(${currentState.flip === 1 ? -deg : deg})`
+  });
+  g.appendChild(createSvgEl('rect', {
+    x: -w / 2, y: -h / 2, width: w, height: h, rx: 4, fill, stroke, 'stroke-width': 2.5
+  }));
+  svg.appendChild(g);
+}
+
+function drawRectBar(svg, x1, y1, x2, y2, thickness = 8, fill = '#cbd5e1', stroke = '#334155') {
+  const sx1 = tx(x1), sy1 = y1, sx2 = tx(x2), sy2 = y2;
+  const dx = sx2 - sx1, dy = sy2 - sy1;
+  const len = Math.hypot(dx, dy);
+  const nx = -dy / len * (thickness / 2);
+  const ny = dx / len * (thickness / 2);
+  svg.appendChild(createSvgEl('polygon', {
+    points: `${sx1 + nx},${sy1 + ny} ${sx2 + nx},${sy2 + ny} ${sx2 - nx},${sy2 - ny} ${sx1 - nx},${sy1 - ny}`,
+    fill, stroke, 'stroke-width': 2, 'stroke-linejoin': 'round'
+  }));
+}
+
+// 鋸齒彈簧：兩端各留一小段直線
+function drawSpring(svg, x1, y1, x2, y2, coils = 8, amp = 9, color = '#64748b', width = 3) {
+  const dx = x2 - x1, dy = y2 - y1;
+  const len = Math.hypot(dx, dy);
+  const ux = dx / len, uy = dy / len;
+  const nx = -uy, ny = ux;
+  const lead = Math.min(14, len * 0.12);
+  const pts = [[x1, y1], [x1 + ux * lead, y1 + uy * lead]];
+  const body = len - 2 * lead;
+  const n = coils * 2;
+  for (let i = 1; i < n; i++) {
+    const s = lead + body * i / n;
+    const side = (i % 2 === 1) ? 1 : -1;
+    pts.push([x1 + ux * s + nx * amp * side, y1 + uy * s + ny * amp * side]);
+  }
+  pts.push([x2 - ux * lead, y2 - uy * lead], [x2, y2]);
+  svg.appendChild(createSvgEl('polyline', {
+    points: pts.map(([x, y]) => `${tx(x)},${y}`).join(' '),
+    fill: 'none', stroke: color, 'stroke-width': width,
+    'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+  }));
+}
+
+function drawWall(svg, x1, y1, x2, y2, side = 'top') {
+  drawLine(svg, x1, y1, x2, y2, '#334155', 3);
+  const steps = 10;
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const px = x1 + (x2 - x1) * t;
+    const py = y1 + (y2 - y1) * t;
+    if (side === 'top') drawLine(svg, px, py, px - 8, py - 10, '#94a3b8', 1.5);
+    else if (side === 'bottom') drawLine(svg, px, py, px - 8, py + 10, '#94a3b8', 1.5);
+    else if (side === 'left') drawLine(svg, px, py, px - 10, py - 8, '#94a3b8', 1.5);
+    else if (side === 'right') drawLine(svg, px, py, px + 10, py - 8, '#94a3b8', 1.5);
+  }
+}
+
+function drawPath(svg, d, stroke = '#334155', width = 2.5, fill = 'none') {
+  const g = createSvgEl('g');
+  if (currentState.flip === 1) g.setAttribute('transform', 'translate(600, 0) scale(-1, 1)');
+  g.appendChild(createSvgEl('path', {
+    d, stroke, 'stroke-width': width, fill, 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+  }));
+  svg.appendChild(g);
+}
+
+// 文字：'F_s?' 會畫成 F、下標 s、再接 ?；最小字級 MIN_FONT
+function drawText(svg, x, y, str, color = '#0f172a', size = 16, bold = false, bgPill = false) {
+  size = Math.max(size, minFont());
+  const sx = tx(x);
+  const m = String(str).match(/^([^_]*)_([A-Za-z0-9]+)(.*)$/);
+  const main = m ? m[1] : String(str);
+  const sub = m ? m[2] : '';
+  const tail = m ? m[3] : '';
+  if (bgPill) {
+    const w = (main.length + sub.length * 0.7 + tail.length) * (size * 0.62) + 16;
+    const h = size + 10;
+    svg.appendChild(createSvgEl('rect', {
+      x: sx - w / 2, y: y - h + 6, width: w, height: h, rx: 6,
+      fill: '#ffffff', stroke: color, 'stroke-width': 1.5, opacity: '0.95'
+    }));
+  }
+  const text = createSvgEl('text', {
+    x: sx, y, fill: color, 'font-size': size,
+    'font-weight': bold ? '800' : '600', 'text-anchor': 'middle', class: 'math-font'
+  });
+  if (!bgPill) {
+    text.setAttribute('stroke', '#f8fafc');
+    text.setAttribute('stroke-width', '4');
+    text.setAttribute('stroke-linejoin', 'round');
+    text.setAttribute('paint-order', 'stroke');
+  }
+  text.appendChild(document.createTextNode(main));
+  if (sub) {
+    const ts = createSvgEl('tspan', { 'font-size': Math.round(size * 0.7), dy: Math.round(size * 0.22) });
+    ts.textContent = sub;
+    text.appendChild(ts);
+    if (tail) {
+      const tt = createSvgEl('tspan', { dy: -Math.round(size * 0.22) });
+      tt.textContent = tail;
+      text.appendChild(tt);
+    }
+  }
+  svg.appendChild(text);
+}
+
+function drawArc(svg, cx, cy, r, startDeg, endDeg, color = '#f59e0b', width = 2.5) {
+  const scx = tx(cx), scy = cy;
+  let sDeg = startDeg, eDeg = endDeg;
+  if (currentState.flip === 1) { sDeg = 180 - endDeg; eDeg = 180 - startDeg; }
+  const sRad = sDeg * D2R, eRad = eDeg * D2R;
+  const x1 = scx + r * Math.cos(sRad), y1 = scy + r * Math.sin(sRad);
+  const x2 = scx + r * Math.cos(eRad), y2 = scy + r * Math.sin(eRad);
+  svg.appendChild(createSvgEl('path', {
+    d: `M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}`, fill: 'none', stroke: color, 'stroke-width': width
+  }));
+}
+
+function drawAngleBetween(svg, cx, cy, ang1, ang2, r, color, label, fontSize = 18) {
+  const a1 = ((ang1 % 360) + 360) % 360;
+  const a2 = ((ang2 % 360) + 360) % 360;
+  let diff = a2 - a1;
+  if (diff > 180) diff -= 360;
+  if (diff < -180) diff += 360;
+  const start = diff >= 0 ? a1 : a2;
+  const end = diff >= 0 ? a1 + diff : a2 - diff;
+  drawArc(svg, cx, cy, r, start, end, color, 2.5);
+  const midRad = (a1 + diff / 2) * D2R;
+  drawText(svg, cx + (r + 18) * Math.cos(midRad), cy + (r + 18) * Math.sin(midRad) + 6, label, color, fontSize, true);
+}
+
+function drawRightAngleMark(svg, px, py, aX, aY, bX, bY) {
+  const size = 10;
+  const dAx = aX - px, dAy = aY - py, lenA = Math.hypot(dAx, dAy);
+  const dBx = bX - px, dBy = bY - py, lenB = Math.hypot(dBx, dBy);
+  if (lenA < 14 || lenB < 14) return; // 太短就不畫，避免擠成一團
+  const uAx = dAx / lenA * size, uAy = dAy / lenA * size;
+  const uBx = dBx / lenB * size, uBy = dBy / lenB * size;
+  svg.appendChild(createSvgEl('polyline', {
+    points: `${tx(px + uAx)},${py + uAy} ${tx(px + uAx + uBx)},${py + uAy + uBy} ${tx(px + uBx)},${py + uBy}`,
+    fill: 'none', stroke: '#64748b', 'stroke-width': 1.5
+  }));
+}
+
+// 核心：向量 v 沿兩個互相垂直的軸（ax1、ax2，皆已指向分量方向）分解
+//   thetaAxis：θ 標在 v 與哪一條軸之間（0 或 1）
+//   askAxis  ：題目詢問哪一條軸上的分力（0 或 1）
+//   答案：askAxis === thetaAxis → cos θ（鄰邊），否則 sin θ（對邊）
+function drawDecompTriangle(svg, cfg) {
+  const { ox, oy, vx, vy, ax1x, ax1y, ax2x, ax2y, symbol, thetaAxis, askAxis, showHint } = cfg;
+
+  const proj1Len = vx * ax1x + vy * ax1y;
+  const proj2Len = vx * ax2x + vy * ax2y;
+  const p1x = ox + ax1x * proj1Len, p1y = oy + ax1y * proj1Len;
+  const p2x = ox + ax2x * proj2Len, p2y = oy + ax2y * proj2Len;
+  const tipX = ox + vx, tipY = oy + vy;
+
+  // 兩條正交座標軸（虛線，長度跟著分量走，不會亂穿過牆壁或地板）
+  drawLine(svg, ox - ax1x * 22, oy - ax1y * 22, ox + ax1x * (proj1Len + 45), oy + ax1y * (proj1Len + 45), '#94a3b8', 1.5, '4,4');
+  drawLine(svg, ox - ax2x * 22, oy - ax2y * 22, ox + ax2x * (proj2Len + 45), oy + ax2y * (proj2Len + 45), '#94a3b8', 1.5, '4,4');
+
+  // 矩形的另外兩邊 + 兩個直角記號
+  drawLine(svg, p1x, p1y, tipX, tipY, '#94a3b8', 1.8, '5,4');
+  drawLine(svg, p2x, p2y, tipX, tipY, '#94a3b8', 1.8, '5,4');
+  drawRightAngleMark(svg, p1x, p1y, ox, oy, tipX, tipY);
+  drawRightAngleMark(svg, p2x, p2y, ox, oy, tipX, tipY);
+
+  // 兩個分力：被詢問的軸用桃紅色粗箭頭
+  const ask1 = (askAxis === 0);
+  drawArrow(svg, ox, oy, p1x, p1y, ask1 ? '#e11d48' : '#64748b', ask1 ? 4.5 : 2.5, ask1 ? 'arrow-target' : 'arrow-other');
+  drawArrow(svg, ox, oy, p2x, p2y, !ask1 ? '#e11d48' : '#64748b', !ask1 ? 4.5 : 2.5, !ask1 ? 'arrow-target' : 'arrow-other');
+
+  // 主向量
+  drawArrow(svg, ox, oy, tipX, tipY, '#0f172a', 4, 'arrow-main');
+  const vLen = Math.hypot(vx, vy);
+  const lp = cfg.labelPos || [tipX + vx / vLen * 28, tipY + vy / vLen * 28];
+  drawText(svg, lp[0], lp[1] + 11, symbol, '#0f172a', 20, true, true);
+
+  // 待求分力的「?」標籤
+  const tMidX = ask1 ? (ox + (p1x - ox) * 0.55 - ax2x * 26) : (ox + (p2x - ox) * 0.55 - ax1x * 26);
+  const tMidY = ask1 ? (oy + (p1y - oy) * 0.55 - ax2y * 26) : (oy + (p2y - oy) * 0.55 - ax1y * 26);
+  drawText(svg, tMidX, tMidY + 9, `${symbol}?`, '#e11d48', 19, true, true);
+
+  // 夾角 θ
+  const vAng = Math.atan2(vy, vx) / D2R;
+  const a1Ang = Math.atan2(p1y - oy, p1x - ox) / D2R;
+  const a2Ang = Math.atan2(p2y - oy, p2x - ox) / D2R;
+  const activeAng = thetaAxis === 0 ? a1Ang : a2Ang;
+  drawAngleBetween(svg, ox, oy, vAng, activeAng, 44, '#f59e0b', 'θ', 20);
+
+  // 幾何推導：互餘角與內錯角
+  if (showHint) {
+    const otherAng = thetaAxis === 0 ? a2Ang : a1Ang;
+    drawAngleBetween(svg, ox, oy, vAng, otherAng, 66, '#8b5cf6', '90°-θ', 16);
+    drawAngleBetween(svg, tipX, tipY, vAng + 180, activeAng + 180, 42, '#10b981', 'θ', 17);
+  }
+}
+
+// 題庫用的簡寫：自動帶入 symbol、θ 位置、詢問的軸、是否顯示推導
+function decomp(svg, st, c) {
+  drawDecompTriangle(svg, {
+    ox: c.ox, oy: c.oy, vx: c.v[0], vy: c.v[1],
+    ax1x: c.ax1[0], ax1y: c.ax1[1], ax2x: c.ax2[0], ax2y: c.ax2[1],
+    symbol: st.model.symbol, thetaAxis: st.thetaAxis, askAxis: st.askAxis, showHint: st.showHint,
+    labelPos: c.labelPos
+  });
+}
+
+// 依題型資料產生題幹、答案、解析（答案由「θ 軸」與「詢問軸」是否相同決定，不再手寫）
+function buildMeta(model, thetaAxis, askAxis) {
+  const same = thetaAxis === askAxis;
+  const ans = same ? 'cos' : 'sin';
+  const S = symHtml(model.symbol);
+  const ref = model.refs[thetaAxis];
+  const prompt = model.stem(ref, model.axisDesc[askAxis], S);
+  const bridge = model.bridge ? model.bridge[thetaAxis] : `θ 就是 ${S} 與「${ref}」的夾角。`;
+  const ax = model.axes;
+  const explanation =
+    `${bridge}把 ${S} 沿「${ax[0]}」與「${ax[1]}」兩個互相垂直的方向分解，` +
+    `θ 夾在 ${S} 與「${ax[thetaAxis]}」之間。` +
+    `所問的「${ax[askAxis]}」分力在 θ 的${same ? '鄰邊' : '對邊'}，所以等於 ${S} ${ans} θ。`;
+  return { prompt, ans, explanation, S };
+}
+
+// =========================================================================
+// 題庫：每個題型只需要描述「幾何」與「題目文字」，答案與解析由引擎自動產生。
+//
+// 欄位說明
+//   axes[0], axes[1]   ：分解時使用的兩個互相垂直方向（與 draw 裡的 ax1、ax2 順序相同）
+//   axisDesc[i]        ：題目詢問「第 i 軸分力」時使用的文字
+//   refs[i]            ：θ 標在「向量與第 i 軸之間」時，題幹用來描述 θ 的說法
+//   bridge[i]（可省略）：θ 的說法與圖上夾角不同時，補一句幾何轉換（互餘角、內錯角…）
+//   stem(ref, ask, S)  ：題幹（S 為已加下標的符號）
+//   draw(svg, st)      ：畫圖。st.thetaAxis / st.askAxis 由引擎給定
+// 新增題型：複製任一題型、改幾何與文字即可，不必手寫答案。
+// =========================================================================
+const UNITS = [
+  { id: '03-1', name: '03-1 力與平移平衡' },
+  { id: '03-2', name: '03-2 力矩與轉動平衡' },
+  { id: '03-3', name: '03-3 靜力平衡綜合' },
+  { id: 'classic', name: '經典切線/斜面力學' }
+];
+
+const QUESTION_MODELS = [
+  // -------------------- 【03-1 力與平移平衡】 --------------------
+  {
+    id: 'cables_ceiling', unit: '03-1', title: '共點力平衡：天花板斜繩張力分解', symbol: 'T',
+    axes: ['水平方向', '鉛直方向'],
+    axisDesc: ['水平方向分力 T<sub>x</sub>', '鉛直方向分力 T<sub>y</sub>'],
+    refs: ['水平天花板', '鉛直虛線'],
+    stem: (ref, ask) => `重物懸掛達靜力平衡，右側輕繩張力為 T，輕繩與「${ref}」的夾角為 θ，請問張力 T 的「${ask}」量值為何？`,
+    draw(svg, st) {
+      const cx = 300, cy = 200, a = st.angleDeg * D2R;
+      const ropeLen = (cy - 65) / Math.sin(a);
+      drawWall(svg, 110, 65, 520, 65, 'top');
+      drawLine(svg, cx, cy, cx - 95, 65, '#64748b', 2.5);
+      drawLine(svg, cx, cy, cx + Math.cos(a) * ropeLen, 65, '#94a3b8', 2.5); // 繩一路接到天花板
+      drawLine(svg, cx, cy, cx, cy + 55, '#334155', 2.5);
+      drawBox(svg, cx - 24, cy + 55, 48, 36, 'W');
+      decomp(svg, st, { ox: cx, oy: cy, v: [Math.cos(a) * 150, -Math.sin(a) * 150], ax1: [1, 0], ax2: [0, -1] });
+    }
+  },
+  {
+    id: 'heavy_rope_wall', unit: '03-1', title: '均勻懸垂粗繩：牆壁端點切線張力分解', symbol: 'T',
+    axes: ['水平方向', '鉛直方向'],
+    axisDesc: ['水平分量（整條繩各處相等，等於最低點 C 的張力）', '鉛直分量（支撐「端點到最低點 C」那段繩的重量）'],
+    refs: ['水平虛線', '鉛直牆面'],
+    stem: (ref, ask) => `一條有重量的均勻粗繩懸掛於兩鉛直牆之間（兩端高度不同），右端點處繩的切線張力為 T（沿繩的切線、指向牆），且與「${ref}」的夾角為 θ。請問 T 的「${ask}」為何？`,
+    draw(svg, st) {
+      // 二次貝茲曲線＝拋物線，近似均勻粗繩；張力沿端點切線方向（P2 − P1）
+      const P0 = [120, 190], P1 = [255, 350], P2 = [440, 130];
+      drawWall(svg, 120, 60, 120, 340, 'left');
+      drawWall(svg, 440, 60, 440, 340, 'right');
+      drawPath(svg, `M ${P0[0]} ${P0[1]} Q ${P1[0]} ${P1[1]} ${P2[0]} ${P2[1]}`, '#475569', 4, 'none');
+      const t = (P0[1] - P1[1]) / (P0[1] - 2 * P1[1] + P2[1]); // 切線水平處＝最低點
+      const bx = (1 - t) ** 2 * P0[0] + 2 * t * (1 - t) * P1[0] + t * t * P2[0];
+      const by = (1 - t) ** 2 * P0[1] + 2 * t * (1 - t) * P1[1] + t * t * P2[1];
+      drawCircle(svg, bx, by, 5, '#334155', '#334155');
+      drawText(svg, bx, by + 28, 'C（最低點）', '#475569', 16, true);
+      const dx = P2[0] - P1[0], dy = P2[1] - P1[1], L = Math.hypot(dx, dy);
+      decomp(svg, st, { ox: P2[0], oy: P2[1], v: [dx / L * 115, dy / L * 115], ax1: [1, 0], ax2: [0, -1] });
+    }
+  },
+  {
+    id: 'spring_midpoint_pull', unit: '03-1', title: '上下固定輕彈簧：中點水平拉開之彈力分解', symbol: 'F_s',
+    axes: ['水平方向', '鉛直方向'],
+    axisDesc: ['水平向左分量（兩段彈簧合起來與外力 F 平衡）', '鉛直分量（上下兩段彈簧的鉛直分力互相抵消）'],
+    refs: ['水平拉力方向', '鉛直虛線'],
+    stem: (ref, ask, S) => `兩段完全相同的輕彈簧上下兩端固定，於中點施水平外力 F 拉開，使上半段彈簧的彈力 ${S} 與「${ref}」的夾角為 θ。請問 ${S} 的「${ask}」為何？`,
+    draw(svg, st) {
+      // 上下錨點對稱、兩段彈簧同角度
+      const phi = 40 * D2R, ox = 312, oy = 200;
+      const axx = ox - 145 * Math.tan(phi);
+      drawWall(svg, axx - 90, 55, axx + 90, 55, 'top');
+      drawWall(svg, axx - 90, 345, axx + 90, 345, 'bottom');
+      drawLine(svg, axx, 55, axx, 345, '#cbd5e1', 1.5, '5,5');
+      drawSpring(svg, ox, oy, axx, 55, 8, 9, '#94a3b8', 2.5);
+      drawSpring(svg, ox, oy, axx, 345, 8, 9, '#94a3b8', 2.5);
+      drawArrow(svg, ox, oy, ox + 90, oy, '#64748b', 3, 'arrow-gray');
+      drawText(svg, ox + 108, oy + 6, 'F', '#475569', 19, true);
+      decomp(svg, st, { ox, oy, v: [-Math.sin(phi) * 125, -Math.cos(phi) * 125], ax1: [-1, 0], ax2: [0, -1] });
+    }
+  },
+  {
+    id: 'two_balls_spring', unit: '03-1', title: '雙球懸掛夾水平彈簧：輕繩張力分解', symbol: 'T',
+    axes: ['水平方向', '鉛直方向'],
+    axisDesc: ['水平分力（與彈簧的推力平衡）', '鉛直分力（平衡球重 W）'],
+    refs: ['水平彈簧方向', '鉛直方向'],
+    stem: (ref, ask) => `兩相同重球用等長輕繩懸掛於同一點，中間夾一壓縮輕彈簧呈平衡。分析左球所受繩張力 T，若輕繩與「${ref}」的夾角為 θ，則 T 的「${ask}」為何？`,
+    draw(svg, st) {
+      const phi = 35 * D2R, L = 150, by = 250, sx = 300;
+      const off = L * Math.sin(phi), sy = by - L * Math.cos(phi);
+      const lx = sx - off, rx = sx + off;
+      drawWall(svg, sx - 90, sy, sx + 90, sy, 'top');
+      drawLine(svg, sx, sy, rx, by, '#94a3b8', 2.5);
+      drawLine(svg, sx, sy, lx, by, '#64748b', 2.5);
+      drawSpring(svg, lx + 20, by, rx - 20, by, 7, 8, '#94a3b8', 2.5);
+      drawCircle(svg, rx, by, 20, '#e2e8f0', '#475569');
+      drawCircle(svg, lx, by, 20, '#dbeafe', '#1e40af');
+      decomp(svg, st, { ox: lx, oy: by, v: [Math.sin(phi) * 125, -Math.cos(phi) * 125], ax1: [1, 0], ax2: [0, -1] });
+    }
+  },
+  {
+    id: 'stacked_cylinders', unit: '03-1', title: '容器內疊球：球心連線作用力分解', symbol: 'F',
+    axes: ['水平方向', '鉛直方向'],
+    axisDesc: ['水平分力（與牆壁對上球的正向力平衡）', '鉛直分力（支撐上球的重量）'],
+    refs: ['水平方向', '鉛直中心線'],
+    stem: (ref, ask) => `兩光滑圓球置於直立容器內，上球靠著左壁、下球靠著右壁與底面。兩球間作用力 F 必沿「球心連線」方向，若球心連線與「${ref}」的夾角為 θ，請問上球所受作用力 F 的「${ask}」為何？`,
+    draw(svg, st) {
+      const r = 56, ux = 330, uy = 190, a = 52 * D2R;
+      const lx = ux + Math.cos(a) * 2 * r, ly = uy + Math.sin(a) * 2 * r;
+      drawWall(svg, ux - r, 90, ux - r, ly + r, 'left');
+      drawWall(svg, lx + r, 90, lx + r, ly + r, 'right');
+      drawWall(svg, ux - r, ly + r, lx + r, ly + r, 'bottom');
+      drawCircle(svg, lx, ly, r, '#f1f5f9', '#64748b');
+      drawCircle(svg, ux, uy, r, '#eff6ff', '#3b82f6');
+      drawLine(svg, ux, uy, lx, ly, '#94a3b8', 1.5, '4,4');
+      // 箭頭長度控制在容器內，不穿牆
+      decomp(svg, st, { ox: ux, oy: uy, v: [-Math.cos(a) * 84, -Math.sin(a) * 84], ax1: [-1, 0], ax2: [0, -1] });
+    }
+  },
+  {
+    id: 'bowl_spheres', unit: '03-1', title: '半圓形碗內雙球：碗壁正向力分解', symbol: 'N',
+    axes: ['水平方向', '鉛直方向'],
+    axisDesc: ['水平分力 N<sub>x</sub>（與另一球的推力平衡）', '鉛直分力 N<sub>y</sub>（支撐球重 W）'],
+    refs: ['水平線', '鉛直線'],
+    stem: (ref, ask) => `兩顆相同的光滑小球放在光滑半圓形碗內，彼此接觸並保持靜止。碗壁對左球的正向力 N 必指向碗心 O。若 N 與「${ref}」的夾角為 θ，請問 N 的「${ask}」為何？`,
+    draw(svg, st) {
+      // 兩球等高、互相接觸：球心到碗心距離 R − r，且球心水平相距 r（到中線），故 h² = (R−r)² − r²
+      const O = [330, 115], R = 165, r = 60;
+      const h = Math.sqrt((R - r) ** 2 - r ** 2);
+      const A = [O[0] - r, O[1] + h], B = [O[0] + r, O[1] + h];
+      drawPath(svg, `M ${O[0] - R} ${O[1]} A ${R} ${R} 0 0 0 ${O[0] + R} ${O[1]}`, '#475569', 4, 'none');
+      drawLine(svg, O[0] - R - 14, O[1], O[0] + R + 14, O[1], '#94a3b8', 2);
+      drawCircle(svg, B[0], B[1], r, '#f1f5f9', '#64748b');
+      drawCircle(svg, A[0], A[1], r, '#dbeafe', '#2563eb');
+      drawLine(svg, A[0], A[1], O[0], O[1], '#94a3b8', 1.5, '4,4');
+      drawCircle(svg, O[0], O[1], 4, '#334155', '#334155');
+      drawText(svg, O[0] + 66, O[1] - 12, '碗心 O', '#475569', 16, true);
+      const dx = O[0] - A[0], dy = O[1] - A[1], L = Math.hypot(dx, dy);
+      decomp(svg, st, { ox: A[0], oy: A[1], v: [dx / L * 98, dy / L * 98], ax1: [1, 0], ax2: [0, -1] });
+    }
+  },
+  {
+    id: 'v_groove_sphere', unit: '03-1', title: 'V 形槽內光滑圓球：斜面正向力分解', symbol: 'N',
+    axes: ['水平方向', '鉛直方向'],
+    axisDesc: ['水平方向分力 N<sub>x</sub>', '鉛直方向分力 N<sub>y</sub>'],
+    refs: ['斜面與鉛直線的夾角', '斜面與水平地面的夾角'],
+    bridge: [
+      '斜面與鉛直線夾 θ。正向力 N 垂直於斜面、水平線垂直於鉛直線，兩邊分別互相垂直，所以 N 與「水平方向」的夾角也是 θ。',
+      '斜面與水平地面夾 θ。正向力 N 垂直於斜面、鉛直線垂直於水平線，兩邊分別互相垂直，所以 N 與「鉛直方向」的夾角也是 θ（超常考的陷阱）。'
+    ],
+    stem: (ref, ask) => `光滑圓球置於左右對稱的 V 形槽中，左壁對圓球施以垂直於槽面的正向力 N。已知左槽「${ref}」為 θ，請問正向力 N 的「${ask}」量值為何？`,
+    draw(svg, st) {
+      // 圓球同時與兩面槽壁相切：槽壁與水平夾 φ，球心在對稱軸上
+      const phi = 52 * D2R, C = [290, 215], r = 52;
+      const nL = [Math.sin(phi), -Math.cos(phi)];     // 左壁正向力方向（右上）
+      const nR = [-Math.sin(phi), -Math.cos(phi)];    // 右壁正向力方向（左上）
+      const K = [C[0] - r * nL[0], C[1] - r * nL[1]]; // 左壁切點
+      const s = (C[0] - K[0]) / Math.cos(phi);
+      const V = [C[0], K[1] + s * Math.sin(phi)];      // 槽底頂點（在對稱軸上）
+      const top = [175 * Math.cos(phi), 175 * Math.sin(phi)];
+      drawPolygon(svg, [[V[0] - top[0], V[1] - top[1]], V, [V[0] + top[0], V[1] - top[1]], [V[0] + top[0], 345], [V[0] - top[0], 345]], '#e2e8f0', '#334155', 3);
+      drawCircle(svg, C[0], C[1], r, '#fef3c7', '#d97706');
+      drawArrow(svg, C[0], C[1], C[0] + nR[0] * 85, C[1] + nR[1] * 85, '#64748b', 2.5, 'arrow-gray');
+      drawText(svg, C[0] + nR[0] * 85 - 16, C[1] + nR[1] * 85 - 8, "N'", '#475569', 16, true);
+      decomp(svg, st, { ox: C[0], oy: C[1], v: [nL[0] * 115, nL[1] * 115], ax1: [1, 0], ax2: [0, -1] });
+    }
+  },
+
+  // -------------------- 【03-2 力矩與轉動平衡】 --------------------
+  {
+    id: 'torque_horizontal_rod', unit: '03-2', title: '力矩基礎：斜向施力拉水平細桿之分力', symbol: 'F',
+    axes: ['平行細桿方向', '垂直細桿方向'],
+    axisDesc: ['平行於細桿的分力（力的作用線通過支點，不產生力矩）', '垂直於細桿的有效分力（產生力矩）'],
+    refs: ['水平細桿', '垂直細桿的方向'],
+    stem: (ref, ask) => `長 r 的水平細桿左端為支點 O，右端受斜向外力 F 作用。已知 F 與「${ref}」的夾角為 θ，請問 F 的「${ask}」量值為何？`,
+    draw(svg, st) {
+      const ox = 330, oy = 230, a = st.angleDeg * D2R;
+      drawRectBar(svg, 150, oy, ox, oy, 10, '#cbd5e1', '#334155');
+      drawCircle(svg, 150, oy, 7, '#f59e0b', '#1e293b');
+      drawText(svg, 126, oy + 6, 'O', '#1e293b', 19, true);
+      decomp(svg, st, { ox, oy, v: [Math.cos(a) * 135, -Math.sin(a) * 135], ax1: [1, 0], ax2: [0, -1] });
+    }
+  },
+  {
+    id: 'torque_lever_arm', unit: '03-2', title: '力臂分解法：由支點向力的作用線作垂直力臂', symbol: 'r',
+    axes: ['沿力作用線方向', '垂直力作用線方向'],
+    axisDesc: ['沿力作用線方向的投影長', '垂直力作用線方向的距離（有效力臂 d，即支點 O 到力作用線的垂直距離）'],
+    refs: ['水平細桿 r', '鉛直方向'],
+    bridge: [
+      '力的作用線與水平細桿夾 θ，所以細桿 r 與「沿力作用線方向」的夾角就是 θ。',
+      '力的作用線與鉛直線夾 θ。「垂直力作用線方向」與作用線垂直、水平細桿與鉛直線垂直，兩邊分別互相垂直，所以 r 與「垂直力作用線方向」的夾角是 θ。'
+    ],
+    stem: (ref, ask) => `【力臂分解訓練】細桿長為 r（左端為支點 O），右端施力 F 的作用線與「${ref}」的夾角為 θ。以細桿 r 為斜邊，請問「${ask}」為何？`,
+    draw(svg, st) {
+      const ox = 180, oy = 210, len = 150, a = 40 * D2R;
+      const ax1 = [Math.cos(a), -Math.sin(a)], ax2 = [Math.sin(a), Math.cos(a)];
+      const ex = ox + len, ey = oy;
+      drawLine(svg, ex - ax1[0] * 130, ey - ax1[1] * 130, ex + ax1[0] * 90, ey + ax1[1] * 90, '#94a3b8', 2, '6,4');
+      if (st.thetaAxis === 1) drawLine(svg, ex, ey - 75, ex, ey + 75, '#cbd5e1', 1.5, '5,5'); // 題幹提到鉛直線時才畫出
+      drawArrow(svg, ex, ey, ex + ax1[0] * 75, ey + ax1[1] * 75, '#0f172a', 3.5);
+      drawText(svg, ex + ax1[0] * 105, ey + ax1[1] * 105 + 4, 'F 作用線', '#0f172a', 16, true);
+      drawCircle(svg, ox, oy, 6, '#f59e0b', '#1e293b');
+      drawText(svg, ox - 20, oy + 6, 'O', '#1e293b', 19, true);
+      decomp(svg, st, { ox, oy, v: [len, 0], ax1, ax2, labelPos: [ox + len / 2, oy + 30] });
+    }
+  },
+  {
+    id: 'tilted_rod_two_weights', unit: '03-2', title: '雙質點斜桿：端點重力對轉軸之垂直分力', symbol: 'W',
+    axes: ['平行細桿方向', '垂直細桿方向'],
+    axisDesc: ['平行於細桿的分力（通過轉軸 O，不產生力矩）', '垂直於細桿的分力（產生重力力矩）'],
+    refs: ['鉛垂線', '水平線'],
+    bridge: [
+      '細桿與鉛垂線夾 θ，而重力 W 本身就沿鉛垂線，所以 W 與「平行細桿方向」的夾角就是 θ。',
+      '細桿與水平線夾 θ。W 垂直於水平線、「垂直細桿方向」垂直於細桿，兩邊分別互相垂直，所以 W 與「垂直細桿方向」的夾角是 θ。'
+    ],
+    stem: (ref, ask) => `輕細桿中心點 O 固定可轉動，兩端置有重物。已知細桿與「${ref}」的夾角為 θ，將下端重物的重力 W（鉛直向下）分解，請問 W 的「${ask}」量值為何？`,
+    draw(svg, st) {
+      const cx = 270, cy = 145, a = 38 * D2R, half = 85;
+      const rx = Math.sin(a), ry = Math.cos(a);   // 沿桿向下
+      const nx = -Math.cos(a), ny = Math.sin(a);  // 垂直桿
+      drawLine(svg, cx, cy - 80, cx, cy + 120, '#cbd5e1', 1.5, '4,4');
+      drawLine(svg, cx - rx * half, cy - ry * half, cx + rx * half, cy + ry * half, '#334155', 4);
+      drawCircle(svg, cx, cy, 5, '#f59e0b', '#0f172a');
+      drawText(svg, cx - 20, cy + 6, 'O', '#0f172a', 18, true);
+      drawCircle(svg, cx - rx * half, cy - ry * half, 11, '#e2e8f0', '#334155');
+      const ox = cx + rx * half, oy = cy + ry * half;
+      drawCircle(svg, ox, oy, 12, '#dbeafe', '#1d4ed8');
+      decomp(svg, st, { ox, oy, v: [0, 110], ax1: [rx, ry], ax2: [nx, ny] });
+    }
+  },
+  {
+    id: 'pivoted_rod_horizontal_pull', unit: '03-2', title: '轉動平衡：水平外力拉起斜桿之垂直分力', symbol: 'F',
+    axes: ['垂直木棒方向', '平行木棒方向'],
+    axisDesc: ['垂直於木棒的有效分力（產生逆時針力矩）', '平行於木棒的分力（通過支點 O，不產生力矩）'],
+    refs: ['鉛垂線', '水平線'],
+    bridge: [
+      '木棒與鉛垂線夾 θ。水平力 F 垂直於鉛垂線、「垂直木棒方向」垂直於木棒，兩邊分別互相垂直，所以 F 與「垂直木棒方向」的夾角是 θ。',
+      '木棒與水平線夾 θ，而 F 本身就沿水平方向，所以 F 與「平行木棒方向」的夾角就是 θ。'
+    ],
+    stem: (ref, ask) => `均勻木棒上端 O 點固定，下端施一「水平外力 F」使木棒呈平衡。已知木棒與「${ref}」的夾角為 θ，將水平力 F 沿垂直與平行木棒分解，請問 F 的「${ask}」為何？`,
+    draw(svg, st) {
+      const topX = 200, topY = 75, a = 36 * D2R, rodLen = 155;
+      const rx = Math.sin(a), ry = Math.cos(a);   // 沿棒向下
+      const nx = Math.cos(a), ny = -Math.sin(a);  // 垂直棒向右上
+      const ox = topX + rx * rodLen, oy = topY + ry * rodLen;
+      drawWall(svg, 140, topY, 280, topY, 'top');
+      drawLine(svg, topX, topY, topX, topY + 150, '#cbd5e1', 1.5, '5,5');
+      drawRectBar(svg, topX, topY, ox, oy, 8, '#e2e8f0', '#334155');
+      drawCircle(svg, topX, topY, 6, '#f59e0b', '#0f172a');
+      drawText(svg, topX - 20, topY + 22, 'O', '#0f172a', 18, true);
+      decomp(svg, st, { ox, oy, v: [130, 0], ax1: [nx, ny], ax2: [rx, ry] });
+    }
+  },
+  {
+    id: 'horizontal_beam_cable', unit: '03-2', title: '樞紐水平橫桿：外端斜拉輕繩張力分解', symbol: 'T',
+    axes: ['平行木棒方向（水平）', '垂直木棒方向（鉛直）'],
+    axisDesc: ['平行於木棒的水平分力 T<sub>x</sub>（壓向牆面樞紐）', '垂直於木棒的鉛直分力 T<sub>y</sub>（對樞紐 O 產生逆時針力矩）'],
+    refs: ['水平木棒', '鉛直牆面'],
+    stem: (ref, ask) => `長 L 的水平木棒左端以樞紐 O 固定於牆上，右端 P 用輕繩拉住固定於牆面。已知輕繩與「${ref}」的夾角為 θ，繩張力為 T，請問 T 的「${ask}」為何？`,
+    draw(svg, st) {
+      const wallX = 160, ox = 390, oy = 250, a = 40 * D2R;
+      drawWall(svg, wallX, 30, wallX, 320, 'left');
+      const hitY = oy - (ox - wallX) * Math.tan(a);
+      drawLine(svg, ox, oy, wallX, hitY, '#94a3b8', 2);
+      drawRectBar(svg, wallX, oy, ox, oy, 10, '#cbd5e1', '#334155');
+      drawCircle(svg, wallX, oy, 6, '#f59e0b', '#0f172a');
+      drawText(svg, wallX - 24, oy + 6, 'O', '#0f172a', 18, true);
+      drawLine(svg, 275, oy + 5, 275, oy + 45, '#334155', 2);
+      drawBox(svg, 255, oy + 45, 40, 30, 'W');
+      decomp(svg, st, { ox, oy, v: [-Math.cos(a) * 140, -Math.sin(a) * 140], ax1: [-1, 0], ax2: [0, -1] });
+    }
+  },
+  {
+    id: 'aerial_work_truck', unit: '03-2', title: '高架工作車斜伸支架：頂端負重之重力分解', symbol: 'W',
+    axes: ['平行支架方向', '垂直支架方向'],
+    axisDesc: ['平行支架軸向的分力（沿支架壓向車身）', '垂直於支架的分力（造成傾倒力矩）'],
+    refs: ['鉛垂線', '水平車身'],
+    bridge: [
+      '支架與鉛垂線夾 θ，而重力 W 本身就沿鉛垂線，所以 W 與「平行支架方向」的夾角就是 θ。',
+      '支架與水平車身夾 θ。W 垂直於水平線、「垂直支架方向」垂直於支架，兩邊分別互相垂直，所以 W 與「垂直支架方向」的夾角是 θ。'
+    ],
+    stem: (ref, ask) => `高架工作車的斜伸支架與「${ref}」的夾角為 θ，支架頂端工作台與人員總重為 W（鉛直向下）。將 W 分解為垂直與平行於支架的兩個分力，請問「${ask}」為何？`,
+    draw(svg, st) {
+      const baseX = 240, baseY = 260, a = 35 * D2R, boomLen = 150;
+      const rx = Math.sin(a), ry = -Math.cos(a); // 沿支架向右上
+      const ox = baseX + rx * boomLen, oy = baseY + ry * boomLen;
+      drawBox(svg, 130, 260, 150, 36, '車體');
+      drawCircle(svg, 165, 302, 14, '#475569', '#1e293b');
+      drawCircle(svg, 245, 302, 14, '#475569', '#1e293b');
+      drawLine(svg, baseX, baseY, baseX, baseY - 140, '#cbd5e1', 1.5, '5,5');
+      drawRectBar(svg, baseX, baseY, ox, oy, 9, '#94a3b8', '#334155');
+      drawBox(svg, ox - 34, oy - 30, 68, 30, '工作台');
+      decomp(svg, st, { ox, oy, v: [0, 125], ax1: [-rx, -ry], ax2: [-ry, rx] });
+    }
+  },
+
+  // -------------------- 【03-3 靜力平衡綜合】 --------------------
+  {
+    id: 'leaning_ladder_wall_force', unit: '03-3', title: '斜靠光滑牆長梯：牆面水平正向力分解', symbol: 'N',
+    axes: ['平行長梯方向', '垂直長梯方向'],
+    axisDesc: ['平行於長梯的分力（沿梯身，力的作用線通過梯腳，不產生力矩）', '垂直於長梯的有效分力（對梯腳支點產生力矩，與梯重的力矩平衡）'],
+    refs: ['水平地面', '鉛直光滑牆'],
+    bridge: [
+      '長梯與水平地面夾 θ，而光滑牆的正向力 N 沿水平方向，所以 N 與「平行長梯方向」的夾角就是 θ。',
+      '長梯與鉛直牆夾 θ。N 垂直於牆面、「垂直長梯方向」垂直於梯身，兩邊分別互相垂直，所以 N 與「垂直長梯方向」的夾角是 θ。'
+    ],
+    stem: (ref, ask) => `長梯斜靠在鉛直光滑牆上，與「${ref}」的夾角為 θ。光滑牆對梯頂施以「水平正向力 N」，將 N 分解為垂直與平行於長梯的方向，請問「${ask}」為何？`,
+    draw(svg, st) {
+      const wallX = 180, floorY = 290, a = 52 * D2R, L = 190;
+      const footX = wallX + Math.cos(a) * L, topY = floorY - Math.sin(a) * L;
+      drawWall(svg, wallX, 60, wallX, floorY, 'left');
+      drawWall(svg, wallX, floorY, 460, floorY, 'bottom');
+      drawRectBar(svg, wallX, topY, footX, floorY, 8, '#fde68a', '#92400e');
+      decomp(svg, st, { ox: wallX, oy: topY, v: [130, 0], ax1: [Math.cos(a), Math.sin(a)], ax2: [Math.sin(a), -Math.cos(a)] });
+    }
+  },
+  {
+    id: 'leaning_ladder_weight', unit: '03-3', title: '斜靠光滑牆長梯：梯重（或人重）對梯子之分解', symbol: 'W',
+    axes: ['垂直長梯方向', '平行長梯方向'],
+    axisDesc: ['垂直於長梯的分力（以梯腳為支點時，力矩 = 此分力 × L/2）', '平行於長梯的分力（沿梯身，通過梯腳，不產生力矩）'],
+    refs: ['水平地面', '鉛直牆面'],
+    bridge: [
+      '長梯與水平地面夾 θ。鉛直向下的 W 垂直於地面、「垂直長梯方向」垂直於梯身，兩邊分別互相垂直，所以 W 與「垂直長梯方向」的夾角是 θ。',
+      '長梯與鉛直牆夾 θ，而 W 本身就沿鉛直方向，所以 W 與「平行長梯方向」的夾角就是 θ。'
+    ],
+    stem: (ref, ask) => `均勻長梯斜靠於牆壁，長梯與「${ref}」的夾角為 θ。將長梯（或梯上之人）鉛直向下的重力 W 分解為垂直與平行於長梯的方向，請問「${ask}」為何？`,
+    draw(svg, st) {
+      const wallX = 175, floorY = 295, a = 55 * D2R, L = 230;
+      const footX = wallX + Math.cos(a) * L, topY = floorY - Math.sin(a) * L;
+      drawWall(svg, wallX, 60, wallX, floorY, 'left');
+      drawWall(svg, wallX, floorY, 460, floorY, 'bottom');
+      drawRectBar(svg, wallX, topY, footX, floorY, 8, '#fde68a', '#92400e');
+      const ox = (wallX + footX) / 2, oy = (topY + floorY) / 2;
+      // 向量長度 90：箭頭與分力都留在地板上方
+      decomp(svg, st, { ox, oy, v: [0, 90], ax1: [-Math.sin(a), Math.cos(a)], ax2: [Math.cos(a), Math.sin(a)], labelPos: [ox + 24, oy + 70] });
+    }
+  },
+  {
+    id: 'crane_boom_cable', unit: '03-3', title: '起重機吊臂平衡：鋼索斜向張力分解', symbol: 'T',
+    axes: ['水平方向', '鉛直方向'],
+    axisDesc: ['水平向左分量 T<sub>x</sub>', '鉛直向下分量 T<sub>y</sub>'],
+    refs: ['水平地面', '鉛直方向'],
+    stem: (ref, ask) => `起重機吊臂 OP 可繞 O 點轉動，頂端 P 繫一條斜向下的鋼索 PS 固定於地面。已知鋼索張力 T 與「${ref}」的夾角為 θ，請問 T 的「${ask}」為何？`,
+    draw(svg, st) {
+      const ox = 390, oy = 105, pivotX = 290, floorY = 290, a = 36 * D2R;
+      drawWall(svg, 110, floorY, 470, floorY, 'bottom');
+      drawRectBar(svg, pivotX, floorY, ox, oy, 8, '#cbd5e1', '#334155');
+      drawCircle(svg, pivotX, floorY, 6, '#f59e0b', '#0f172a');
+      drawText(svg, pivotX, floorY + 28, 'O', '#0f172a', 18, true);
+      const sX = ox - (floorY - oy) / Math.tan(a);
+      drawLine(svg, ox, oy, sX, floorY, '#94a3b8', 2);
+      drawText(svg, sX - 4, floorY + 28, 'S', '#475569', 17, true);
+      drawLine(svg, ox, oy, ox, oy + 80, '#334155', 2);
+      drawBox(svg, ox - 22, oy + 80, 44, 32, 'W');
+      decomp(svg, st, { ox, oy, v: [-Math.cos(a) * 135, Math.sin(a) * 135], ax1: [-1, 0], ax2: [0, 1] });
+    }
+  },
+  {
+    id: 'cube_oblique_pull', unit: '03-3', title: '剛體滑動與轉動臨界：正立方體側面斜拉外力分解', symbol: 'F',
+    axes: ['水平方向', '鉛直方向'],
+    axisDesc: [
+      '水平拉力分量 F<sub>y</sub>（造成滑動趨勢，並使立方體繞轉軸 A 有順時針翻轉趨勢）',
+      '鉛直向上分量 F<sub>z</sub>（減輕正向力；作用線通過轉軸 A，力臂為 0，不產生力矩）'
+    ],
+    refs: ['水平方向', '鉛直方向'],
+    stem: (ref, ask) => `邊長 L 的正立方體置於粗糙水平桌面上，於右側面中央繫一細繩施斜向拉力 F。已知細繩與「${ref}」的夾角為 θ，請問拉力 F 的「${ask}」為何？`,
+    draw(svg, st) {
+      const floorY = 285, size = 110, left = 175, a = 38 * D2R;
+      const ox = left + size, oy = floorY - size / 2;
+      drawWall(svg, 110, floorY, 480, floorY, 'bottom');
+      drawBox(svg, left, floorY - size, size, size, 'L');
+      drawCircle(svg, ox, floorY, 5, '#e11d48', '#881337');
+      drawText(svg, ox + 50, floorY + 28, '轉軸 A', '#be123c', 16, true);
+      decomp(svg, st, { ox, oy, v: [Math.cos(a) * 135, -Math.sin(a) * 135], ax1: [1, 0], ax2: [0, -1] });
+    }
+  },
+
+  // -------------------- 【經典切線/斜面力學】 --------------------
+  {
+    id: 'pendulum_gravity', unit: 'classic', title: '單擺運動：重力沿切線與法線方向分解', symbol: 'mg',
+    axes: ['法線方向（沿擺線）', '切線方向（垂直擺線）'],
+    axisDesc: ['法線方向（沿擺線）的分力（與繩張力同一直線）', '切線方向的分力（提供擺動回復力）'],
+    refs: ['鉛直虛線', '水平虛線'],
+    bridge: [
+      '擺線與鉛直線夾 θ。擺線方向就是法線方向，而 mg 沿鉛直方向，所以 mg 與「法線方向」的夾角也是 θ（內錯角相等）。',
+      '擺線與水平線夾 θ。切線方向垂直於擺線、mg 垂直於水平線，兩邊分別互相垂直，所以 mg 與「切線方向」的夾角是 θ。'
+    ],
+    stem: (ref, ask) => `單擺擺錘質量為 m，受鉛直向下重力 mg。當擺線與「${ref}」的夾角為 θ 時，將重力沿法線（沿擺線）與切線（垂直擺線）分解，請問「${ask}」量值為何？`,
+    draw(svg, st) {
+      const topX = 230, topY = 55, a = 36 * D2R, stringLen = 140;
+      const rx = Math.sin(a), ry = Math.cos(a);    // 法線（沿擺線向外）
+      const tx_ = -Math.cos(a), ty_ = Math.sin(a); // 切線
+      const ox = topX + rx * stringLen, oy = topY + ry * stringLen;
+      drawWall(svg, topX - 60, topY, topX + 60, topY, 'top');
+      drawLine(svg, topX, topY, topX, topY + 145, '#cbd5e1', 1.5, '5,5');
+      drawLine(svg, topX, topY, ox, oy, '#334155', 2.5);
+      drawCircle(svg, ox, oy, 16, '#dbeafe', '#1d4ed8');
+      // 擺錘上標的是「mg 與某軸」的夾角；這裡在懸點另外標出題幹所說的 θ
+      const stringAng = 90 - 36; // 擺線與水平線的夾角（螢幕座標）
+      if (st.thetaAxis === 0) {
+        drawArc(svg, topX, topY, 50, stringAng, 90, '#f59e0b');
+        drawText(svg, topX + 70 * Math.cos(72 * D2R) + 6, topY + 70 * Math.sin(72 * D2R) + 6, 'θ', '#d97706', 18, true);
+      } else {
+        drawLine(svg, topX, topY, topX + 150, topY, '#cbd5e1', 1.5, '5,5');
+        drawArc(svg, topX, topY, 50, 0, stringAng, '#f59e0b');
+        drawText(svg, topX + 72 * Math.cos(27 * D2R), topY + 72 * Math.sin(27 * D2R) + 6, 'θ', '#d97706', 18, true);
+      }
+      decomp(svg, st, { ox, oy, v: [0, 125], ax1: [rx, ry], ax2: [tx_, ty_] });
+    }
+  },
+  {
+    id: 'incline_gravity', unit: 'classic', title: '斜面上的木塊：重力沿平行與垂直斜面分解', symbol: 'mg',
+    axes: ['垂直斜面方向', '平行斜面方向'],
+    axisDesc: ['垂直壓向斜面的分力（決定正向力）', '平行斜面向下的分力（使物體下滑）'],
+    refs: ['斜面傾角（斜面與水平底邊的夾角）', '斜面頂角（斜面與鉛直高邊的夾角）'],
+    bridge: [
+      '斜面傾角為 θ。mg 垂直於水平底邊、斜面法線垂直於斜面，兩邊分別互相垂直，所以 mg 與「垂直斜面方向」的夾角也是 θ。',
+      '斜面與鉛直高邊夾 θ，而 mg 本身就沿鉛直方向，所以 mg 與「平行斜面方向」的夾角就是 θ。'
+    ],
+    stem: (ref, ask) => `質量 m 的木塊置於斜面上，已知「${ref}」為 θ。將鉛直向下的重力 mg 分解為平行與垂直斜面的兩個分力，請問「${ask}」量值為何？`,
+    draw(svg, st) {
+      const a = 35 * D2R;
+      const x1 = 140, y1 = 280, x2 = 430, y3 = y1 - (x2 - x1) * Math.tan(a);
+      drawPolygon(svg, [[x1, y1], [x2, y1], [x1, y3]], '#f1f5f9', '#475569', 2.5);
+      // 木塊底邊貼在斜面上：斜面上一點 + 往外法線方向抬高半個木塊高度
+      const sx = 270, sy = y3 + (sx - x1) * Math.tan(a);
+      const cx = sx + 18 * Math.sin(a), cy = sy - 18 * Math.cos(a);
+      drawRotRect(svg, cx, cy, 52, 36, 35, '#dbeafe', '#1d4ed8');
+      decomp(svg, st, { ox: cx, oy: cy, v: [0, 125], ax1: [-Math.sin(a), Math.cos(a)], ax2: [Math.cos(a), Math.sin(a)] });
+    }
+  },
+  {
+    id: 'incline_horizontal_push', unit: 'classic', title: '斜面上受水平推力 F：沿平行與垂直斜面分解', symbol: 'F',
+    axes: ['平行斜面方向（向上）', '垂直斜面方向（壓入斜面）'],
+    axisDesc: ['平行斜面向上的分力（可抵銷下滑力）', '垂直壓入斜面的分力（使正向力增加）'],
+    refs: ['斜面傾角（斜面與水平底邊的夾角）', '斜面頂角（斜面與鉛直邊的夾角）'],
+    bridge: [
+      '斜面傾角為 θ，而推力 F 沿水平方向，所以 F 與「平行斜面方向」的夾角就是 θ（注意：和重力的分解剛好相反！）。',
+      '斜面與鉛直邊夾 θ。「垂直斜面方向」垂直於斜面、水平線垂直於鉛直線，兩邊分別互相垂直，所以 F 與「垂直斜面方向」的夾角是 θ。'
+    ],
+    stem: (ref, ask) => `【易錯陷阱】斜面上的木塊受到「水平方向推力 F」作用。已知「${ref}」為 θ，將水平推力 F 分解為平行與垂直斜面的兩個分力，請問「${ask}」為何？`,
+    draw(svg, st) {
+      const a = 35 * D2R;
+      const x1 = 150, y1 = 290, x2 = 440, y3 = y1 - (x2 - x1) * Math.tan(a);
+      drawPolygon(svg, [[x1, y1], [x2, y1], [x2, y3]], '#f1f5f9', '#475569', 2.5);
+      const sx = 290, sy = y1 - (sx - x1) * Math.tan(a);
+      const cx = sx - 18 * Math.sin(a), cy = sy - 18 * Math.cos(a);
+      drawRotRect(svg, cx, cy, 52, 36, -35, '#fef3c7', '#d97706');
+      decomp(svg, st, { ox: cx, oy: cy, v: [130, 0], ax1: [Math.cos(a), -Math.sin(a)], ax2: [Math.sin(a), Math.cos(a)] });
+    }
+  },
+  {
+    id: 'conical_pendulum', unit: 'classic', title: '圓錐擺：繩張力分解為水平與鉛直方向', symbol: 'T',
+    axes: ['水平方向（指向圓心）', '鉛直方向'],
+    axisDesc: ['水平指向圓心的分力 T<sub>x</sub>（提供向心力）', '鉛直向上的分力 T<sub>y</sub>（平衡重力 mg）'],
+    refs: ['水平圓周平面', '鉛直旋轉軸'],
+    stem: (ref, ask) => `小球繫於輕繩作水平面圓錐擺運動，擺線張力為 T，且與「${ref}」的夾角為 θ。將張力 T 分解為水平與鉛直兩個分力，請問「${ask}」為何？（提示：加速度在水平面上，所以分解的是 T，不是 mg）`,
+    draw(svg, st) {
+      const topX = 350, topY = 55, ox = 235, oy = 225;
+      const vx = topX - ox, vy = topY - oy, L = Math.hypot(vx, vy);
+      drawWall(svg, topX - 70, topY, topX + 70, topY, 'top');
+      drawLine(svg, topX, topY, topX, 275, '#94a3b8', 1.5, '6,4');
+      drawEllipse(svg, topX, oy, topX - ox, 24);
+      drawLine(svg, ox, oy, topX, topY, '#cbd5e1', 2);
+      drawCircle(svg, ox, oy, 14, '#fce7f3', '#db2777');
+      decomp(svg, st, { ox, oy, v: [vx / L * 135, vy / L * 135], ax1: [1, 0], ax2: [0, -1] });
+    }
+  }
+];
+
+QUESTION_MODELS.forEach(m => {
+  m.unitName = UNITS.find(u => u.id === m.unit).name;
+});
+
+// =========================================================================
+// 狀態管理、出題、作答、挑戰賽與英雄榜
+// =========================================================================
+let currentMode = 'practice'; // 'practice' | 'challenge' | 'leaderboard'
+let activeCategories = new Set(UNITS.map(u => u.id));
+let forcedModelId = 'random';
+
+let currentState = {
+  model: QUESTION_MODELS[0],
+  flip: 0,        // 0: 正常, 1: 左右鏡像
+  thetaAxis: 0,   // θ 標在向量與「第幾條軸」之間
+  askAxis: 0,     // 題目詢問「第幾條軸」上的分力
+  angleDeg: 38,
+  showHint: false,
+  answered: false,
+  counted: false  // 同一題只計一次成績（老師切換變體重答不重複計分）
+};
+
+let practiceStats = { total: 0, correct: 0, streak: 0 };
+
+let challengeState = {
+  running: false, timeLeft: 60.0, score: 0, combo: 0, maxCombo: 0,
+  correct: 0, total: 0, timerId: null, locked: false
+};
+
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+  // 旋轉手機或調整視窗後，依新的畫布寬度重畫（文字大小會跟著調整）
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (currentMode !== 'leaderboard') renderCurrentQuestion();
+  }, 150);
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  buildCategoryFilters();
+  populateModelSelector();
+  nextQuestion();
+  renderLeaderboard();
+});
+
+function buildCategoryFilters() {
+  const box = document.getElementById('category-filters');
+  box.textContent = '';
+  UNITS.forEach(u => {
+    const count = QUESTION_MODELS.filter(m => m.unit === u.id).length;
+    const label = document.createElement('label');
+    label.className = 'flex items-center justify-between p-2 rounded-lg bg-slate-50 hover:bg-indigo-50/60 cursor-pointer border border-slate-200/80 transition';
+    const left = document.createElement('div');
+    left.className = 'flex items-center gap-2';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.value = u.id; cb.checked = true;
+    cb.className = 'w-4 h-4 accent-indigo-600 rounded';
+    cb.addEventListener('change', updateFilter);
+    const name = document.createElement('span');
+    name.className = 'font-bold text-slate-700';
+    name.textContent = u.name;
+    left.append(cb, name);
+    const badge = document.createElement('span');
+    badge.className = 'text-xs text-slate-500 bg-white px-2 py-0.5 rounded border';
+    badge.textContent = `${count} 題型`;
+    label.append(left, badge);
+    box.appendChild(label);
+  });
+  document.getElementById('active-count-badge').textContent = `共 ${QUESTION_MODELS.length} 種模型`;
+}
+
+function populateModelSelector() {
+  const sel = document.getElementById('model-selector');
+  QUESTION_MODELS.forEach((m, idx) => {
+    const opt = document.createElement('option');
+    opt.value = m.id;
+    opt.textContent = `[${m.unit}] ${idx + 1}. ${m.title}`;
+    sel.appendChild(opt);
+  });
+}
+
+// =========================================================================
+// 出題、渲染與作答檢核
+// =========================================================================
+function getFilteredModels() {
+  if (forcedModelId !== 'random') {
+    const found = QUESTION_MODELS.find(m => m.id === forcedModelId);
+    if (found) return [found];
+  }
+  const list = QUESTION_MODELS.filter(m => activeCategories.has(m.unit));
+  return list.length > 0 ? list : QUESTION_MODELS;
+}
+
+function currentMeta() {
+  return buildMeta(currentState.model, currentState.thetaAxis, currentState.askAxis);
+}
+
+function nextQuestion() {
+  const pool = getFilteredModels();
+  currentState = {
+    model: pool[Math.floor(Math.random() * pool.length)],
+    flip: Math.random() < 0.5 ? 0 : 1,
+    thetaAxis: Math.random() < 0.5 ? 0 : 1,
+    askAxis: Math.random() < 0.5 ? 0 : 1,
+    angleDeg: 34 + Math.floor(Math.random() * 20),
+    showHint: false,
+    answered: false,
+    counted: false
+  };
+  resetOptionButtons();
+  document.getElementById('feedback-box').classList.add('hidden');
+  renderCurrentQuestion();
+}
+
+function renderCurrentQuestion() {
+  const { model, flip, thetaAxis, showHint } = currentState;
+  const meta = currentMeta();
+
+  document.getElementById('q-unit-badge').textContent = model.unitName;
+  document.getElementById('q-title').textContent = model.title;
+  document.getElementById('q-prompt').innerHTML = meta.prompt; // 題幹是題庫內建文字，不含使用者輸入
+
+  const flipText = flip === 1 ? '左右鏡像視角' : '標準視角';
+  const thetaText = thetaAxis === 0 ? 'θ 位置 A' : 'θ 位置 B (防背誦)';
+  document.getElementById('q-variant-tag').textContent = `${flipText} ・ ${thetaText}`;
+
+  document.getElementById('label-opt-sin').innerHTML = `${meta.S} sin θ`;
+  document.getElementById('label-opt-cos').innerHTML = `${meta.S} cos θ`;
+
+  const hintBtn = document.getElementById('btn-hint-toggle');
+  if (hintBtn) hintBtn.textContent = showHint ? '🙈 隱藏幾何角度推導' : '📐 顯示幾何角度推導';
+
+  const svg = document.getElementById('physics-svg');
+  svg.innerHTML = '';
+  model.draw(svg, currentState);
+}
+
+const OPT_BASE = 'btn-option py-4 px-6 rounded-2xl border-2 shadow-sm flex flex-col items-center justify-center gap-1';
+
+function resetOptionButtons() {
+  ['sin', 'cos'].forEach(type => {
+    document.getElementById(`btn-opt-${type}`).className =
+      `${OPT_BASE} bg-white hover:bg-indigo-50 border-slate-300 hover:border-indigo-500 group`;
+  });
+}
+
+function submitAnswer(choice) {
+  if (currentMode === 'practice' && currentState.answered) return;
+  if (currentMode === 'challenge' && (!challengeState.running || challengeState.locked)) return;
+  if (currentMode === 'leaderboard') return;
+
+  const meta = currentMeta();
+  const isCorrect = (choice === meta.ans);
+
+  if (currentMode === 'practice') {
+    currentState.answered = true;
+    currentState.showHint = true; // 答題後自動顯示幾何角度推導線
+    renderCurrentQuestion();
+
+    if (!currentState.counted) {
+      currentState.counted = true;
+      practiceStats.total++;
+      if (isCorrect) { practiceStats.correct++; practiceStats.streak++; } else { practiceStats.streak = 0; }
+      updatePracticeStatsUI();
+    }
+
+    const chosenBtn = document.getElementById(`btn-opt-${choice}`);
+    const rightBtn = document.getElementById(`btn-opt-${meta.ans}`);
+    chosenBtn.className = `${OPT_BASE} ${isCorrect ? 'bg-emerald-50 border-emerald-500' : 'bg-rose-50 border-rose-500'}`;
+    if (!isCorrect) rightBtn.className = `${OPT_BASE} bg-emerald-50 border-emerald-500`;
+
+    const fbBox = document.getElementById('feedback-box');
+    const fbTitle = document.getElementById('feedback-title');
+    fbBox.classList.remove('hidden');
+    if (isCorrect) {
+      fbBox.className = 'mt-4 p-4 rounded-xl border bg-emerald-50/70 border-emerald-300';
+      fbTitle.innerHTML = `<span class="text-emerald-700">✅ 答對了！正確分力為 <span class="math-font">${meta.S} ${meta.ans} θ</span></span>`;
+    } else {
+      fbBox.className = 'mt-4 p-4 rounded-xl border bg-rose-50/70 border-rose-300';
+      fbTitle.innerHTML = `<span class="text-rose-700">❌ 小心夾角位置！正確答案應為 <span class="math-font">${meta.S} ${meta.ans} θ</span></span>`;
+    }
+    document.getElementById('feedback-explanation').innerHTML = meta.explanation;
+
+  } else if (currentMode === 'challenge') {
+    challengeState.total++;
+    if (isCorrect) {
+      challengeState.correct++;
+      challengeState.combo++;
+      if (challengeState.combo > challengeState.maxCombo) challengeState.maxCombo = challengeState.combo;
+      challengeState.score += 100 + Math.min(challengeState.combo * 20, 100);
+      nextQuestion();
+    } else {
+      challengeState.combo = 0;
+      challengeState.timeLeft = Math.max(0, challengeState.timeLeft - 2.0);
+      challengeState.locked = true; // 閃紅的 0.22 秒內不接受連點
+      const chosenBtn = document.getElementById(`btn-opt-${choice}`);
+      chosenBtn.classList.add('bg-rose-100', 'border-rose-500');
+      setTimeout(() => {
+        challengeState.locked = false;
+        if (challengeState.running) nextQuestion();
+      }, 220);
+    }
+    updateChallengeHudUI();
+  }
+}
+
+function updatePracticeStatsUI() {
+  document.getElementById('stat-correct').textContent = practiceStats.correct;
+  document.getElementById('stat-streak').textContent = `${practiceStats.streak} 🔥`;
+  const rate = practiceStats.total > 0 ? Math.round((practiceStats.correct / practiceStats.total) * 100) : 0;
+  document.getElementById('stat-rate').textContent = `${rate}%`;
+}
+
+// =========================================================================
+// 教師即時控制與分類篩選器
+// =========================================================================
+function resetAnswerUI() {
+  currentState.answered = false;
+  currentState.showHint = false; // 換了 θ 位置或詢問分力，先把推導藏起來，避免直接露出答案
+  resetOptionButtons();
+  document.getElementById('feedback-box').classList.add('hidden');
+}
+
+function flipCurrentQuestion() {
+  currentState.flip = currentState.flip === 0 ? 1 : 0;
+  renderCurrentQuestion();
+}
+
+function toggleThetaPos() {
+  currentState.thetaAxis = currentState.thetaAxis === 0 ? 1 : 0;
+  resetAnswerUI();
+  renderCurrentQuestion();
+}
+
+function toggleTargetAxis() {
+  currentState.askAxis = currentState.askAxis === 0 ? 1 : 0;
+  resetAnswerUI();
+  renderCurrentQuestion();
+}
+
+function toggleHintLines() {
+  currentState.showHint = !currentState.showHint;
+  renderCurrentQuestion();
+}
+
+function updateFilter() {
+  const checkboxes = document.querySelectorAll('#category-filters input[type="checkbox"]');
+  activeCategories.clear();
+  checkboxes.forEach(cb => { if (cb.checked) activeCategories.add(cb.value); });
+  if (activeCategories.size === 0) {
+    checkboxes[0].checked = true;
+    activeCategories.add(checkboxes[0].value);
+  }
+  const count = QUESTION_MODELS.filter(m => activeCategories.has(m.unit)).length;
+  document.getElementById('active-count-badge').textContent = `已選 ${count} 種模型`;
+  document.getElementById('model-selector').value = 'random';
+  forcedModelId = 'random';
+  nextQuestion();
+}
+
+function toggleAllCategories() {
+  const checkboxes = document.querySelectorAll('#category-filters input[type="checkbox"]');
+  const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+  checkboxes.forEach((cb, i) => { cb.checked = allChecked ? (i === 0) : true; });
+  updateFilter();
+}
+
+function selectSpecificModel(val) {
+  forcedModelId = val;
+  nextQuestion();
+}
+
+// =========================================================================
+// 模式切換、60 秒極限挑戰賽
+// =========================================================================
+function switchMode(mode) {
+  if (challengeState.running) stopChallengeEarly();
+  currentMode = mode;
+
+  ['practice', 'challenge', 'leaderboard'].forEach(m => {
+    document.getElementById(`tab-${m}`).className = (m === mode)
+      ? 'px-4 py-1.5 rounded-lg text-sm font-bold transition bg-indigo-600 text-white shadow'
+      : 'px-4 py-1.5 rounded-lg text-sm font-bold transition text-slate-300 hover:text-white';
+  });
+
+  const sidebar = document.getElementById('sidebar-panel');
+  const quizStage = document.getElementById('quiz-stage');
+  const lbStage = document.getElementById('leaderboard-stage');
+  const teacherControls = document.getElementById('teacher-controls');
+  const challengeHud = document.getElementById('challenge-hud');
+  const challengeOverlay = document.getElementById('challenge-start-overlay');
+
+  if (mode === 'practice') {
+    sidebar.classList.remove('hidden');
+    quizStage.classList.remove('hidden');
+    lbStage.classList.add('hidden');
+    teacherControls.classList.remove('hidden');
+    challengeHud.classList.add('hidden');
+    challengeOverlay.classList.add('hidden');
+    nextQuestion();
+  } else if (mode === 'challenge') {
+    sidebar.classList.remove('hidden');
+    quizStage.classList.remove('hidden');
+    lbStage.classList.add('hidden');
+    teacherControls.classList.add('hidden');
+    challengeHud.classList.remove('hidden');
+    challengeOverlay.classList.remove('hidden');
+    document.getElementById('feedback-box').classList.add('hidden');
+    nextQuestion(); // 遮罩後面先換一題，避免顯示練習模式殘留的詳解圖
+  } else if (mode === 'leaderboard') {
+    sidebar.classList.add('hidden');
+    quizStage.classList.add('hidden');
+    lbStage.classList.remove('hidden');
+    renderLeaderboard();
+  }
+}
+
+function startChallengeGame() {
+  document.getElementById('challenge-start-overlay').classList.add('hidden');
+  document.getElementById('score-submit-card').classList.add('hidden');
+
+  challengeState = {
+    running: true, timeLeft: 60.0, score: 0, combo: 0, maxCombo: 0,
+    correct: 0, total: 0, timerId: null, locked: false
+  };
+  updateChallengeHudUI();
+  nextQuestion();
+
+  let lastTick = performance.now();
+  challengeState.timerId = setInterval(() => {
+    const now = performance.now();
+    const dt = (now - lastTick) / 1000;
+    lastTick = now;
+    challengeState.timeLeft = Math.max(0, challengeState.timeLeft - dt);
+    updateChallengeHudUI();
+    if (challengeState.timeLeft <= 0) finishChallengeGame();
+  }, 100);
+}
+
+function updateChallengeHudUI() {
+  document.getElementById('timer-display').textContent = `${challengeState.timeLeft.toFixed(1)}s`;
+  document.getElementById('score-display').textContent = challengeState.score;
+  document.getElementById('combo-display').textContent = `x${challengeState.combo}`;
+}
+
+function stopChallengeEarly() {
+  if (challengeState.timerId) clearInterval(challengeState.timerId);
+  challengeState.running = false;
+  document.getElementById('challenge-start-overlay').classList.remove('hidden');
+}
+
+function finishChallengeGame() {
+  if (challengeState.timerId) clearInterval(challengeState.timerId);
+  challengeState.running = false;
+
+  switchMode('leaderboard');
+  document.getElementById('score-submit-card').classList.remove('hidden');
+
+  const rate = challengeState.total > 0 ? Math.round((challengeState.correct / challengeState.total) * 100) : 0;
+  document.getElementById('final-score-summary').textContent =
+    `總分：${challengeState.score} 分 ｜ 答對：${challengeState.correct} / ${challengeState.total} 題 (${rate}%) ｜ 最高連擊：${challengeState.maxCombo} Combo`;
+}
+
+// =========================================================================
+// 英雄榜（LocalStorage，只存在這台電腦的這個瀏覽器）
+// =========================================================================
+const LB_STORAGE_KEY = 'physics_vector_decomp_leaderboard_v2';
+
+function getLeaderboardData() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(LB_STORAGE_KEY) || '[]');
+    if (!Array.isArray(raw)) return [];
+    // 讀回來時一律轉型，避免任何人手動改過的資料影響畫面
+    return raw.map(r => ({
+      classNo: String(r.classNo ?? '').slice(0, 20),
+      name: String(r.name ?? '').slice(0, 20),
+      score: Number(r.score) || 0,
+      correct: Number(r.correct) || 0,
+      total: Number(r.total) || 0,
+      rate: Number(r.rate) || 0,
+      maxCombo: Number(r.maxCombo) || 0,
+      date: String(r.date ?? '').slice(0, 30)
+    }));
+  } catch (e) {
+    return [];
+  }
+}
+
+function savePlayerScore() {
+  const cls = document.getElementById('player-class').value.trim().slice(0, 20) || '未填班級';
+  const name = document.getElementById('player-name').value.trim().slice(0, 20) || '無名物理俠';
+  const rate = challengeState.total > 0 ? Math.round((challengeState.correct / challengeState.total) * 100) : 0;
+
+  const list = getLeaderboardData();
+  list.push({
+    classNo: cls, name,
+    score: challengeState.score, correct: challengeState.correct, total: challengeState.total,
+    rate, maxCombo: challengeState.maxCombo,
+    date: new Date().toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+  });
+  list.sort((a, b) => b.score - a.score);
+  try {
+    localStorage.setItem(LB_STORAGE_KEY, JSON.stringify(list.slice(0, 100)));
+  } catch (e) {
+    alert('無法儲存成績（瀏覽器可能關閉了本機儲存）。');
+  }
+  document.getElementById('player-class').value = '';
+  document.getElementById('player-name').value = '';
+  document.getElementById('score-submit-card').classList.add('hidden');
+  renderLeaderboard();
+}
+
+function renderLeaderboard() {
+  const tbody = document.getElementById('leaderboard-tbody');
+  const list = getLeaderboardData();
+  tbody.textContent = '';
+  if (list.length === 0) {
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = 7;
+    td.className = 'py-10 text-center text-slate-400';
+    td.textContent = '目前尚無挑戰紀錄，快去「⚡ 60秒極限挑戰」搶下第一名吧！';
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+    return;
+  }
+  list.forEach((item, idx) => {
+    const tr = document.createElement('tr');
+    tr.className = 'hover:bg-slate-50 transition';
+    const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : String(idx + 1);
+    // 一律用 textContent 寫入，學生輸入 <b> 之類的字也只會當成純文字
+    [
+      [medal, 'py-3 px-4 font-black text-slate-700'],
+      [item.classNo, 'py-3 px-4 font-medium text-slate-600'],
+      [item.name, 'py-3 px-4 font-bold text-slate-800'],
+      [item.score, 'py-3 px-4 font-black text-indigo-600 text-base'],
+      [`${item.correct} / ${item.total} (${item.rate}%)`, 'py-3 px-4 text-slate-600'],
+      [`${item.maxCombo} 🔥`, 'py-3 px-4 font-bold text-amber-600'],
+      [item.date, 'py-3 px-4 text-xs text-slate-400']
+    ].forEach(([text, cls]) => {
+      const td = document.createElement('td');
+      td.className = cls;
+      td.textContent = text;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+// CSV：欄位一律加雙引號、內部引號加倍；以 = + - @ 開頭的字串前面補 '，避免試算表把它當公式
+function csvCell(v) {
+  let s = String(v);
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  return '"' + s.replace(/"/g, '""') + '"';
+}
+
+function exportLeaderboardCSV() {
+  const list = getLeaderboardData();
+  if (list.length === 0) return alert('目前沒有成績紀錄可匯出！');
+  const header = ['名次', '班級座號', '姓名', '總分', '答對題數', '總作答題數', '正確率(%)', '最高連擊', '達成時間'].map(csvCell).join(',') + '\n';
+  const rows = list.map((r, i) =>
+    [i + 1, r.classNo, r.name, r.score, r.correct, r.total, r.rate, r.maxCombo, r.date].map(csvCell).join(',')
+  ).join('\n');
+  const blob = new Blob(['﻿' + header + rows], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `物理向量分解挑戰賽成績單_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function clearLeaderboard() {
+  if (confirm('確定要清空所有英雄榜紀錄嗎？')) {
+    localStorage.removeItem(LB_STORAGE_KEY);
+    renderLeaderboard();
+  }
+}
+
+  </script>
+</body>
+</html>
