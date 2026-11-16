@@ -325,9 +325,40 @@ def t_standing(ctx):
     pg.close()
 
 
+def t_atwood(ctx):
+    pg = open_page(ctx, "atwood", frozen=True)
+    set_val(pg, "m1", 0.9); set_val(pg, "m2", 1.1); step(pg, 6)
+    check("阿特午 a = (m₂−m₁)g/(m₁+m₂)", meter(pg, "加速度"), 0.2 * 9.8 / 2, 0.002)
+    check("阿特午 T = 2m₁m₂g/(m₁+m₂)", meter(pg, "繩張力"), 2 * 0.9 * 1.1 * 9.8 / 2, 0.001)
+    check("阿特午 時間 √(2h/a)", meter(pg, "所需時間"), math.sqrt(2 / 0.98), 0.001)
+    set_val(pg, "selSpd", 1); pg.click("#btnPlay"); step(pg, 200)
+    check("阿特午 釋放後末速 √(2ah)", meter(pg, "目前速度"), math.sqrt(2 * 0.98), 0.002)
+    pg.uncheck("#chkNoise")
+    for a, b in ((0.9, 1.1), (0.8, 1.2), (0.6, 1.4), (0.5, 2.0)):
+        set_val(pg, "m1", a); set_val(pg, "m2", b); pg.click("#btnRec")
+    check("阿特午 實驗斜率 = g", num(text(pg, "gFitVal")), 9.8, 0.003)
+    set_val(pg, "selG", 1.62); pg.click("#btnClr")
+    for a, b in ((0.9, 1.1), (0.5, 1.5)):
+        set_val(pg, "m1", a); set_val(pg, "m2", b); pg.click("#btnRec")
+    check("阿特午 月球斜率 = 1.62", num(text(pg, "gFitVal")), 1.62, 0.005)
+    pg.click("#btnUnk")
+    for a, b in ((0.9, 1.1), (0.5, 1.5)):
+        set_val(pg, "m1", a); set_val(pg, "m2", b); pg.click("#btnRec")
+    est = num(text(pg, "gFitVal")); pg.click("#btnRev")
+    check("阿特午 未知星球：斜率 = 揭曉值", est, after("正確答案 g =", text(pg, "fitTxt")) or -1, 0.01)
+    pg.click("#btnUnk"); set_val(pg, "selG", 9.8); pg.click('[data-m="tab"]')
+    set_val(pg, "m1", 1.0); set_val(pg, "m2", 0.5); set_val(pg, "mu", 0.2); step(pg, 6)
+    check("連體 a = (m₂−μm₁)g/(m₁+m₂)", meter(pg, "加速度"), 0.3 * 9.8 / 1.5, 0.002)
+    check("連體 T = m₂(g−a)", meter(pg, "繩張力"), 0.5 * (9.8 - 1.96), 0.002)
+    set_val(pg, "m2", 0.15); step(pg, 6)
+    check("連體 拉不動時 a = 0", meter(pg, "加速度"), 0, abs_=1e-6)
+    check("連體 拉不動時 T = m₂g", meter(pg, "繩張力"), 0.15 * 9.8, 0.002)
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
-         "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing}
+         "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing,
+         "atwood": t_atwood}
 
 
 def main():

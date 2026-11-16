@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阿特午機與連體運動 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/lab-mobile.css">
+    <link rel="stylesheet" href="../shared/touch.css">
+    <style>
+        [hidden] { display: none !important; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        input.ans { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 8px; font-size: 1rem; width: 7em; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>🪢 阿特午機與連體運動</h1>
+    <p class="subtitle">a = (m₂ − m₁)g／(m₁ + m₂)　｜　T = 2m₁m₂g／(m₁ + m₂)</p>
+</header>
+
+<div class="container">
+<div class="card sticky-sim"><div class="card-title"><span id="cTitle">阿特午機：兩物體以同樣大小的加速度運動</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div><div class="canvas-wrap"><canvas id="scene" width="760" height="400"></canvas></div></div><div class="card"><div class="card-title">選擇模式與條件</div><div class="mode-bar" id="modeBar"><button class="mode-btn active" data-m="atw"><b>① 阿特午機</b>定滑輪兩側各掛一個物體</button><button class="mode-btn" data-m="tab"><b>② 桌面連體</b>桌上滑車被懸掛的砝碼拉動，可加摩擦</button></div><div class="controls-grid"><div class="control-group"><div class="control-label"><span><span id="m1Name">左邊 m₁</span></span><b style="color:var(--cyan)"><span id="m1L"></span> kg</b></div><input type="range" id="m1" min="0.1" max="2" step="0.05" value="0.9"></div><div class="control-group"><div class="control-label"><span><span id="m2Name">右邊 m₂</span></span><b style="color:var(--orange)"><span id="m2L"></span> kg</b></div><input type="range" id="m2" min="0.1" max="2" step="0.05" value="1.1"></div><div class="control-group" data-for="tab"><div class="control-label"><span>桌面動摩擦係數 μ</span><b style="color:var(--red)"><span id="muL"></span> </b></div><input type="range" id="mu" min="0" max="0.6" step="0.02" value="0"><div class="sub-note">0 = 光滑桌面（最大靜摩擦也用同一個 μ）</div></div><div class="control-group"><div class="control-label"><span>移動距離 h</span><b style="color:var(--green)"><span id="hL"></span> m</b></div><input type="range" id="h" min="0.4" max="1.2" step="0.05" value="1"></div><div class="control-group"><div class="control-label">重力加速度</div><select id="selG"><option value="9.8" selected>地球 9.8 m/s²</option><option value="1.62">月球 1.62 m/s²</option><option value="3.71">火星 3.71 m/s²</option></select></div><div class="control-group"><div class="control-label">播放速度</div><select id="selSpd"><option value="0.25">0.25 倍</option><option value="0.5" selected>0.5 倍</option><option value="1">1 倍</option></select></div></div><div class="btn-row" style="margin:8px 0"><button class="btn green" id="btnPlay">▶ 釋放</button><button class="btn secondary" id="btnReset">↺ 回到起點</button></div></div><div class="card"><div class="card-title">即時數據</div><div class="dashboard" id="dash"></div><div class="status" id="status"></div></div><div class="card"><div class="card-title">v–t 圖與 x–t 圖</div><div class="two-col"><div class="graph-box"><canvas id="g1" width="480" height="260"></canvas></div><div class="graph-box"><canvas id="g2" width="480" height="260"></canvas></div></div></div><div class="card" data-for="atw"><div class="card-title">實驗：用阿特午機測重力加速度 g</div><div class="fit-text">固定 h，改變兩邊質量，測落下時間 t，算出 a = 2h／t²。以 (m₂ − m₁)／(m₁ + m₂) 為橫軸、a 為縱軸，直線的斜率就是 g。兩邊質量越接近，加速度越小、越容易計時。</div><div class="btn-row" style="margin:8px 0"><button class="btn orange" id="btnRec">⏱ 測量並記錄</button><button class="btn secondary" id="btnClr">清除數據</button><button class="btn secondary" id="btnUnk">🎲 未知星球</button><button class="btn secondary" id="btnRev">揭曉</button></div><div class="check-row"><label><input type="checkbox" id="chkNoise" checked> 加入計時誤差（±0.5%）</label></div><div class="two-col"><div class="graph-box"><canvas id="gFit" width="480" height="320"></canvas></div><div class="table-scroll"><table><thead><tr><th>#</th><th>m₁ (kg)</th><th>m₂ (kg)</th><th>(m₂−m₁)／(m₁+m₂)</th><th>t (s)</th><th>a (m/s²)</th></tr></thead><tbody id="recBody"></tbody></table></div></div><div class="fit-text" id="fitTxt"></div></div>
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary><ul><li>阿特午機（m₂ &gt; m₁）：對兩物體分別列牛頓第二定律 m₂g − T = m₂a、T − m₁g = m₁a，解得 <b>a = (m₂ − m₁)g／(m₁ + m₂)</b>（m/s²）、<b>T = 2m₁m₂g／(m₁ + m₂)</b>（N）。</li><li>桌面連體：T − μm₁g = m₁a、m₂g − T = m₂a，解得 <b>a = (m₂ − μm₁)g／(m₁ + m₂)</b>、T = m₂(g − a)。若 m₂ ≤ μm₁，系統靜止，T = m₂g。</li><li>由靜止移動 h：<b>h = ½at²</b>，所以 a = 2h／t²；末速 v = at = √(2ah)。</li><li>系統觀點：把兩物體當成一個系統，「推動的力」(m₂ − m₁)g 除以「總質量」(m₁ + m₂)。</li><li>符號：m₁、m₂ 質量（kg）；T 繩張力（N）；μ 動摩擦係數；g 重力加速度（m/s²）。</li></ul>
+            <p class="assume">理想化假設：繩子不可伸長、質量不計；滑輪質量與軸承摩擦不計（所以兩邊張力相等）；不計空氣阻力。桌面連體模式中，最大靜摩擦係數與動摩擦係數取同一個 μ。</p></details>
+        <details><summary>建議講解順序</summary><ol><li>先讓兩邊一樣重，釋放：不動。再讓 m₂ 稍重，請學生預測 a 是否等於 g。</li><li>看數據：張力 T 介於 m₁g 與 m₂g 之間，兩個物體各自的合力都不為零。</li><li>把 m₂ 調到很大：a 趨近 g，但永遠小於 g。</li><li>切到桌面連體：光滑桌面時 a = m₂g／(m₁ + m₂)，強調 T 不等於 m₂g。</li><li>加入摩擦：找出剛好拉不動的 m₂。</li><li>回到阿特午機做實驗：記錄 4 組以上，由斜率求 g；再挑戰未知星球。</li></ol></details>
+        <details><summary>可以問學生的問題</summary><ul><li>m₁ = m₂ 時，張力是多少？物體一定靜止嗎？（T = mg；可以等速運動）</li><li>兩邊各加上相同的質量，加速度變大還是變小？（變小，推動的力不變、總質量變大）</li><li>釋放後，滑輪上方掛鉤受的力是 (m₁ + m₂)g 嗎？（不是，是 2T，比較小）</li><li>桌面連體中，把 m₁ 與 m₂ 對調，加速度一樣嗎？（光滑時不同：推動的力變成 m₁g）</li><li>為什麼當年阿特午要用這個裝置測 g，而不直接讓物體自由落下？（加速度小，時間長，容易量）</li></ul></details>
+        <details><summary>常見迷思</summary><ul><li><b>「繩子張力等於懸掛物的重量」</b>：只有靜止或等速時才成立；加速下降的物體，T &lt; mg。</li><li><b>「重的那邊加速度比較大」</b>：繩子不可伸長，兩物體加速度大小相同。</li><li><b>「張力等於兩物重量的平均」</b>：T = 2m₁m₂g／(m₁ + m₂) 是調和平均的形式，不是算術平均。</li><li><b>「加速度等於 g」</b>：只有自由落體才是 g；這裡被另一個物體「拖住」，a &lt; g。</li></ul></details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script src="../shared/lab.js"></script>
+<script>
+(() => {
+    'use strict';
+    const { el, rad, deg, arrow, txt, graph, meter, fitLine, fitThroughOrigin, noise, niceStep } = Lab;
+    const $$ = s => [...document.querySelectorAll(s)];
+    // 滑桿：顯示目前數值（id + 'L'），拖動時呼叫 cb；回傳讀值函式
+    function sl(id, dp, cb) { const e = el(id), lb = el(id + 'L'), up = () => { if (lb) lb.textContent = (+e.value).toFixed(dp); };
+        e.addEventListener('input', () => { up(); cb && cb(); }); up(); return () => +e.value; }
+    // 模式切換：有 data-for 的區塊只在對應模式顯示
+    function showFor(m) { $$('[data-for]').forEach(e => e.hidden = !e.dataset.for.split(' ').includes(m));
+        $$('#modeBar .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.m === m)); }
+    function onMode(cb) { $$('#modeBar .mode-btn').forEach(b => b.addEventListener('click', () => { showFor(b.dataset.m); cb(b.dataset.m); })); }
+    const rows = (id, arr) => el(id).innerHTML = arr.map(r => '<tr>' + r.map(v => `<td>${v}</td>`).join('') + '</tr>').join('') || '<tr><td colspan="9" style="text-align:center;color:#6a7a92">尚無數據</td></tr>';
+    // 動畫迴圈：fn(dt)；dt 為秒，最大 0.05
+    function loop(fn) { let last = null; const f = ts => { if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05); last = ts; fn(dt); requestAnimationFrame(f); }; requestAnimationFrame(f); }
+
+    const c = el('scene').getContext('2d'), W = 760, H = 400;
+    const atwA = (m1, m2, g) => (m2 - m1) * g / (m1 + m2), atwT = (m1, m2, g) => 2 * m1 * m2 * g / (m1 + m2);
+    const tabA = (m1, m2, mu, g) => m2 <= mu * m1 ? 0 : (m2 - mu * m1) * g / (m1 + m2);
+    window.LabTest = { atwA, atwT, tabA };
+    const S = { mode: 'atw', t: 0, playing: false, recs: [], unk: false, hid: false, gU: 9.8 };
+    const draw0 = () => { S.t = 0; S.playing = false; };
+    const m1 = sl('m1', 2, draw0), m2 = sl('m2', 2, draw0), mu = sl('mu', 2, draw0), hh = sl('h', 2, draw0);
+    const g = () => S.unk ? S.gU : +el('selG').value;
+    const acc = () => S.mode === 'atw' ? atwA(m1(), m2(), g()) : tabA(m1(), m2(), mu(), g());
+    const ten = () => S.mode === 'atw' ? atwT(m1(), m2(), g()) : m2() * (g() - acc());
+    const tEnd = () => Math.abs(acc()) < 1e-9 ? Infinity : Math.sqrt(2 * hh() / Math.abs(acc()));
+    const mask = v => S.hid ? '？' : v;
+    function box(x, y, m, col, name) { const s = 30 + 22 * Math.sqrt(m); c.fillStyle = col; c.fillRect(x - s / 2, y, s, s); txt(c, name, x, y + s / 2 + 6, '#00131a', 17, 'center'); return s; }
+    function draw() {
+        c.fillStyle = '#080a0f'; c.fillRect(0, 0, W, H);
+        const a = acc(), t = Math.min(S.t, tEnd()), x = 0.5 * a * t * t, sc = 120, v = a * t;
+        c.strokeStyle = '#c3d0e4'; c.lineWidth = 2;
+        if (S.mode === 'atw') {
+            const px = 380, py = 70, R = 42, y0 = 215;
+            c.fillStyle = '#3a4558'; c.fillRect(px - 60, 12, 120, 10); c.beginPath(); c.moveTo(px, 22); c.lineTo(px, py); c.stroke();
+            c.fillStyle = '#1d2432'; c.beginPath(); c.arc(px, py, R, 0, 7); c.fill(); c.stroke();
+            c.save(); c.translate(px, py); c.rotate(x * sc / R); c.beginPath(); c.moveTo(-R, 0); c.lineTo(R, 0); c.moveTo(0, -R); c.lineTo(0, R); c.strokeStyle = '#4a586e'; c.stroke(); c.restore();
+            const y1 = y0 - x * sc, y2 = y0 + x * sc; c.strokeStyle = '#c3d0e4';
+            c.beginPath(); c.moveTo(px - R, py); c.lineTo(px - R, y1); c.moveTo(px + R, py); c.lineTo(px + R, y2); c.stroke();
+            const s1 = box(px - R, y1, m1(), '#00d4ff', 'm₁'), s2 = box(px + R, y2, m2(), '#ff9f43', 'm₂'), k = 6;
+            arrow(c, px - R - 50, y1 + s1 / 2, px - R - 50, y1 + s1 / 2 + m1() * g() * k, '#ffcc00', 3); txt(c, 'm₁g', px - R - 62, y1 + s1 / 2 + 20, '#ffcc00', 17, 'right');
+            arrow(c, px - R - 26, y1, px - R - 26, y1 - ten() * k, '#00e676', 3); txt(c, 'T', px - R - 36, y1 - 20, '#00e676', 17, 'right');
+            arrow(c, px + R + 50, y2 + s2 / 2, px + R + 50, y2 + s2 / 2 + m2() * g() * k, '#ffcc00', 3); txt(c, 'm₂g', px + R + 62, y2 + s2 / 2 + 20, '#ffcc00', 17);
+            arrow(c, px + R + 26, y2, px + R + 26, y2 - ten() * k, '#00e676', 3); txt(c, 'T', px + R + 36, y2 - 20, '#00e676', 17);
+            if (Math.abs(a) > 1e-6) { arrow(c, 620, 200, 620, 200 + Math.sign(a) * 50, '#ff6b81', 4); txt(c, 'a（m₂）', 632, 205, '#ff6b81', 17); arrow(c, 140, 200, 140, 200 - Math.sign(a) * 50, '#ff6b81', 4); txt(c, 'a（m₁）', 128, 205, '#ff6b81', 17, 'right'); }
+        } else {
+            const ty = 150, ex = 560, R = 24, x0 = 170;
+            c.fillStyle = '#1a2130'; c.fillRect(40, ty, ex - 40, 16); c.fillRect(ex - 30, ty + 16, 14, 220);
+            c.fillStyle = '#1d2432'; c.beginPath(); c.arc(ex + 8, ty - R + 4, R, 0, 7); c.fill(); c.stroke();
+            const s1 = 30 + 22 * Math.sqrt(m1()), cx = x0 + x * sc; box(cx, ty - s1, m1(), '#00d4ff', 'm₁');
+            const yy = 215 + x * sc; c.beginPath(); c.moveTo(cx + s1 / 2, ty - s1 / 2 > ty - 2 * R + 4 ? ty - 2 * R + 4 : ty - 2 * R + 4); c.lineTo(ex + 8, ty - 2 * R + 4); c.moveTo(ex + 8 + R, ty - R + 4); c.lineTo(ex + 8 + R, yy); c.stroke();
+            const s2 = box(ex + 8 + R, yy, m2(), '#ff9f43', 'm₂'), k = 6;
+            arrow(c, cx + s1 / 2, ty - 2 * R + 4, cx + s1 / 2 + ten() * k, ty - 2 * R + 4, '#00e676', 3); txt(c, 'T', cx + s1 / 2 + 8, ty - 2 * R - 8, '#00e676', 17);
+            const f = a > 0 ? mu() * m1() * g() : Math.min(m2() * g(), mu() * m1() * g());
+            if (f > 1e-6) { arrow(c, cx - s1 / 2, ty - 6, cx - s1 / 2 - f * k, ty - 6, '#ff6b81', 3); txt(c, a > 0 ? '動摩擦力' : '靜摩擦力', cx - s1 / 2 - 6, ty + 36, '#ff6b81', 17, 'right'); }
+            arrow(c, ex + 70 + R, yy + s2 / 2, ex + 70 + R, yy + s2 / 2 + m2() * g() * k, '#ffcc00', 3); txt(c, 'm₂g', ex + 80 + R, yy + s2 / 2 + 20, '#ffcc00', 17);
+            arrow(c, ex + 34 + R, yy, ex + 34 + R, yy - ten() * k, '#00e676', 3); txt(c, 'T', ex + 42 + R, yy - 18, '#00e676', 17);
+            if (a === 0) txt(c, '拉不動：靜摩擦力 = m₂g', 300, 60, '#ffcc00', 20, 'center');
+        }
+        txt(c, `t = ${t.toFixed(2)} s　v = ${Math.abs(v).toFixed(2)} m/s　已移動 ${Math.abs(x).toFixed(2)} m`, 20, 388, '#c3d0e4', 18);
+    }
+    function panels() {
+        const a = acc(), T = ten(), te = tEnd(), t = Math.min(S.t, te);
+        el('dash').innerHTML = [meter('加速度 a', mask(Math.abs(a).toFixed(3)), 'm/s²', '#ff6b81'), meter('繩張力 T', mask(T.toFixed(3)), 'N', '#00e676'),
+            meter('m₁ 重量 m₁g', mask((m1() * g()).toFixed(2)), 'N', '#00d4ff'), meter('m₂ 重量 m₂g', mask((m2() * g()).toFixed(2)), 'N', '#ff9f43'),
+            meter('移動 h 所需時間', isFinite(te) ? te.toFixed(3) : '∞', 's', '#ffcc00'), meter('目前速度 v', Math.abs(a * t).toFixed(3), 'm/s')].join('');
+        el('status').innerHTML = S.mode === 'atw' ? (Math.abs(a) < 1e-9 ? '兩邊一樣重：合力為零，維持靜止（或等速）。' : `<b>${a > 0 ? 'm₂ 下降、m₁ 上升' : 'm₁ 下降、m₂ 上升'}</b>；張力介於兩物重量之間。`)
+            : (a === 0 ? 'm₂g 不超過最大靜摩擦力 μm₁g，系統靜止。' : '滑車向右加速；懸掛物加速下降，所以 T &lt; m₂g。');
+        const te2 = isFinite(te) ? te : 2, a2 = Math.abs(a), P = n => Array.from({ length: 41 }, (_, i) => { const tt = te2 * i / 40; return [tt, n ? 0.5 * a2 * tt * tt : a2 * tt]; });
+        graph(el('g1'), { xmin: 0, xmax: te2, ymin: 0, ymax: Math.max(a2 * te2, 0.5) * 1.1, title: 'v–t 圖（斜率 = a）', xl: 't (s)', yl: 'v (m/s)', series: [{ pts: P(0), col: '#00d4ff', w: 2.5 }], dots: [{ x: t, y: a2 * t }] });
+        graph(el('g2'), { xmin: 0, xmax: te2, ymin: 0, ymax: hh() * 1.1, title: 'x–t 圖（拋物線）', xl: 't (s)', yl: 'x (m)', series: [{ pts: P(1), col: '#00e676', w: 2.5 }], dots: [{ x: t, y: 0.5 * a2 * t * t }] });
+    }
+    function renderExp() {
+        rows('recBody', S.recs.map((r, i) => [i + 1, r.m1.toFixed(2), r.m2.toFixed(2), r.x.toFixed(3), r.t.toFixed(3), r.a.toFixed(3)]));
+        const pts = S.recs.map(r => [r.x, r.a]), xm = Math.max(0.3, ...pts.map(p => Math.abs(p[0]))) * 1.15, ym = Math.max(2, ...pts.map(p => p[1])) * 1.15, k = pts.length >= 2 ? fitThroughOrigin(pts) : null;
+        graph(el('gFit'), { xmin: 0, xmax: xm, ymin: 0, ymax: ym, title: 'a 對 (m₂−m₁)／(m₁+m₂)', xl: '(m₂−m₁)／(m₁+m₂)', yl: 'a (m/s²)', series: k ? [{ pts: [[0, 0], [xm, k * xm]], col: '#ffcc00', w: 2 }] : [], dots: pts.map(p => ({ x: p[0], y: p[1], col: '#00d4ff' })) });
+        el('fitTxt').innerHTML = k ? `通過原點的最佳直線斜率 = <b id="gFitVal">${k.toFixed(2)}</b> m/s² → 這就是量到的 g。` + (S.unk ? (S.hid ? '　按「揭曉」對答案。' : `　正確答案 g = <b>${S.gU.toFixed(2)}</b> m/s²。`) : `（設定值 ${g().toFixed(2)}）`) : '記錄 2 組以上不同的質量組合，就會畫出最佳直線。';
+        el('btnUnk').textContent = S.unk ? '回到已知星球' : '🎲 未知星球'; el('btnRev').disabled = !(S.unk && S.hid); el('selG').disabled = S.unk;
+    }
+    el('btnRec').addEventListener('click', () => { const a = Math.abs(acc()); if (a < 1e-6) { el('fitTxt').textContent = '兩邊一樣重，不會動，無法計時。'; return; }
+        const t = tEnd() * (1 + (el('chkNoise').checked ? noise(0.005) : 0)); S.recs.push({ m1: m1(), m2: m2(), x: Math.abs(m2() - m1()) / (m1() + m2()), t, a: 2 * hh() / (t * t) }); renderExp(); });
+    el('btnClr').addEventListener('click', () => { S.recs = []; renderExp(); });
+    el('btnUnk').addEventListener('click', () => { S.unk = !S.unk; S.hid = S.unk; S.recs = []; if (S.unk) S.gU = [1.62, 3.71, 8.87, 11.15, 24.79][Math.floor(Math.random() * 5)] ; draw0(); renderExp(); });
+    el('btnRev').addEventListener('click', () => { S.hid = false; renderExp(); });
+    el('btnPlay').addEventListener('click', () => { if (S.t >= tEnd()) S.t = 0; S.playing = true; });
+    el('btnReset').addEventListener('click', draw0); el('selG').addEventListener('change', draw0);
+    onMode(m => { S.mode = m; draw0(); el('m1Name').textContent = m === 'atw' ? '左邊 m₁' : '滑車 m₁'; el('m2Name').textContent = m === 'atw' ? '右邊 m₂' : '砝碼 m₂'; el('cTitle').textContent = m === 'atw' ? '阿特午機：兩物體以同樣大小的加速度運動' : '桌面連體：滑車與懸掛砝碼'; });
+    showFor('atw'); renderExp(); let fn = 0;
+    loop(dt => { if (S.playing) { S.t += dt * +el('selSpd').value; if (S.t >= tEnd()) { S.t = tEnd(); S.playing = false; } } draw(); if (!(fn++ % 3)) panels(); });
+
+})();
+</script>
+</body>
+</html>
