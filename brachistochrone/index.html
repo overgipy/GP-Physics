@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最速降線與擺線 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/lab-mobile.css">
+    <link rel="stylesheet" href="../shared/touch.css">
+    <style>
+        [hidden] { display: none !important; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        input.ans { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 8px; font-size: 1rem; width: 7em; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>🎿 最速降線與擺線</h1>
+    <p class="subtitle">最快的不是直線，是擺線　｜　等時性 t = π√(r／g)</p>
+</header>
+
+<div class="container">
+<div class="card sticky-sim"><div class="card-title"><span id="cTitle">最速降線：從 A 滑到 B，哪一條軌道最快？</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div><div class="canvas-wrap"><canvas id="scene" width="760" height="400"></canvas></div></div><div class="card"><div class="card-title">選擇模式與條件</div><div class="mode-bar" id="modeBar"><button class="mode-btn active" data-m="race"><b>① 軌道競速</b>直線、圓弧、拋物線、擺線與自訂曲線同時出發</button><button class="mode-btn" data-m="iso"><b>② 擺線的等時性</b>從不同高度釋放，竟然同時到谷底</button></div><div class="controls-grid"><div class="control-group" data-for="race"><div class="control-label"><span>A、B 的水平距離 L</span><b style="color:var(--cyan)"><span id="LL"></span> m</b></div><input type="range" id="L" min="0.5" max="3" step="0.05" value="2"></div><div class="control-group" data-for="race"><div class="control-label"><span>A、B 的高度差 H</span><b style="color:var(--orange)"><span id="HhL"></span> m</b></div><input type="range" id="Hh" min="0.3" max="1.5" step="0.05" value="1"></div><div class="control-group" data-for="race"><div class="control-label"><span>自訂曲線的彎曲程度 p</span><b style="color:var(--green)"><span id="pL"></span> </b></div><input type="range" id="p" min="0.2" max="2" step="0.01" value="0.5"><div class="sub-note">y ∝ x<sup>p</sup>：p = 1 是直線，越小開頭越陡</div></div><div class="control-group" data-for="iso"><div class="control-label"><span>擺線的滾動圓半徑 r</span><b style="color:var(--cyan)"><span id="rL"></span> m</b></div><input type="range" id="r" min="0.2" max="1" step="0.01" value="0.5"><div class="sub-note">谷底深度 = 2r</div></div><div class="control-group" data-for="iso"><div class="control-label"><span>第二顆珠子的起點（高度比例）</span><b style="color:var(--orange)"><span id="s2L"></span> %</b></div><input type="range" id="s2" min="5" max="95" step="1" value="50"></div><div class="control-group" data-for="iso"><div class="control-label"><span>第三顆珠子的起點（高度比例）</span><b style="color:var(--green)"><span id="s3L"></span> %</b></div><input type="range" id="s3" min="5" max="95" step="1" value="15"></div><div class="control-group" data-for="iso"><div class="control-label">軌道形狀</div><select id="selC"><option value="cyc" selected>擺線</option><option value="arc">圓弧（對照組）</option></select><div class="sub-note">圓弧只有在擺角很小時才近似等時</div></div><div class="control-group"><div class="control-label">重力加速度</div><select id="selG"><option value="9.8" selected>地球 9.8 m/s²</option><option value="1.62">月球 1.62 m/s²</option><option value="3.71">火星 3.71 m/s²</option></select></div><div class="control-group"><div class="control-label">播放速度</div><select id="selSpd"><option value="0.25">0.25 倍</option><option value="0.5" selected>0.5 倍</option><option value="1">1 倍</option></select></div></div><div class="btn-row" style="margin:8px 0"><button class="btn green" id="btnPlay">▶ 同時釋放</button><button class="btn secondary" id="btnReset">↺ 回到起點</button></div></div><div class="card"><div class="card-title"><span id="resT">成績表</span></div><div class="table-scroll"><table><thead><tr><th>名次</th><th>軌道</th><th>時間 (s)</th><th>路程 (m)</th><th>比擺線慢</th></tr></thead><tbody id="rank"></tbody></table></div><div class="status" id="status"></div></div><div class="card"><div class="card-title">速率–時間圖</div><div class="graph-box"><canvas id="g1" width="760" height="300"></canvas></div></div><div class="card" data-for="iso"><div class="card-title">實驗：用擺線的等時性測重力加速度</div><div class="fit-text">在擺線軌道上，不管從哪裡釋放，滑到谷底的時間都是 t = π√(r／g)。改變滾動圓半徑 r，按「測量並記錄」；以 r 為橫軸、t² 為縱軸是通過原點的直線，斜率 = π²／g。</div><div class="btn-row" style="margin:8px 0"><button class="btn orange" id="btnRec">⏱ 測量並記錄</button><button class="btn secondary" id="btnClr">清除數據</button><button class="btn secondary" id="btnUnk">🎲 未知星球</button><button class="btn secondary" id="btnRev">揭曉</button></div><div class="check-row"><label><input type="checkbox" id="chkNoise" checked> 加入計時誤差（±0.5%）</label></div><div class="two-col"><div class="graph-box"><canvas id="gFit" width="480" height="320"></canvas></div><div class="table-scroll"><table><thead><tr><th>#</th><th>r (m)</th><th>起點 (%)</th><th>t (s)</th><th>t² (s²)</th></tr></thead><tbody id="recBody"></tbody></table></div></div><div class="fit-text" id="fitTxt"></div></div>
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary><ul><li>無摩擦滑下，任一點的速率只由下降高度決定：<b>v = √(2gy)</b>（y 為已下降的高度）。</li><li>沿軌道滑行的時間：<b>t = ∫ ds／v</b>——每一小段路程除以當時的速率再加起來。要快，就要「早點變快」又「路不要繞太遠」。</li><li>直線斜面：<b>t = √(2(L² + H²)／(gH))</b>。</li><li>最速降線是<b>擺線</b>（圓沿直線滾動時，圓周上一點的軌跡）：x = r(θ − sinθ)、y = r(1 − cosθ)（y 向下為正）；由起點滑到參數 θ 處的時間 <b>t = θ√(r／g)</b>。</li><li>擺線的<b>等時性</b>：在開口向上的擺線軌道上，從任何高度由靜止釋放，到達最低點的時間都是 <b>t = π√(r／g)</b>。</li><li>圓弧軌道（就是單擺）只有在小角度時近似等時；擺角越大，週期越長。</li></ul>
+            <p class="assume">理想化假設：珠子視為質點、串在軌道上無摩擦滑動（不會飛離軌道），不計空氣阻力；所有軌道都在同一鉛直面內，起點、終點相同。各曲線以細小折線計算，每一小段視為等加速度運動。</p></details>
+        <details><summary>建議講解順序</summary><ol><li>先只看直線與擺線，請學生預測：直線最短，會最快嗎？</li><li>釋放後看成績表與 v–t 圖：擺線一開始就衝得快，路雖然長，時間卻最短。</li><li>把 L 拉長、H 縮小：擺線會先衝到比終點更低的地方再爬上來，還是最快。</li><li>調整自訂曲線的 p，看能不能贏過擺線（不能，只能逼近）。</li><li>切到等時性：三顆珠子從不同高度出發，同時到谷底；換成圓弧就不同時了。</li><li>做實驗：t²–r 圖求 g，再挑戰未知星球。這也是惠更斯設計擺線鐘的原理。</li></ol></details>
+        <details><summary>可以問學生的問題</summary><ul><li>兩點之間直線最短，為什麼不是最快？（一開始太平緩、加速太慢）</li><li>「一開始垂直掉下去再水平走」會最快嗎？（不會；本頁可用很小的 p 試試，路程變太長）</li><li>擺線從高處出發的珠子路比較長，為什麼和低處出發的同時到？（路長的那顆坡也比較陡、平均速率較大，剛好抵消）</li><li>把這個實驗搬到月球，哪一條軌道最快？（還是擺線；所有時間都變成 √(9.8／1.62) ≈ 2.46 倍）</li><li>單擺的週期真的與擺角無關嗎？（只在小角度近似成立；擺線擺才嚴格等時）</li></ul></details>
+        <details><summary>常見迷思</summary><ul><li><b>「路程最短的直線最快」</b>：時間 = 路程 ÷ 平均速率，直線的平均速率小。</li><li><b>「越陡越好，先垂直落下最快」</b>：太陡的曲線路程會變得太長，擺線是兩者之間的最佳折衷。</li><li><b>「到終點的速率不同」</b>：所有軌道終點速率都是 √(2gH)，不同的只是花了多少時間。</li><li><b>「最速降線是圓弧或拋物線」</b>：它們接近但不是；正確答案是擺線，1696 年由白努利提出、牛頓等人解出。</li></ul></details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script src="../shared/lab.js"></script>
+<script>
+(() => {
+    'use strict';
+    const { el, rad, deg, arrow, txt, graph, meter, fitLine, fitThroughOrigin, noise, niceStep } = Lab;
+    const $$ = s => [...document.querySelectorAll(s)];
+    // 滑桿：顯示目前數值（id + 'L'），拖動時呼叫 cb；回傳讀值函式
+    function sl(id, dp, cb) { const e = el(id), lb = el(id + 'L'), up = () => { if (lb) lb.textContent = (+e.value).toFixed(dp); };
+        e.addEventListener('input', () => { up(); cb && cb(); }); up(); return () => +e.value; }
+    // 模式切換：有 data-for 的區塊只在對應模式顯示
+    function showFor(m) { $$('[data-for]').forEach(e => e.hidden = !e.dataset.for.split(' ').includes(m));
+        $$('#modeBar .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.m === m)); }
+    function onMode(cb) { $$('#modeBar .mode-btn').forEach(b => b.addEventListener('click', () => { showFor(b.dataset.m); cb(b.dataset.m); })); }
+    const rows = (id, arr) => el(id).innerHTML = arr.map(r => '<tr>' + r.map(v => `<td>${v}</td>`).join('') + '</tr>').join('') || '<tr><td colspan="9" style="text-align:center;color:#6a7a92">尚無數據</td></tr>';
+    // 動畫迴圈：fn(dt)；dt 為秒，最大 0.05
+    function loop(fn) { let last = null; const f = ts => { if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05); last = ts; fn(dt); requestAnimationFrame(f); }; requestAnimationFrame(f); }
+    // 畫布拖曳：cb(x, y, 階段)；x、y 為畫布座標，階段為 'down'／'move'／'up'
+    function dragOn(cv, cb) { let on = false; cv.style.touchAction = 'none'; const P = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
+        cv.addEventListener('pointerdown', e => { on = true; cv.setPointerCapture(e.pointerId); cb(...P(e), 'down'); }); cv.addEventListener('pointermove', e => { if (on) cb(...P(e), 'move'); });
+        const up = e => { if (on) { on = false; cb(...P(e), 'up'); } }; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up); }
+
+    const c = el('scene').getContext('2d'), W = 760, H = 400, NPT = 1200;
+    // 沿折線（y 向下為正、起點在 pts[0]）的時間表：每小段等加速度，dt = 2ds／(v₁ + v₂)
+    function timing(p, g) { const y0 = p[0][1], T = [0], V = [0]; let len = 0; for (let i = 1; i < p.length; i++) { const v = Math.sqrt(Math.max(2 * g * (p[i][1] - y0), 0)), ds = Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]); len += ds; T.push(T[i - 1] + 2 * ds / (v + V[i - 1] || 1e-12)); V.push(v); } return { T, V, len, total: T[T.length - 1] }; }
+    // 解擺線參數：(θ − sinθ)／(1 − cosθ) = L／H
+    function cycParam(L, Hh) { let a = 1e-6, b = 2 * Math.PI - 1e-6; for (let i = 0; i < 80; i++) { const m = (a + b) / 2; (m - Math.sin(m)) / (1 - Math.cos(m)) < L / Hh ? a = m : b = m; } const th = (a + b) / 2; return { th, r: Hh / (1 - Math.cos(th)) }; }
+    function curves(L, Hh, pw) { const cy = cycParam(L, Hh), R = (L * L + Hh * Hh) / (2 * L), a0 = Math.atan2(Hh, R - L), N = NPT, mk = f => Array.from({ length: N + 1 }, (_, i) => f(i / N));
+        return [{ id: 'line', name: '直線', col: '#c3d0e4', p: mk(u => [L * u, Hh * u]) }, { id: 'arc', name: '圓弧', col: '#ff7ad9', p: mk(u => { const a = a0 * u; return [R - R * Math.cos(a), R * Math.sin(a)]; }) },
+            { id: 'para', name: '拋物線', col: '#00d4ff', p: mk(u => [L * u, Hh * (1 - (1 - u) * (1 - u))]) }, { id: 'cyc', name: '擺線', col: '#ffcc00', p: mk(u => { const t = cy.th * u; return [cy.r * (t - Math.sin(t)), cy.r * (1 - Math.cos(t))]; }) },
+            { id: 'pow', name: `自訂 p = ${pw.toFixed(2)}`, col: '#00e676', p: mk(u => { const w = u * u; return [L * w, Hh * Math.pow(w, pw)]; }) }]; }
+    // 等時性軌道：開口向上的半個擺線（或同深度、同寬度起點的圓弧），由高度比例 f 處滑到谷底
+    function isoTrack(r, kind, f) { const N = NPT; if (kind === 'cyc') { const th0 = Math.acos(2 * f - 1), q = t => [r * (t - Math.sin(t)), r * (1 - Math.cos(t))]; return Array.from({ length: N + 1 }, (_, i) => q(th0 + (Math.PI - th0) * i / N)).map(([x, y]) => [x, y]); }
+        const R = 2 * r, a0 = Math.acos(1 - f); return Array.from({ length: N + 1 }, (_, i) => { const a = a0 * (1 - i / N); return [Math.PI * r - R * Math.sin(a), R * Math.cos(a)]; }); }
+    const isoTime = (r, kind, f, g) => timing(isoTrack(r, kind, f), g).total;
+    window.LabTest = { timing, cycParam, curves, isoTime, raceTimes: (L, Hh, pw, g) => Object.fromEntries(curves(L, Hh, pw).map(k => [k.id, timing(k.p, g).total])), hidden: () => S.gU };
+    const S = { mode: 'race', t: 0, playing: false, cs: [], recs: [], unk: false, hid: false, gU: 9.8 };
+    const build = () => { S.t = 0; S.playing = false; const gg = g();
+        if (S.mode === 'race') S.cs = curves(L(), Hh(), p()); else { const kind = el('selC').value; S.cs = [[1, '#ffcc00', '第一顆（最高）'], [s2() / 100, '#ff9f43', `第二顆（${s2()}%）`], [s3() / 100, '#00e676', `第三顆（${s3()}%）`]].map(([f, col, name], i) => ({ id: 'b' + i, name, col, p: isoTrack(r(), kind, f) })); }
+        S.cs.forEach(k => k.tm = timing(k.p, gg)); };
+    const L = sl('L', 2, () => build()), Hh = sl('Hh', 2, () => build()), p = sl('p', 2, () => build()), r = sl('r', 2, () => build()), s2 = sl('s2', 0, () => build()), s3 = sl('s3', 0, () => build()), g = () => S.unk ? S.gU : +el('selG').value;
+    const at = (tm, t) => { const n = tm.T.length - 1; if (t >= tm.T[n]) return n; let a = 0, b = n; while (b - a > 1) { const m = (a + b) >> 1; tm.T[m] <= t ? a = m : b = m; } return a + (t - tm.T[a]) / (tm.T[b] - tm.T[a]); };
+    const lerp = (q, f) => { const i = Math.min(Math.floor(f), q.length - 2), u = f - i; return [q[i][0] + u * (q[i + 1][0] - q[i][0]), q[i][1] + u * (q[i + 1][1] - q[i][1])]; };
+    const tMax = () => Math.max(...S.cs.map(k => k.tm.total));
+    function draw() {
+        c.fillStyle = '#080a0f'; c.fillRect(0, 0, W, H); let xm, ym, X, Y;
+        if (S.mode === 'race') { xm = L(); ym = Math.max(...S.cs.map(k => Math.max(...k.p.filter((_, i) => i % 20 === 0).map(q => q[1]))), Hh()); const sc = Math.min(680 / xm, 320 / ym); X = x => 40 + x * sc; Y = y => 40 + y * sc;
+            txt(c, 'A', X(0) - 8, Y(0) - 10, '#f0f3f8', 20, 'right'); txt(c, 'B', X(L()) + 10, Y(Hh()) + 6, '#f0f3f8', 20); }
+        else { const sc = Math.min(700 / (2 * Math.PI * r()), 320 / (2 * r())), full = el('selC').value === 'cyc' ? Array.from({ length: 201 }, (_, i) => { const t = 2 * Math.PI * i / 200; return [r() * (t - Math.sin(t)), r() * (1 - Math.cos(t))]; }) : Array.from({ length: 201 }, (_, i) => { const a = -Math.PI / 2 + Math.PI * i / 200; return [Math.PI * r() + 2 * r() * Math.sin(a), 2 * r() * Math.cos(a)]; });
+            X = x => 380 + (x - Math.PI * r()) * sc; Y = y => 40 + y * sc; c.strokeStyle = '#4a586e'; c.lineWidth = 3; c.beginPath(); full.forEach((q, i) => i ? c.lineTo(X(q[0]), Y(q[1])) : c.moveTo(X(q[0]), Y(q[1]))); c.stroke(); txt(c, '谷底', X(Math.PI * r()), Y(2 * r()) + 26, '#c3d0e4', 17, 'center'); }
+        S.cs.forEach(k => { if (S.mode === 'race') { c.strokeStyle = k.col; c.lineWidth = k.id === 'cyc' ? 3.5 : 2; c.beginPath(); k.p.forEach((q, i) => { if (i % 4 === 0 || i === k.p.length - 1) i ? c.lineTo(X(q[0]), Y(q[1])) : c.moveTo(X(q[0]), Y(q[1])); }); c.stroke(); } });
+        S.cs.forEach(k => { const [bx, by] = lerp(k.p, at(k.tm, S.t)); c.fillStyle = k.col; c.beginPath(); c.arc(X(bx), Y(by) - 7, 8, 0, 7); c.fill(); c.strokeStyle = '#080a0f'; c.lineWidth = 1.5; c.stroke(); });
+        txt(c, `t = ${Math.min(S.t, tMax()).toFixed(3)} s`, 14, 392, '#c3d0e4', 18);
+    }
+    function panels() {
+        const ref = S.mode === 'race' ? S.cs.find(k => k.id === 'cyc').tm.total : S.cs[0].tm.total, q = v => S.hid ? '？' : v, sorted = S.cs.slice().sort((a, b) => a.tm.total - b.tm.total);
+        el('rank').innerHTML = sorted.map((k, i) => `<tr><td>${i + 1}</td><td style="color:${k.col}"><b>${k.name}</b></td><td>${q(k.tm.total.toFixed(4))}</td><td>${k.tm.len.toFixed(3)}</td><td>${Math.abs(k.tm.total / ref - 1) < 5e-4 ? '—' : (k.tm.total / ref > 1 ? '+' : '−') + (Math.abs(k.tm.total / ref - 1) * 100).toFixed(1) + '%'}</td></tr>`).join('');
+        el('resT').textContent = S.mode === 'race' ? '成績表（時間由短到長）' : '到達谷底的時間';
+        el('status').innerHTML = S.mode === 'race' ? `所有軌道的終點速率都是 √(2gH) = ${q(Math.sqrt(2 * g() * Hh()).toFixed(3))} m/s；擺線的時間最短。` : el('selC').value === 'cyc' ? `擺線：三顆珠子<b>同時到谷底</b>，理論值 π√(r／g) = ${q((Math.PI * Math.sqrt(r() / g())).toFixed(4))} s。` : '圓弧：起點越高，花的時間越長——不等時。';
+        const tm = tMax(), vm = Math.max(...S.cs.map(k => Math.max(...k.tm.V.filter((_, i) => i % 20 === 0)))) * 1.15;
+        graph(el('g1'), { xmin: 0, xmax: tm, ymin: 0, ymax: vm, title: '速率–時間圖', xl: 't (s)', yl: 'v (m/s)', series: S.hid ? [] : S.cs.map(k => ({ pts: k.tm.T.map((t, i) => [t, k.tm.V[i]]).filter((_, i) => i % 8 === 0 || i === k.tm.T.length - 1), col: k.col, w: k.id === 'cyc' ? 3 : 2 })), vline: Math.min(S.t, tm) });
+    }
+    function renderExp() {
+        rows('recBody', S.recs.map((x, i) => [i + 1, x.r.toFixed(2), x.f, x.t.toFixed(3), (x.t * x.t).toFixed(4)]));
+        const pts = S.recs.map(x => [x.r, x.t * x.t]), k = pts.length >= 2 ? fitThroughOrigin(pts) : null, ym = Math.max(1.1, ...pts.map(q => q[1])) * 1.15;
+        graph(el('gFit'), { xmin: 0, xmax: 1.05, ymin: 0, ymax: ym, title: 't²–r 圖', xl: 'r (m)', yl: 't² (s²)', series: k ? [{ pts: [[0, 0], [1.05, k * 1.05]], col: '#ffcc00', w: 2 }] : [], dots: pts.map(q => ({ x: q[0], y: q[1], col: '#00d4ff' })) });
+        el('fitTxt').innerHTML = k ? `斜率 = <b>${k.toFixed(3)}</b> s²/m = π²／g → g = <b id="gFitVal">${(Math.PI ** 2 / k).toFixed(2)}</b> m/s²。` + (S.unk ? (S.hid ? '　按「揭曉」對答案。' : `　正確答案 g = <b id="gTrue">${S.gU.toFixed(2)}</b> m/s²。`) : '') : '記錄 2 個以上不同的 r（軌道要選擺線）。起點可以隨意改變——時間不受影響。';
+        el('btnUnk').textContent = S.unk ? '回到已知星球' : '🎲 未知星球'; el('btnRev').disabled = !(S.unk && S.hid); el('selG').disabled = S.unk;
+    }
+    el('btnRec').addEventListener('click', () => { if (el('selC').value !== 'cyc') { el('fitTxt').textContent = '請先把軌道形狀換成擺線。'; return; } S.recs.push({ r: r(), f: s2(), t: isoTime(r(), 'cyc', s2() / 100, g()) * (1 + (el('chkNoise').checked ? noise(0.005) : 0)) }); renderExp(); });
+    el('btnClr').addEventListener('click', () => { S.recs = []; renderExp(); });
+    el('btnUnk').addEventListener('click', () => { S.unk = !S.unk; S.hid = S.unk; S.recs = []; if (S.unk) S.gU = [1.62, 3.71, 8.87, 11.15, 24.79][Math.floor(Math.random() * 5)]; build(); renderExp(); });
+    el('btnRev').addEventListener('click', () => { S.hid = false; renderExp(); });
+    el('btnPlay').addEventListener('click', () => { if (S.t >= tMax()) S.t = 0; S.playing = true; }); el('btnReset').addEventListener('click', build); ['selG', 'selC'].forEach(id => el(id).addEventListener('change', build));
+    onMode(m => { S.mode = m; build(); el('cTitle').textContent = m === 'race' ? '最速降線：從 A 滑到 B，哪一條軌道最快？' : '擺線的等時性：從不同高度釋放'; });
+    showFor('race'); build(); renderExp(); let fn = 0;
+    loop(dt => { if (S.playing) { S.t += dt * +el('selSpd').value; if (S.t >= tMax()) { S.t = tMax(); S.playing = false; } } draw(); if (!(fn++ % 4)) panels(); });
+
+})();
+</script>
+</body>
+</html>

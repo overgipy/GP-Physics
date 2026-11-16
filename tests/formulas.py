@@ -578,6 +578,37 @@ def t_race(ctx):
     check("雙珠 挑戰：預測正確被判定答對", 1 if "預測正確" in text(pg, "qRes") else 0, 1, abs_=0)
 
 
+def t_brach(ctx):
+    pg = open_page(ctx, "brachistochrone", frozen=True)
+    g = 9.8
+    for L, Hh in ((2.0, 1.0), (1.0, 1.0), (3.0, 0.5)):
+        r = pg.evaluate("a => LabTest.raceTimes(a[0], a[1], 0.5, 9.8)", [L, Hh])
+        check(f"最速降線 L={L} H={Hh} 直線 t = √(2(L²+H²)/gH)", r["line"], math.sqrt(2 * (L * L + Hh * Hh) / (g * Hh)), 1e-4)
+        a, b = 1e-6, 2 * math.pi - 1e-6          # 獨立解擺線參數
+        for _ in range(80):
+            m = (a + b) / 2
+            if (m - math.sin(m)) / (1 - math.cos(m)) < L / Hh: a = m
+            else: b = m
+        rr = Hh / (1 - math.cos(a))
+        check(f"最速降線 L={L} H={Hh} 擺線 t = θ√(r/g)", r["cyc"], a * math.sqrt(rr / g), 2e-4)
+        check(f"最速降線 L={L} H={Hh} 擺線比其他四條都快", 1 if all(r["cyc"] < r[k] - 1e-6 for k in ("line", "arc", "para", "pow")) else 0, 1, abs_=0)
+    best = min(pg.evaluate("p => LabTest.raceTimes(2, 1, p, 9.8)", p / 100)["pow"] for p in range(20, 201, 2))
+    cyc = pg.evaluate("LabTest.raceTimes(2, 1, 0.5, 9.8).cyc")
+    check("最速降線 自訂曲線怎麼調都贏不了擺線", 1 if best > cyc else 0, 1, abs_=0)
+    set_val(pg, "L", 2); set_val(pg, "Hh", 1); step(pg, 6)
+    check("最速降線 成績表第一名是擺線", 1 if "擺線" in pg.inner_text("#rank tr:first-child") else 0, 1, abs_=0)
+    pg.click('[data-m="iso"]'); set_val(pg, "r", 0.5); step(pg, 6); t0 = math.pi * math.sqrt(0.5 / g)
+    for f in (1.0, 0.5, 0.15, 0.05):
+        check(f"等時性 擺線從 {f:.0%} 高度到谷底 = π√(r/g)", pg.evaluate("f => LabTest.isoTime(0.5, 'cyc', f, 9.8)", f), t0, 1e-3)
+    ta = [pg.evaluate("f => LabTest.isoTime(0.5, 'arc', f, 9.8)", f) for f in (0.9, 0.5, 0.02)]
+    check("等時性 圓弧起點越高時間越長", 1 if ta[0] > ta[1] > ta[2] else 0, 1, abs_=0)
+    check("等時性 圓弧小角度極限 = (π/2)√(R/g)，R = 2r", ta[2], math.pi / 2 * math.sqrt(1.0 / g), 0.01)
+    pg.uncheck("#chkNoise"); pg.click("#btnUnk")
+    for rr, s in ((0.2, 30), (0.5, 80), (0.8, 10), (1.0, 60)): set_val(pg, "r", rr); set_val(pg, "s2", s); pg.click("#btnRec")
+    est = num(text(pg, "gFitVal")); pg.click("#btnRev")
+    check("等時性 未知星球：g = π²/斜率", est, num(text(pg, "gTrue")), 0.01)
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
          "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing,
@@ -590,7 +621,8 @@ TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_proje
          "transformer": t_transformer,
          "microwave": t_microwave,
          "radioactive-decay": t_decay,
-         "ball-race": t_race}
+         "ball-race": t_race,
+         "brachistochrone": t_brach}
 
 
 def main():
