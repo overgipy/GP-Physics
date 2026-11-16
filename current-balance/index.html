@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電流天平 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/lab-mobile.css">
+    <link rel="stylesheet" href="../shared/touch.css">
+    <style>
+        [hidden] { display: none !important; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        input.ans { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 8px; font-size: 1rem; width: 7em; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>⚖️ 電流天平</h1>
+    <p class="subtitle">B = μ₀nI<sub>s</sub>　｜　F = ILB　｜　平衡時 mg = μ₀nI<sub>s</sub>IL</p>
+</header>
+
+<div class="container">
+<div class="card sticky-sim"><div class="card-title"><span id="cTitle">電流天平：磁力與砝碼重量平衡</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div><div class="canvas-wrap"><canvas id="scene" width="760" height="400"></canvas></div></div><div class="card"><div class="card-title">調整條件</div><div class="controls-grid"><div class="control-group"><div class="control-label"><span>螺線管電流 I<sub>s</sub></span><b style="color:var(--orange)"><span id="IsL"></span> A</b></div><input type="range" id="Is" min="0" max="5" step="0.1" value="3"></div><div class="control-group"><div class="control-label"><span>天平導線電流 I</span><b style="color:var(--cyan)"><span id="IL"></span> A</b></div><input type="range" id="I" min="0" max="5" step="0.1" value="3"></div><div class="control-group"><div class="control-label"><span>導線在磁場中的長度 L</span><b style="color:var(--green)"><span id="LL"></span> cm</b></div><input type="range" id="L" min="1" max="5" step="0.1" value="3"><div class="sub-note">U 形導線的末端那一段</div></div><div class="control-group"><div class="control-label"><span>螺線管每公尺匝數 n</span><b style="color:var(--yellow)"><span id="nL"></span> 匝/m</b></div><input type="range" id="n" min="1000" max="4000" step="100" value="2000"></div><div class="control-group"><div class="control-label"><span>小砝碼質量 m</span><b style="color:var(--red)"><span id="mL"></span> mg</b></div><input type="range" id="m" min="0" max="250" step="1" value="40"><div class="sub-note">掛在天平另一端（兩臂等長）</div></div></div><div class="check-row"><label><input type="checkbox" id="chkRev"> 把天平導線的電流反向</label></div><div class="btn-row" style="margin:8px 0"><button class="btn green" id="btnAuto">⚖ 自動調到平衡</button></div></div><div class="card"><div class="card-title">即時數據</div><div class="dashboard" id="dash"></div><div class="status" id="status"></div></div><div class="card"><div class="card-title">實驗：由 F–(I<sub>s</sub>·I) 圖求真空磁導率 μ₀</div><div class="fit-text">每改變一次電流，就調整砝碼到平衡，此時磁力 F = mg。按「平衡後記錄」會自動找出平衡所需的砝碼質量。以 I<sub>s</sub>·I 為橫軸、F 為縱軸是通過原點的直線，斜率 = μ₀nL。</div><div class="btn-row" style="margin:8px 0"><button class="btn orange" id="btnRec">📝 平衡後記錄</button><button class="btn secondary" id="btnClr">清除數據</button><button class="btn secondary" id="btnUnk">🎲 未知匝數</button><button class="btn secondary" id="btnRev">揭曉</button></div><div class="check-row"><label><input type="checkbox" id="chkNoise" checked> 加入秤重誤差（±1 mg）</label></div><div class="two-col"><div class="graph-box"><canvas id="gFit" width="480" height="320"></canvas></div><div class="table-scroll"><table><thead><tr><th>#</th><th>I<sub>s</sub> (A)</th><th>I (A)</th><th>I<sub>s</sub>·I (A²)</th><th>m (mg)</th><th>F (10⁻⁴ N)</th></tr></thead><tbody id="recBody"></tbody></table></div></div><div class="fit-text" id="fitTxt"></div></div>
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary><ul><li>長螺線管內部的磁場 <b>B = μ₀ n I<sub>s</sub></b>（T）；μ₀ = 4π × 10⁻⁷ T·m/A，n 每公尺匝數（匝/m），I<sub>s</sub> 螺線管電流（A）。方向沿管軸，由安培右手定則決定。</li><li>載流導線在磁場中受力 <b>F = I L B sinθ</b>（N）；導線與磁場垂直時 <b>F = ILB</b>。方向用右手開掌定則（或 F = I<b>L</b> × <b>B</b>）。</li><li>U 形導線兩側與磁場平行的部分不受力，只有末端長 L、與磁場垂直的那一段受力。</li><li>平衡條件（兩臂等長）：<b>mg = I L B = μ₀ n I<sub>s</sub> I L</b>。</li><li>所以 F ∝ I（固定 B）、F ∝ I<sub>s</sub>（固定 I）、F ∝ L；F–(I<sub>s</sub>·I) 圖的斜率 = μ₀nL。</li></ul>
+            <p class="assume">理想化假設：螺線管夠長，內部磁場均勻且不計地磁；天平導線末端完全在均勻磁場內並與磁場垂直；天平兩臂等長、支點無摩擦；g = 9.8 m/s²。天平傾斜的動畫只是示意。</p></details>
+        <details><summary>建議講解順序</summary><ol><li>先只開螺線管電流：有磁場，但天平導線沒電流，不受力。</li><li>再開天平電流：末端被往下推，天平傾斜；調砝碼到平衡，讀出磁力。</li><li>把 I 加倍：砝碼也要加倍；再把 I<sub>s</sub> 加倍，同樣加倍——F 與兩個電流都成正比。</li><li>把天平電流反向：力變成向上，砝碼放這一端就無法平衡。</li><li>改變 L 與匝數 n，看磁力怎麼變。</li><li>做實驗：F–(I<sub>s</sub>·I) 圖求 μ₀，再挑戰未知匝數。</li></ol></details>
+        <details><summary>可以問學生的問題</summary><ul><li>U 形導線的兩側也有電流，為什麼不受磁力？（電流方向與磁場平行，sinθ = 0）</li><li>兩個電流同時反向，磁力方向會變嗎？（不變：B 反向、I 也反向）</li><li>n = 2000 匝/m、I<sub>s</sub> = 3 A 時，管內磁場多大？（約 7.5 mT，約地磁的 150 倍以上）</li><li>如果 I 與 I<sub>s</sub> 用同一個電源串聯（I = I<sub>s</sub>），F 與電流是什麼關係？（F ∝ I²）</li><li>為什麼要用螺線管而不是磁鐵？（磁場大小可由電流計算，才能求出 μ₀）</li></ul></details>
+        <details><summary>常見迷思</summary><ul><li><b>「導線有電流就會受磁力」</b>：電流與磁場平行時不受力。</li><li><b>「磁力的方向沿著磁場方向」</b>：磁力同時垂直於電流與磁場。</li><li><b>「螺線管的磁場和長度、半徑有關」</b>：理想長螺線管內部 B = μ₀nI，只與匝數密度和電流有關。</li><li><b>「砝碼質量就是磁力」</b>：平衡時磁力等於砝碼的重量 mg，單位要換成牛頓。</li></ul></details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script src="../shared/lab.js"></script>
+<script>
+(() => {
+    'use strict';
+    const { el, rad, deg, arrow, txt, graph, meter, fitLine, fitThroughOrigin, noise, niceStep } = Lab;
+    const $$ = s => [...document.querySelectorAll(s)];
+    // 滑桿：顯示目前數值（id + 'L'），拖動時呼叫 cb；回傳讀值函式
+    function sl(id, dp, cb) { const e = el(id), lb = el(id + 'L'), up = () => { if (lb) lb.textContent = (+e.value).toFixed(dp); };
+        e.addEventListener('input', () => { up(); cb && cb(); }); up(); return () => +e.value; }
+    // 模式切換：有 data-for 的區塊只在對應模式顯示
+    function showFor(m) { $$('[data-for]').forEach(e => e.hidden = !e.dataset.for.split(' ').includes(m));
+        $$('#modeBar .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.m === m)); }
+    function onMode(cb) { $$('#modeBar .mode-btn').forEach(b => b.addEventListener('click', () => { showFor(b.dataset.m); cb(b.dataset.m); })); }
+    const rows = (id, arr) => el(id).innerHTML = arr.map(r => '<tr>' + r.map(v => `<td>${v}</td>`).join('') + '</tr>').join('') || '<tr><td colspan="9" style="text-align:center;color:#6a7a92">尚無數據</td></tr>';
+    // 動畫迴圈：fn(dt)；dt 為秒，最大 0.05
+    function loop(fn) { let last = null; const f = ts => { if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05); last = ts; fn(dt); requestAnimationFrame(f); }; requestAnimationFrame(f); }
+    // 畫布拖曳：cb(x, y, 階段)；x、y 為畫布座標，階段為 'down'／'move'／'up'
+    function dragOn(cv, cb) { let on = false; cv.style.touchAction = 'none'; const P = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
+        cv.addEventListener('pointerdown', e => { on = true; cv.setPointerCapture(e.pointerId); cb(...P(e), 'down'); }); cv.addEventListener('pointermove', e => { if (on) cb(...P(e), 'move'); });
+        const up = e => { if (on) { on = false; cb(...P(e), 'up'); } }; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up); }
+
+    const c = el('scene').getContext('2d'), W = 760, H = 400, MU0 = 4e-7 * Math.PI, G = 9.8;
+    const Bsol = (n, Is) => MU0 * n * Is, force = (n, Is, I, Lcm) => Bsol(n, Is) * I * Lcm / 100, balM = (n, Is, I, Lcm) => force(n, Is, I, Lcm) / G * 1e6;   // mg
+    const S = { tilt: 0, recs: [], unk: false, hid: false, nU: 2000 };
+    const Is = sl('Is', 1), I = sl('I', 1), L = sl('L', 1), ns = sl('n', 0), m = sl('m', 0), n = () => S.unk ? S.nU : ns(), rev = () => el('chkRev').checked;
+    window.LabTest = { Bsol, force, balM, MU0, hidden: () => S.nU };
+    function draw() {
+        c.fillStyle = '#080a0f'; c.fillRect(0, 0, W, H); const F = force(n(), Is(), I(), L()) * (rev() ? -1 : 1), Wt = m() * 1e-6 * G, net = F - Wt, ref = Math.max(Math.abs(F), Wt, 1e-6);
+        const tgt = Math.abs(net) < 0.015 * ref ? 0 : Math.max(-1, Math.min(1, net / ref * 3)) * 0.13; S.tilt += (tgt - S.tilt) * 0.08;
+        // 螺線管剖面
+        const sx = 60, sw = 300, yT = 110, yB = 290, nc = S.hid ? 14 : Math.round(n() / 150);
+        c.fillStyle = '#12161f'; c.fillRect(sx, yT, sw, yB - yT);
+        for (let i = 0; i < nc; i++) { const x = sx + (i + .5) / nc * sw; [[yT, 1], [yB, -1]].forEach(([y, s]) => { c.fillStyle = '#b87333'; c.beginPath(); c.arc(x, y, 8, 0, 7); c.fill(); if (Is() > 0) { c.fillStyle = '#080a0f'; if (s > 0) { c.beginPath(); c.arc(x, y, 2.5, 0, 7); c.fill(); } else { c.fillRect(x - 5, y - 1, 10, 2); c.fillRect(x - 1, y - 5, 2, 10); } } }); }
+        const nb = Math.min(6, Math.round(Bsol(n(), Is()) * 1000 / 4)); for (let i = 0; i < nb; i++) { const y = yT + 30 + (i + .5) / nb * (yB - yT - 60); arrow(c, sx + 14, y, sx + sw - 14, y, 'rgba(255,204,0,.45)', 2, 9); }
+        txt(c, '螺線管（剖面）：⊙ 電流流出、⊗ 流入', sx, 84, '#9aa8bd', 16); if (nb) txt(c, 'B', sx + sw - 30, yT + 28, '#ffcc00', 18);
+        // 天平
+        const px = sx + sw + 60, py = 200; c.fillStyle = '#ffcc00'; c.beginPath(); c.moveTo(px, py); c.lineTo(px - 16, py + 150); c.lineTo(px + 16, py + 150); c.closePath(); c.fill();
+        c.save(); c.translate(px, py); c.rotate(-S.tilt); c.fillStyle = '#2b6b4a'; c.fillRect(-250, -6, 500, 12); c.strokeStyle = '#00d4ff'; c.lineWidth = 3; c.strokeRect(-244, -3, 238, 6);
+        const ex = -244; c.fillStyle = '#00d4ff'; c.beginPath(); c.arc(ex, 0, 9, 0, 7); c.fill(); txt(c, '長 L 的一段（垂直紙面）', ex + 16, -16, '#00d4ff', 16);
+        if (Math.abs(F) > 1e-7) { const al = Math.sign(F) * Math.min(100, 20 + Math.abs(F) * 9e4); arrow(c, ex, 0, ex, al, '#ff6b81', 4, 12); txt(c, '磁力 F', ex + 12, al * 0.8 + 6, '#ff6b81', 18); }
+        if (m() > 0) { const s = 12 + Math.sqrt(m()) * 1.6; c.fillStyle = '#ff9f43'; c.fillRect(244 - s / 2, -6 - s, s, s); arrow(c, 244, 6, 244, 6 + Math.min(100, 20 + Wt * 9e4), '#ffcc00', 4, 12); txt(c, '砝碼重 mg', 232, 60, '#ffcc00', 18, 'right'); }
+        c.restore();
+        txt(c, Math.abs(net) < 0.015 * ref && ref > 1e-6 ? '平衡 ✓' : net > 0 ? '磁力較大：導線端下沉' : '導線端上翹', 560, 40, Math.abs(net) < 0.015 * ref && ref > 1e-6 ? '#00e676' : '#ff6b81', 22, 'center');
+    }
+    function panels() {
+        const B = Bsol(n(), Is()), F = force(n(), Is(), I(), L()), q = v => S.hid ? '？' : v;
+        el('dash').innerHTML = [meter('管內磁場 B = μ₀nIs', q((B * 1000).toFixed(3)), 'mT', '#ffcc00'), meter('磁力 F = ILB', q((F * 1e4).toFixed(3)), '×10⁻⁴ N', '#ff6b81'), meter('砝碼重量 mg', (m() * 1e-6 * G * 1e4).toFixed(3), '×10⁻⁴ N', '#ff9f43'), meter('平衡所需砝碼', q((F / G * 1e6).toFixed(1)), 'mg', '#00e676'), meter('Is × I', (Is() * I()).toFixed(2), 'A²', '#00d4ff')].join('');
+        el('status').innerHTML = rev() ? '天平電流反向：<b>磁力變成向上</b>，砝碼放在另一端只會更不平衡。' : '磁力向下推導線末端；調整砝碼質量，讓 <b>mg = ILB</b>。';
+    }
+    function renderExp() {
+        rows('recBody', S.recs.map((r, i) => [i + 1, r.Is.toFixed(1), r.I.toFixed(1), (r.Is * r.I).toFixed(2), r.m.toFixed(0), (r.m * 1e-6 * G * 1e4).toFixed(2)]));
+        const pts = S.recs.map(r => [r.Is * r.I, r.m * 1e-6 * G * 1e4]), k = pts.length >= 2 ? fitThroughOrigin(pts) : null, ym = Math.max(5, ...pts.map(p => p[1])) * 1.15, Lm = L() / 100;
+        graph(el('gFit'), { xmin: 0, xmax: 26, ymin: 0, ymax: ym, title: 'F–(Is·I) 圖', xl: 'Is·I (A²)', yl: 'F (10⁻⁴ N)', series: k ? [{ pts: [[0, 0], [26, k * 26]], col: '#ffcc00', w: 2 }] : [], dots: pts.map(p => ({ x: p[0], y: p[1], col: '#00d4ff' })) });
+        el('fitTxt').innerHTML = !k ? '記錄 2 組以上不同的電流組合（L 與匝數不要變）。' : S.unk ? `斜率 = ${k.toFixed(4)} × 10⁻⁴ N/A² = μ₀nL → n = 斜率／(μ₀L) = <b id="nFit">${(k * 1e-4 / (MU0 * Lm)).toFixed(0)}</b> 匝/m。` + (S.hid ? '　按「揭曉」對答案。' : `　正確答案 n = <b id="nTrue">${S.nU}</b> 匝/m。`)
+            : `斜率 = ${k.toFixed(4)} × 10⁻⁴ N/A² = μ₀nL → μ₀ = 斜率／(nL) = <b id="muFit">${(k * 1e-4 / (n() * Lm) * 1e7).toFixed(3)}</b> × 10⁻⁷ T·m/A（公認值 4π ≈ 12.566）。`;
+        el('btnUnk').textContent = S.unk ? '回到已知匝數' : '🎲 未知匝數'; el('btnRev').disabled = !(S.unk && S.hid); el('n').disabled = S.unk; el('nL').textContent = S.hid ? '？' : n().toFixed(0);
+    }
+    el('btnAuto').addEventListener('click', () => { el('m').value = Math.round(balM(n(), Is(), I(), L())); el('m').dispatchEvent(new Event('input')); });
+    el('btnRec').addEventListener('click', () => { if (rev() || Is() * I() === 0) { el('fitTxt').textContent = '現在無法用砝碼平衡（電流為零或方向相反）。'; return; } const mm = balM(n(), Is(), I(), L()) + (el('chkNoise').checked ? noise(1) : 0); S.recs.push({ Is: Is(), I: I(), m: mm }); el('m').value = Math.round(mm); el('m').dispatchEvent(new Event('input')); renderExp(); });
+    el('btnClr').addEventListener('click', () => { S.recs = []; renderExp(); });
+    el('btnUnk').addEventListener('click', () => { S.unk = !S.unk; S.hid = S.unk; S.recs = []; if (S.unk) S.nU = 1200 + 100 * Math.floor(Math.random() * 27); renderExp(); });
+    el('btnRev').addEventListener('click', () => { S.hid = false; renderExp(); });
+    ['L', 'n'].forEach(id => el(id).addEventListener('change', () => { if (S.recs.length) { S.recs = []; renderExp(); } }));
+    renderExp(); let fn = 0; loop(() => { draw(); if (!(fn++ % 4)) panels(); });
+
+})();
+</script>
+</body>
+</html>

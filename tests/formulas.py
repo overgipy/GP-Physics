@@ -529,6 +529,26 @@ def t_capacitor(ctx):
     check("電容 未知介質：由斜率求 κ", est, num(text(pg, "kTrue")), 0.01)
 
 
+def t_balance(ctx):
+    pg = open_page(ctx, "current-balance", frozen=True)
+    mu0 = 4e-7 * math.pi
+    for i, v in (("Is", 3), ("I", 3), ("L", 3), ("n", 2000)): set_val(pg, i, v)
+    step(pg, 6); B = mu0 * 2000 * 3; F = B * 3 * 0.03
+    check("電流天平 B = μ₀nIs（mT）", meter(pg, "管內磁場"), B * 1000, 0.002); check("電流天平 F = ILB（×10⁻⁴ N）", meter(pg, "磁力"), F * 1e4, 0.002)
+    check("電流天平 平衡砝碼 m = F/g（mg）", meter(pg, "平衡所需砝碼"), F / 9.8 * 1e6, 0.003)
+    set_val(pg, "I", 1.5); step(pg, 6); check("電流天平 I 減半 → F 減半", meter(pg, "磁力"), F * 1e4 / 2, 0.002)
+    set_val(pg, "Is", 1.5); step(pg, 6); check("電流天平 Is 也減半 → F 變 1/4", meter(pg, "磁力"), F * 1e4 / 4, 0.002)
+    pg.click("#btnAuto"); step(pg, 6)
+    check("電流天平 自動平衡後 mg ≈ F", meter(pg, "砝碼重量"), F * 1e4 / 4, 0.03)
+    pg.uncheck("#chkNoise")
+    for a, b in ((1, 2), (2, 3), (3, 4), (5, 5)): set_val(pg, "Is", a); set_val(pg, "I", b); pg.click("#btnRec")
+    check("電流天平 實驗求 μ₀（×10⁻⁷）", num(text(pg, "muFit")), 4 * math.pi, 0.002)
+    pg.click("#btnUnk")
+    for a, b in ((1, 2), (2, 3), (3, 4), (5, 5)): set_val(pg, "Is", a); set_val(pg, "I", b); pg.click("#btnRec")
+    est = num(text(pg, "nFit")); pg.click("#btnRev")
+    check("電流天平 未知匝數", est, num(text(pg, "nTrue")), 0.005)
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
          "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing,
@@ -539,7 +559,8 @@ TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_proje
          "static-equilibrium": t_static,
          "energy-coaster": t_coaster,
          "electric-field": t_efield,
-         "capacitor": t_capacitor}
+         "capacitor": t_capacitor,
+         "current-balance": t_balance}
 
 
 def main():
