@@ -609,6 +609,33 @@ def t_brach(ctx):
     check("等時性 未知星球：g = π²/斜率", est, num(text(pg, "gTrue")), 0.01)
 
 
+def t_cyclotron(ctx):
+    pg = open_page(ctx, "cyclotron", frozen=True)
+    e, u = 1.602177e-19, 1.660539e-27; mp = 1.007276 * u
+    for i, v in (("selP", "p"), ("B", 1), ("V", 100), ("R", 40), ("rho", 1)): set_val(pg, i, v)
+    step(pg, 6); f = e * 1 / (2 * math.pi * mp)
+    check("迴旋加速器 質子 f = qB/2πm（MHz）", meter(pg, "迴旋頻率"), f / 1e6, 0.001); check("迴旋加速器 週期（ns）", meter(pg, "週期"), 1e9 / f, 0.001)
+    kmax = (e * 0.4) ** 2 / (2 * mp) / e / 1e6
+    check("迴旋加速器 出口動能 (qBR)²/2m（MeV）", meter(pg, "出口動能"), kmax, 0.001)
+    check("迴旋加速器 圈數 = ⌈K_max/2qV⌉", meter(pg, "到出口需要的圈數"), math.ceil(math.floor(kmax / 0.1) / 2), abs_=0.01)
+    A = pg.evaluate("(() => { const a = LabTest.accel('p', 1, 100, 0.4, 1); return [a.K[0], a.K[9], a.r[0], a.r[3], a.K.length]; })()")
+    check("迴旋加速器 第 1 次加速後 K = qV", A[0], 0.1, 1e-6); check("迴旋加速器 第 10 次加速後 K = 10qV", A[1], 1.0, 1e-6)
+    check("迴旋加速器 r₁ = √(2mqV)/qB", A[2], math.sqrt(2 * mp * e * 1e5) / e, 1e-5); check("迴旋加速器 r₄/r₁ = 2（r ∝ √n）", A[3] / A[2], 2, 1e-6)
+    set_val(pg, "V", 200); step(pg, 6)
+    check("迴旋加速器 電壓加倍：出口動能不變", meter(pg, "出口動能"), kmax, 0.001); check("迴旋加速器 電壓加倍：圈數約減半", meter(pg, "到出口需要的圈數"), math.ceil(math.floor(kmax / 0.2) / 2), abs_=0.01)
+    set_val(pg, "B", 2); step(pg, 6); check("迴旋加速器 B 加倍：出口動能 4 倍", meter(pg, "出口動能"), 4 * kmax, 0.001)
+    set_val(pg, "B", 1); set_val(pg, "selP", "a"); step(pg, 6)
+    check("迴旋加速器 α 粒子頻率約為質子的一半", meter(pg, "迴旋頻率"), 2 * e / (2 * math.pi * 4.001506 * u) / 1e6, 0.001)
+    set_val(pg, "selP", "p"); set_val(pg, "V", 20); set_val(pg, "rho", 1.1); step(pg, 6)
+    check("迴旋加速器 頻率偏 10%：到不了出口", 0 if pg.evaluate("LabTest.accel('p', 1, 20, 0.4, 1.1).out") else 1, 1, abs_=0)
+    set_val(pg, "rho", 1); pg.uncheck("#chkNoise"); pg.click("#btnUnk"); hid = pg.evaluate("LabTest.hidden()")
+    for b in (0.5, 1, 1.5, 2): set_val(pg, "B", b); pg.click("#btnRec")
+    est = num(text(pg, "qmFit")); pg.click("#btnRev")
+    check("迴旋加速器 未知粒子荷質比（×10⁷ C/kg）", est, num(text(pg, "qmTrue")), 0.002)
+    q, m = {"p": (1, 1.007276), "d": (1, 2.013553), "he3": (2, 3.014932)}[hid]
+    check("迴旋加速器 頁面荷質比 = 獨立計算", num(text(pg, "qmTrue")), q * e / (m * u) / 1e7, 0.001)
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
          "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing,
@@ -622,7 +649,8 @@ TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_proje
          "microwave": t_microwave,
          "radioactive-decay": t_decay,
          "ball-race": t_race,
-         "brachistochrone": t_brach}
+         "brachistochrone": t_brach,
+         "cyclotron": t_cyclotron}
 
 
 def main():

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>迴旋加速器 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/lab-mobile.css">
+    <link rel="stylesheet" href="../shared/touch.css">
+    <style>
+        [hidden] { display: none !important; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        input.ans { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 8px; font-size: 1rem; width: 7em; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>🌀 迴旋加速器</h1>
+    <p class="subtitle">r = mv／qB　｜　T = 2πm／qB　｜　K<sub>max</sub> = (qBR)²／2m</p>
+</header>
+
+<div class="container">
+<div class="card sticky-sim"><div class="card-title"><span id="cTitle">迴旋加速器（俯視圖）</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div><div class="canvas-wrap"><canvas id="scene" width="760" height="400"></canvas></div></div><div class="card"><div class="card-title">調整條件</div><div class="controls-grid"><div class="control-group"><div class="control-label">被加速的粒子</div><select id="selP"><option value="p" selected>質子 ¹H⁺</option><option value="d">氘核 ²H⁺</option><option value="a">α 粒子 ⁴He²⁺</option><option value="he3">氦-3 核 ³He²⁺</option></select></div><div class="control-group"><div class="control-label"><span>磁場 B（垂直紙面向外）</span><b style="color:var(--yellow)"><span id="BL"></span> T</b></div><input type="range" id="B" min="0.3" max="2" step="0.05" value="1"></div><div class="control-group"><div class="control-label"><span>D 形盒之間的電壓 V</span><b style="color:var(--red)"><span id="VL"></span> kV</b></div><input type="range" id="V" min="10" max="200" step="5" value="100"><div class="sub-note">每通過縫隙一次，動能增加 qV</div></div><div class="control-group"><div class="control-label"><span>D 形盒半徑 R</span><b style="color:var(--cyan)"><span id="RL"></span> cm</b></div><input type="range" id="R" min="20" max="60" step="1" value="40"></div><div class="control-group"><div class="control-label"><span>交流電頻率 ÷ 迴旋頻率</span><b style="color:var(--orange)"><span id="rhoL"></span> 倍</b></div><input type="range" id="rho" min="0.9" max="1.1" step="0.002" value="1"><div class="sub-note">1.000 = 剛好同步（共振條件）</div></div><div class="control-group"><div class="control-label">播放速度</div><select id="selSpd"><option value="2">每秒 1 圈</option><option value="8" selected>每秒 4 圈</option><option value="40">每秒 20 圈</option></select></div></div><div class="btn-row" style="margin:8px 0"><button class="btn green" id="btnPlay">▶ 開始加速</button><button class="btn secondary" id="btnPause">⏸ 暫停</button><button class="btn secondary" id="btnEnd">⏭ 直接看結果</button><button class="btn secondary" id="btnReset">↺ 重來</button></div></div><div class="card"><div class="card-title">即時數據</div><div class="dashboard" id="dash"></div><div class="status" id="status"></div></div><div class="card"><div class="card-title">動能與軌道半徑隨圈數的變化</div><div class="two-col"><div class="graph-box"><canvas id="g1" width="480" height="260"></canvas></div><div class="graph-box"><canvas id="g2" width="480" height="260"></canvas></div></div></div><div class="card"><div class="card-title">實驗：由迴旋頻率求粒子的荷質比</div><div class="fit-text">改變磁場 B，量粒子的迴旋頻率 f 並記錄。f–B 圖是通過原點的直線，斜率 = q／(2πm)，可以求出荷質比 q／m。按「未知粒子」後粒子種類會被隱藏，請由荷質比判斷它是哪一種。</div><div class="btn-row" style="margin:8px 0"><button class="btn orange" id="btnRec">📝 測量並記錄</button><button class="btn secondary" id="btnClr">清除數據</button><button class="btn secondary" id="btnUnk">🎲 未知粒子</button><button class="btn secondary" id="btnRev">揭曉</button></div><div class="check-row"><label><input type="checkbox" id="chkNoise" checked> 加入測量誤差（±0.5%）</label></div><div class="two-col"><div class="graph-box"><canvas id="gFit" width="480" height="320"></canvas></div><div class="table-scroll"><table><thead><tr><th>#</th><th>B (T)</th><th>f (MHz)</th><th>f／B (MHz/T)</th></tr></thead><tbody id="recBody"></tbody></table></div></div><div class="fit-text" id="fitTxt"></div></div>
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary><ul><li>磁力當向心力：<b>qvB = mv²／r</b>，所以軌道半徑 <b>r = mv／(qB)</b>——越快，圈越大。</li><li>週期 <b>T = 2πr／v = 2πm／(qB)</b>，迴旋頻率 <b>f = qB／(2πm)</b>：<b>與速率、半徑無關</b>，這是迴旋加速器能運作的關鍵。</li><li>粒子每轉半圈通過縫隙一次，交流電壓剛好反向，所以每次都被加速：每次增加動能 <b>qV</b>，每圈增加 <b>2qV</b>。交流電頻率必須等於迴旋頻率（共振條件）。</li><li>磁力永遠垂直速度，<b>不作功</b>；動能全部來自縫隙的電場。</li><li>最大動能由 D 形盒半徑決定：r = R 時 v = qBR／m，<b>K<sub>max</sub> = (qBR)²／(2m)</b>——與加速電壓 V 無關。</li><li>加速電壓只決定要轉幾圈：圈數 ≈ K<sub>max</sub>／(2qV)；第 n 次加速後半徑 r<sub>n</sub> ∝ √n，所以軌道越往外越密。</li></ul>
+            <p class="assume">理想化假設：粒子從中心由靜止出發；D 形盒內只有均勻磁場、沒有電場，縫隙很窄（通過時間不計）且只有電場；不計相對論效應（粒子速率接近光速的十分之一以上時，質量變大、週期變長，就會與交流電不同步，這是真實迴旋加速器的能量上限）；不計粒子輻射與氣體碰撞。</p></details>
+        <details><summary>建議講解順序</summary><ol><li>先看一圈：在 D 形盒裡等速率轉半圈，過縫隙時加速，下一個半圈變大。</li><li>數一數每半圈花的時間：圈越來越大，週期卻不變——對照 T = 2πm／qB。</li><li>直接看結果：軌道是越往外越密的螺旋，動能–圈數是直線。</li><li>把電壓 V 加倍：圈數減半，但出口動能不變！再把 R 或 B 加大：出口動能才變大。</li><li>把交流電頻率調偏一點：粒子一開始被加速，後來變成被減速——必須同步。</li><li>換成 α 粒子、氘核，比較頻率；最後做實驗求荷質比、判斷未知粒子。</li></ol></details>
+        <details><summary>可以問學生的問題</summary><ul><li>粒子越轉越快，為什麼轉一圈的時間不變？（半徑與速率成正比，路程與速率同比例增加）</li><li>想提高出口動能，應該加大電壓、磁場還是半徑？（磁場或半徑；電壓只影響圈數）</li><li>磁場對粒子作了多少功？（零，磁力永遠垂直速度）</li><li>同一台加速器、同樣的 B，質子與 α 粒子的出口動能誰大？（一樣大：q²／m 都相同）</li><li>為什麼迴旋加速器沒辦法把電子加速到很高的能量？（電子很快就接近光速，相對論效應使週期改變而失去同步）</li></ul></details>
+        <details><summary>常見迷思</summary><ul><li><b>「磁場讓粒子加速」</b>：磁場只改變方向、不改變速率；加速靠的是縫隙的電場。</li><li><b>「加速電壓越高，最後的能量越大」</b>：出口動能 (qBR)²／2m 與電壓無關，電壓高只是少轉幾圈。</li><li><b>「粒子越快，轉一圈越快」</b>：週期 2πm／qB 與速率無關（不考慮相對論時）。</li><li><b>「交流電的頻率要越調越高來追上粒子」</b>：迴旋頻率是固定的，交流電用固定頻率即可。</li></ul></details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script src="../shared/lab.js"></script>
+<script>
+(() => {
+    'use strict';
+    const { el, rad, deg, arrow, txt, graph, meter, fitLine, fitThroughOrigin, noise, niceStep } = Lab;
+    const $$ = s => [...document.querySelectorAll(s)];
+    // 滑桿：顯示目前數值（id + 'L'），拖動時呼叫 cb；回傳讀值函式
+    function sl(id, dp, cb) { const e = el(id), lb = el(id + 'L'), up = () => { if (lb) lb.textContent = (+e.value).toFixed(dp); };
+        e.addEventListener('input', () => { up(); cb && cb(); }); up(); return () => +e.value; }
+    // 模式切換：有 data-for 的區塊只在對應模式顯示
+    function showFor(m) { $$('[data-for]').forEach(e => e.hidden = !e.dataset.for.split(' ').includes(m));
+        $$('#modeBar .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.m === m)); }
+    function onMode(cb) { $$('#modeBar .mode-btn').forEach(b => b.addEventListener('click', () => { showFor(b.dataset.m); cb(b.dataset.m); })); }
+    const rows = (id, arr) => el(id).innerHTML = arr.map(r => '<tr>' + r.map(v => `<td>${v}</td>`).join('') + '</tr>').join('') || '<tr><td colspan="9" style="text-align:center;color:#6a7a92">尚無數據</td></tr>';
+    // 動畫迴圈：fn(dt)；dt 為秒，最大 0.05
+    function loop(fn) { let last = null; const f = ts => { if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05); last = ts; fn(dt); requestAnimationFrame(f); }; requestAnimationFrame(f); }
+    // 畫布拖曳：cb(x, y, 階段)；x、y 為畫布座標，階段為 'down'／'move'／'up'
+    function dragOn(cv, cb) { let on = false; cv.style.touchAction = 'none'; const P = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
+        cv.addEventListener('pointerdown', e => { on = true; cv.setPointerCapture(e.pointerId); cb(...P(e), 'down'); }); cv.addEventListener('pointermove', e => { if (on) cb(...P(e), 'move'); });
+        const up = e => { if (on) { on = false; cb(...P(e), 'up'); } }; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up); }
+
+    const c = el('scene').getContext('2d'), W = 760, H = 400, E = 1.602177e-19, U = 1.660539e-27, CL = 2.998e8;
+    const PT = { p: { n: '質子', q: 1, m: 1.007276 }, d: { n: '氘核', q: 1, m: 2.013553 }, a: { n: 'α 粒子', q: 2, m: 4.001506 }, he3: { n: '氦-3 核', q: 2, m: 3.014932 } };
+    const fc = (pt, B) => PT[pt].q * E * B / (2 * Math.PI * PT[pt].m * U);                    // 迴旋頻率（Hz）
+    const kmax = (pt, B, Rm) => (PT[pt].q * E * B * Rm) ** 2 / (2 * PT[pt].m * U) / E / 1e6;  // MeV
+    // 逐次通過縫隙：第 n 次增加 qV·cos(nπ(ρ − 1))；回傳每半圈的動能（MeV）與半徑（m），直到 r ≥ R 或放棄
+    function accel(pt, B, VkV, Rm, rho) { const P = PT[pt], q = P.q * E, m = P.m * U, K = [], r = []; let k = 0;
+        for (let n = 0; n < 6000; n++) { k += q * VkV * 1e3 * Math.cos(n * Math.PI * (rho - 1)); if (k <= 0) k = q * 10; const rr = Math.sqrt(2 * m * k) / (q * B); if (rr >= Rm) return { K, r, out: true, kOut: k / E / 1e6 }; K.push(k / E / 1e6); r.push(rr); }
+        return { K, r, out: false, kOut: null }; }
+    const S = { u: 0, playing: false, A: null, recs: [], unk: false, hid: false, pU: 'p' };
+    const pt = () => S.unk ? S.pU : el('selP').value, build = () => { S.A = accel(pt(), B(), V(), R() / 100, rho()); S.u = 0; S.playing = false; let y = 0; S.cy = S.A.r.map((rr, i) => { const cy = i % 2 ? y + rr : y - rr; y += i % 2 ? 2 * rr : -2 * rr; return cy; }); S.yEnd = y; };
+    const B = sl('B', 2, () => build()), V = sl('V', 0, () => build()), R = sl('R', 0, () => build()), rho = sl('rho', 3, () => build());
+    window.LabTest = { fc, kmax, accel, hidden: () => S.pU, PT };
+    function draw() {
+        c.fillStyle = '#080a0f'; c.fillRect(0, 0, W, H); const Rm = R() / 100, sc = 170 / Rm, cx = 300, cy0 = 200, A = S.A, gap = 7, n = A.r.length, uu = Math.min(S.u, n), k = Math.floor(uu);
+        for (const s of [-1, 1]) { c.fillStyle = '#121a26'; c.strokeStyle = '#3a4558'; c.lineWidth = 2; c.beginPath(); c.arc(cx + s * gap, cy0, 170, s > 0 ? -Math.PI / 2 : Math.PI / 2, s > 0 ? Math.PI / 2 : 3 * Math.PI / 2); c.closePath(); c.fill(); c.stroke(); }
+        const ph = Math.cos(S.u * Math.PI * rho()), pos = ph >= 0; txt(c, 'D₁', cx - 150, 50, pos ? '#ff6b81' : '#00d4ff', 20); txt(c, 'D₂', cx + 130, 50, pos ? '#00d4ff' : '#ff6b81', 20); txt(c, pos ? '＋' : '−', cx - 120, 50, pos ? '#ff6b81' : '#00d4ff', 20); txt(c, pos ? '−' : '＋', cx + 164, 50, pos ? '#00d4ff' : '#ff6b81', 20);
+        for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) { const x = cx + i * 46, y = cy0 + j * 46; if (Math.hypot(x - cx, y - cy0) < 160) { c.fillStyle = 'rgba(255,204,0,.35)'; c.beginPath(); c.arc(x, y, 2.5, 0, 7); c.fill(); } }
+        // 軌跡：第 i 個半圈在右（偶數）或左（奇數）D 形盒，圓心在縫隙線上
+        c.strokeStyle = 'rgba(0,230,118,.85)'; c.lineWidth = 1.2; c.beginPath(); let px = cx, py = cy0;
+        for (let i = 0; i <= k && i < n; i++) { const f = i < k ? 1 : uu - k, rr = A.r[i] * sc, yc = cy0 - S.cy[i] * sc, right = i % 2 === 0;
+            const a0 = right ? -Math.PI / 2 : Math.PI / 2, a1 = a0 + Math.PI * f; if (right) c.arc(cx, yc, rr, a0, a1); else c.arc(cx, yc, rr, a0, a1); px = cx + rr * Math.cos(a1); py = yc + rr * Math.sin(a1); }
+        c.stroke();
+        if (uu >= n && A.out) { const yq = cy0 - S.yEnd * sc, dir = n % 2 === 0 ? 1 : -1, t = Math.min((S.u - n) * 0.5, 1); px = cx + dir * t * 260; py = yq; c.strokeStyle = '#00e676'; c.lineWidth = 2; c.beginPath(); c.moveTo(cx, yq); c.lineTo(px, py); c.stroke(); if (dir > 0) { c.fillStyle = '#ff9f43'; c.fillRect(cx + 262, yq - 30, 10, 60); txt(c, '靶', cx + 284, yq + 6, '#ff9f43', 18); } }
+        c.fillStyle = '#ffffff'; c.beginPath(); c.arc(px, py, 5, 0, 7); c.fill();
+        txt(c, '黃點：磁場垂直紙面向外', 14, 392, '#9aa8bd', 16); const x0 = 560;
+        txt(c, S.hid ? '未知粒子' : PT[pt()].n, x0, 110, '#f0f3f8', 22); txt(c, `第 ${Math.floor(uu / 2)} 圈`, x0, 150, '#ffcc00', 22); txt(c, `動能 ${(k > 0 ? A.K[Math.min(k, n) - 1] : 0).toFixed(3)} MeV`, x0, 186, '#00e676', 18);
+        if (uu >= n) txt(c, A.out ? '已引出！' : '無法加速到出口', x0, 226, A.out ? '#00e676' : '#ff6b81', 20);
+    }
+    function panels() {
+        const A = S.A, n = A.r.length, k = Math.min(Math.floor(S.u), n), f = fc(pt(), B()), q = v => S.hid ? '？' : v, Kc = k > 0 ? A.K[k - 1] : 0, P = PT[pt()], vOut = P.q * E * B() * R() / 100 / (P.m * U);
+        el('dash').innerHTML = [meter('迴旋頻率 f = qB／2πm', (f / 1e6).toFixed(3), 'MHz', '#ffcc00'), meter('週期 T', (1e9 / f).toFixed(2), 'ns', '#ffcc00'), meter('目前動能 K', Kc.toFixed(3), 'MeV', '#00e676'), meter('目前軌道半徑 r', k > 0 ? (A.r[k - 1] * 100).toFixed(2) : '0.00', 'cm', '#00d4ff'),
+            meter('已通過縫隙', k, '次'), meter('出口動能 (qBR)²／2m', q(kmax(pt(), B(), R() / 100).toFixed(3)), 'MeV', '#ff9f43'), meter('到出口需要的圈數', A.out ? Math.ceil(n / 2) : '—', '圈', '#ff9f43'), meter('出口速率 ÷ 光速', q((vOut / CL).toFixed(3)), '', '#ff6b81')].join('');
+        el('status').innerHTML = !A.out ? '<b>頻率沒有同步</b>：粒子到縫隙時電場方向不對，有時加速、有時減速，到不了出口。' : Math.abs(rho() - 1) > 1e-9 ? '頻率稍微偏掉：每次加到的能量比 qV 少，要多轉幾圈才出得去。' : vOut / CL > 0.15 ? '注意：出口速率已超過光速的 15%，真實情況需要考慮相對論修正。' : '每半圈的時間都相同；圈越大、速率越快，剛好抵消。';
+        const ks = A.K.map((v, i) => [(i + 1) / 2, v]), rs = A.r.map((v, i) => [(i + 1) / 2, v * 100]), xm = Math.max(n / 2, 1);
+        graph(el('g1'), { xmin: 0, xmax: xm, ymin: 0, ymax: Math.max(...A.K, 0.1) * 1.15, title: '動能–圈數', xl: '圈數', yl: 'K (MeV)', series: [{ pts: ks, col: '#00e676', w: 2.5 }], vline: Math.min(S.u, n) / 2 });
+        graph(el('g2'), { xmin: 0, xmax: xm, ymin: 0, ymax: R() * 1.1, title: '軌道半徑–圈數（r ∝ √n）', xl: '圈數', yl: 'r (cm)', series: [{ pts: [[0, R()], [xm, R()]], col: '#4a586e', w: 1.5, dash: [5, 5] }, { pts: rs, col: '#00d4ff', w: 2.5 }], vline: Math.min(S.u, n) / 2 });
+    }
+    function renderExp() {
+        rows('recBody', S.recs.map((x, i) => [i + 1, x[0].toFixed(2), x[1].toFixed(3), (x[1] / x[0]).toFixed(3)]));
+        const k = S.recs.length >= 2 ? fitThroughOrigin(S.recs) : null, ym = Math.max(20, ...S.recs.map(x => x[1])) * 1.15, qm = k ? 2 * Math.PI * k * 1e6 : 0;
+        graph(el('gFit'), { xmin: 0, xmax: 2.1, ymin: 0, ymax: ym, title: 'f–B 圖', xl: 'B (T)', yl: 'f (MHz)', series: k ? [{ pts: [[0, 0], [2.1, k * 2.1]], col: '#ffcc00', w: 2 }] : [], dots: S.recs.map(x => ({ x: x[0], y: x[1], col: '#00d4ff' })) });
+        el('fitTxt').innerHTML = k ? `斜率 = <b>${k.toFixed(3)}</b> MHz/T = q／(2πm) → 荷質比 q／m = <b id="qmFit">${(qm / 1e7).toFixed(3)}</b> × 10⁷ C/kg。<br>參考：質子 9.58、氘核 4.79、α 粒子 4.82、氦-3 核 6.40（× 10⁷ C/kg）。` + (S.unk ? (S.hid ? '　按「揭曉」對答案。' : `　正確答案：<b id="pTrue">${PT[S.pU].n}</b>（<span id="qmTrue">${(PT[S.pU].q * E / (PT[S.pU].m * U) / 1e7).toFixed(3)}</span> × 10⁷ C/kg）。`) : '') : '記錄 2 組以上不同的磁場。';
+        el('btnUnk').textContent = S.unk ? '回到已知粒子' : '🎲 未知粒子'; el('btnRev').disabled = !(S.unk && S.hid); el('selP').disabled = S.unk;
+    }
+    el('btnRec').addEventListener('click', () => { S.recs.push([B(), fc(pt(), B()) / 1e6 * (1 + (el('chkNoise').checked ? noise(0.005) : 0))]); renderExp(); });
+    el('btnClr').addEventListener('click', () => { S.recs = []; renderExp(); });
+    el('btnUnk').addEventListener('click', () => { S.unk = !S.unk; S.hid = S.unk; S.recs = []; if (S.unk) S.pU = ['p', 'd', 'he3'][Math.floor(Math.random() * 3)]; build(); renderExp(); });
+    el('btnRev').addEventListener('click', () => { S.hid = false; renderExp(); });
+    el('btnPlay').addEventListener('click', () => { if (S.u >= S.A.r.length + 2) S.u = 0; S.playing = true; }); el('btnPause').addEventListener('click', () => S.playing = false); el('btnEnd').addEventListener('click', () => { S.u = S.A.r.length + 2; S.playing = false; }); el('btnReset').addEventListener('click', build);
+    el('selP').addEventListener('change', () => { S.recs = []; build(); renderExp(); });
+    build(); renderExp(); let fn = 0; loop(dt => { if (S.playing) { S.u += dt * +el('selSpd').value; if (S.u >= S.A.r.length + 2) { S.u = S.A.r.length + 2; S.playing = false; } } draw(); if (!(fn++ % 4)) panels(); });
+
+})();
+</script>
+</body>
+</html>
