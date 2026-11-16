@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雲霄飛車與力學能守恆 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/lab-mobile.css">
+    <link rel="stylesheet" href="../shared/touch.css">
+    <style>
+        [hidden] { display: none !important; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        input.ans { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 8px; font-size: 1rem; width: 7em; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>🎢 雲霄飛車與力學能守恆</h1>
+    <p class="subtitle">mgh + ½mv² = 定值　｜　過迴圈頂點：h ≥ 2.5R</p>
+</header>
+
+<div class="container">
+<div class="card sticky-sim"><div class="card-title"><span id="cTitle">雲霄飛車：位能 ⇄ 動能，摩擦把力學能變成熱</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div><div class="canvas-wrap"><canvas id="scene" width="760" height="400"></canvas></div></div><div class="card"><div class="card-title">設計軌道</div><div class="controls-grid"><div class="control-group"><div class="control-label"><span>起點高度 h</span><b style="color:var(--cyan)"><span id="h0L"></span> m</b></div><input type="range" id="h0" min="1" max="8" step="0.05" value="6"></div><div class="control-group"><div class="control-label"><span>迴圈半徑 R</span><b style="color:var(--orange)"><span id="RL"></span> m</b></div><input type="range" id="R" min="0.8" max="2.5" step="0.05" value="2"><div class="sub-note">要過頂點：h ≥ 2.5R（無摩擦）</div></div><div class="control-group"><div class="control-label"><span>後段山丘高度</span><b style="color:var(--green)"><span id="h2L"></span> m</b></div><input type="range" id="h2" min="0" max="6" step="0.1" value="3"></div><div class="control-group"><div class="control-label"><span>軌道摩擦係數 μ</span><b style="color:var(--red)"><span id="muL"></span> </b></div><input type="range" id="mu" min="0" max="0.1" step="0.005" value="0"><div class="sub-note">0 = 光滑軌道</div></div><div class="control-group"><div class="control-label"><span>車的質量 m</span><b style="color:var(--yellow)"><span id="mL"></span> kg</b></div><input type="range" id="m" min="100" max="1000" step="50" value="500"><div class="sub-note">質量會影響速率嗎？</div></div><div class="control-group"><div class="control-label">重力加速度</div><select id="selG"><option value="9.8" selected>地球 9.8 m/s²</option><option value="1.62">月球 1.62 m/s²</option><option value="3.71">火星 3.71 m/s²</option></select></div><div class="control-group"><div class="control-label">播放速度</div><select id="selSpd"><option value="0.25">0.25 倍</option><option value="0.5" selected>0.5 倍</option><option value="1">1 倍</option></select></div></div><div class="btn-row" style="margin:8px 0"><button class="btn green" id="btnPlay">▶ 釋放</button><button class="btn secondary" id="btnPause">⏸ 暫停</button><button class="btn secondary" id="btnReset">↺ 回到起點</button></div></div><div class="card"><div class="card-title">即時數據</div><div class="dashboard" id="dash"></div><div class="status" id="status"></div></div><div class="card"><div class="card-title">v–t 圖與能量–t 圖</div><div class="two-col"><div class="graph-box"><canvas id="g1" width="480" height="260"></canvas></div><div class="graph-box"><canvas id="g2" width="480" height="260"></canvas></div></div><div class="legend"><span style="--c:#00e676">動能 K</span><span style="--c:#00d4ff">重力位能 U</span><span style="--c:#ff6b81">摩擦生熱</span><span style="--c:#ffcc00">總和</span></div></div><div class="card"><div class="card-title">實驗：在軌道最低點量速率，驗證 v² = 2gh</div><div class="fit-text">迴圈入口（最低點）有一個測速器。改變起點高度 h，按「測量並記錄」。光滑軌道時 v²–h 是通過原點的直線，斜率 = 2g；加上摩擦後，點會落在直線下方。</div><div class="btn-row" style="margin:8px 0"><button class="btn orange" id="btnRec">⏱ 測量並記錄</button><button class="btn secondary" id="btnClr">清除數據</button><button class="btn secondary" id="btnUnk">🎲 未知星球</button><button class="btn secondary" id="btnRev">揭曉</button></div><div class="two-col"><div class="graph-box"><canvas id="gFit" width="480" height="320"></canvas></div><div class="table-scroll"><table><thead><tr><th>#</th><th>h (m)</th><th>μ</th><th>v (m/s)</th><th>v² (m²/s²)</th></tr></thead><tbody id="recBody"></tbody></table></div></div><div class="fit-text" id="fitTxt"></div></div>
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary><ul><li>重力位能 <b>U = mgh</b>、動能 <b>K = ½mv²</b>（J）。只有重力作功時，<b>力學能守恆：mgh₁ + ½mv₁² = mgh₂ + ½mv₂²</b>。</li><li>由靜止從高度 h 滑到最低點：<b>v = √(2gh)</b>，與質量、軌道形狀無關。</li><li>有摩擦時：<b>減少的力學能 = 摩擦力作的功 = 產生的熱</b>，摩擦力 f = μN。</li><li>鉛直圓迴圈頂點：向心力由重力與正向力提供 <b>mg + N = mv²／R</b>；剛好通過的條件 N = 0，<b>v<sub>頂</sub> = √(gR)</b>。</li><li>光滑軌道要通過迴圈頂點：mgh = mg(2R) + ½m(gR)，所以 <b>h ≥ 2.5R</b>；此時最低點速率 √(5gR)、最低點正向力 6mg。</li><li>軌道對車的正向力（一般位置）：<b>N = m(g cosφ + v²／r)</b>，φ 是軌道的傾斜角，r 是曲率半徑（凹向上取正）。</li></ul>
+            <p class="assume">理想化假設：車子視為質點，沿軌道滑動（不計車輪轉動的動能）與空氣阻力；摩擦力 = μN。只有迴圈段檢查「是否貼著軌道」（N ≥ 0，課本題目的假設）；其餘路段假設有安全輪夾住軌道，不會飛離。</p></details>
+        <details><summary>建議講解順序</summary><ol><li>光滑軌道、h = 6 m、R = 2 m：釋放，看能量長條在動能與位能之間換來換去，總和不變。</li><li>改變質量再放一次：每一點的速率都不變。</li><li>把 h 降到 5 m（= 2.5R）附近，找出剛好過迴圈頂點的高度；再低一點就在迴圈裡掉下來。</li><li>看頂點的正向力：剛好通過時為零，車與人「完全失重」。</li><li>後段山丘比起點高：過不去，退回來。</li><li>打開摩擦：熱的長條一直增加，最後停在低處。</li><li>做實驗：v²–h 圖求 g，再挑戰未知星球。</li></ol></details>
+        <details><summary>可以問學生的問題</summary><ul><li>從 6 m 高滑到底，速率是多少？換成兩倍重的車呢？（約 10.8 m/s；一樣）</li><li>要通過半徑 2 m 的迴圈頂點，起點至少要多高？為什麼不是 4 m？（5 m；頂點還需要 √(gR) 的速率）</li><li>剛好通過頂點時，車在最低點受到的正向力是重量的幾倍？（6 倍）</li><li>光滑軌道上，後段山丘最高可以多高？（和起點一樣高）</li><li>有摩擦時，減少的力學能跑去哪裡了？（變成軌道與車輪的熱能）</li></ul></details>
+        <details><summary>常見迷思</summary><ul><li><b>「越重的車滑得越快」</b>：v = √(2gh)，與質量無關。</li><li><b>「起點只要和迴圈頂點一樣高就能通過」</b>：那樣到頂點速率為零，早就離開軌道掉下來了。</li><li><b>「在迴圈頂點有一個向外的離心力把車頂住」</b>：在地面觀察，車只受重力與正向力，兩者都向下，一起提供向心力。</li><li><b>「有摩擦時能量不守恆」</b>：力學能不守恆，但加上熱能後的總能量仍守恆。</li></ul></details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script src="../shared/lab.js"></script>
+<script>
+(() => {
+    'use strict';
+    const { el, rad, deg, arrow, txt, graph, meter, fitLine, fitThroughOrigin, noise, niceStep } = Lab;
+    const $$ = s => [...document.querySelectorAll(s)];
+    // 滑桿：顯示目前數值（id + 'L'），拖動時呼叫 cb；回傳讀值函式
+    function sl(id, dp, cb) { const e = el(id), lb = el(id + 'L'), up = () => { if (lb) lb.textContent = (+e.value).toFixed(dp); };
+        e.addEventListener('input', () => { up(); cb && cb(); }); up(); return () => +e.value; }
+    // 模式切換：有 data-for 的區塊只在對應模式顯示
+    function showFor(m) { $$('[data-for]').forEach(e => e.hidden = !e.dataset.for.split(' ').includes(m));
+        $$('#modeBar .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.m === m)); }
+    function onMode(cb) { $$('#modeBar .mode-btn').forEach(b => b.addEventListener('click', () => { showFor(b.dataset.m); cb(b.dataset.m); })); }
+    const rows = (id, arr) => el(id).innerHTML = arr.map(r => '<tr>' + r.map(v => `<td>${v}</td>`).join('') + '</tr>').join('') || '<tr><td colspan="9" style="text-align:center;color:#6a7a92">尚無數據</td></tr>';
+    // 動畫迴圈：fn(dt)；dt 為秒，最大 0.05
+    function loop(fn) { let last = null; const f = ts => { if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05); last = ts; fn(dt); requestAnimationFrame(f); }; requestAnimationFrame(f); }
+
+    const c = el('scene').getContext('2d'), W = 760, H = 400, DS = 0.01;
+    // 建立軌道：回傳以弧長等距取樣的 {x, y, phi（傾斜角）, kap（曲率，凹向上為正）}，以及迴圈起訖弧長
+    function build(h0, R, h2) { const p = [], add = (x, y) => p.push([x, y]);
+        for (let i = 0; i <= 600; i++) { const x = 6 * i / 600; add(x, h0 * (1 - Math.sin(Math.PI * x / 12))); }
+        for (let i = 1; i <= 50; i++) add(6 + i / 50, 0); const iL0 = p.length - 1;
+        for (let i = 1; i <= 720; i++) { const a = 2 * Math.PI * i / 720; add(7 + R * Math.sin(a), R - R * Math.cos(a)); } const iL1 = p.length - 1;
+        for (let i = 1; i <= 100; i++) add(7 + 2 * i / 100, 0);
+        for (let i = 1; i <= 600; i++) { const x = 6 * i / 600; add(9 + x, h2 / 2 * (1 - Math.cos(2 * Math.PI * x / 6))); }
+        for (let i = 1; i <= 150; i++) add(15 + 3 * i / 150, 0);
+        const cs = [0]; for (let i = 1; i < p.length; i++) cs.push(cs[i - 1] + Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]));
+        const Ltot = cs[cs.length - 1], n = Math.floor(Ltot / DS), xs = new Float64Array(n + 1), ys = new Float64Array(n + 1); let j = 0;
+        for (let i = 0; i <= n; i++) { const s = i * DS; while (j < cs.length - 2 && cs[j + 1] < s) j++; const f = (s - cs[j]) / (cs[j + 1] - cs[j] || 1); xs[i] = p[j][0] + f * (p[j + 1][0] - p[j][0]); ys[i] = p[j][1] + f * (p[j + 1][1] - p[j][1]); }
+        const phi = new Float64Array(n + 1), kap = new Float64Array(n + 1);
+        for (let i = 0; i <= n; i++) { const a = Math.max(i - 1, 0), b = Math.min(i + 1, n); phi[i] = Math.atan2(ys[b] - ys[a], xs[b] - xs[a]); }
+        for (let i = 0; i <= n; i++) { const a = Math.max(i - 2, 0), b = Math.min(i + 2, n); let d = phi[b] - phi[a]; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; kap[i] = d / ((b - a) * DS); }
+        return { xs, ys, phi, kap, n, L: n * DS, sL0: cs[iL0], sL1: cs[iL1], sTop: (cs[iL0] + cs[iL1]) / 2 }; }
+    const at = (T, s) => { const i = Math.min(Math.max(Math.round(s / DS), 0), T.n); return { x: T.xs[i], y: T.ys[i], phi: T.phi[i], kap: T.kap[i] }; };
+    // 走一小步（半隱式）；回傳是否脫離軌道
+    function stepCar(T, st, mu, g, h) { const q = at(T, st.s), N = g * Math.cos(q.phi) + st.v * st.v * q.kap; st.N = N;      // N 為每公斤的正向力
+        if (st.s > T.sL0 + 0.05 && st.s < T.sL1 - 0.05 && N < -1e-6) return true;
+        let a = -g * Math.sin(q.phi); const fr = mu * Math.max(N, 0);
+        if (Math.abs(st.v) < 1e-4 && Math.abs(a) <= fr) { st.v = 0; st.rest = true; return false; }
+        const v1 = st.v + (a - Math.sign(st.v || a) * fr) * h; if (st.v !== 0 && v1 * st.v < 0 && Math.abs(a) <= fr) { st.v = 0; st.rest = true; return false; }
+        st.heat += fr * Math.abs(st.v) * h; st.v = v1; st.s += st.v * h; st.t += h; if (st.s < 0) { st.s = 0; st.v = Math.abs(st.v) * 0; } return false; }
+    // 測試與實驗用：由靜止釋放，回傳 { vBottom（最低點速率）, nTop（迴圈頂每公斤正向力）, vTop, fell, passedHill }
+    function run(h0, R, h2, mu, g) { const T = build(h0, R, h2), st = { s: 0, v: 0, t: 0, heat: 0 }, out = { fell: false, vBottom: null, vTop: null, nTop: null, passedHill: false, T };
+        for (let i = 0; i < 4e5 && st.s < T.L - 0.05 && !st.rest; i++) { const s0 = st.s; if (stepCar(T, st, mu, g, 5e-4)) { out.fell = true; break; }
+            if (out.vBottom === null && st.s >= T.sL0) out.vBottom = st.v; if (out.vTop === null && s0 < T.sTop && st.s >= T.sTop) { out.vTop = st.v; out.nTop = g * Math.cos(Math.PI) + st.v * st.v / R; }
+            if (st.s > T.L - 2.5) out.passedHill = true; if (st.t > 80) break; } out.heat = st.heat; return out; }
+    window.LabTest = { run, build };
+    const S = { T: null, st: null, playing: false, fell: false, hist: [], recs: [], unk: false, hid: false, gU: 9.8 };
+    const reset = () => { S.T = build(h0(), R(), h2()); S.st = { s: 0, v: 0, t: 0, heat: 0, N: 0 }; S.playing = false; S.fell = false; S.hist = []; };
+    const h0 = sl('h0', 2, () => reset()), R = sl('R', 2, () => reset()), h2 = sl('h2', 1, () => reset()), mu = sl('mu', 3, () => reset()), m = sl('m', 0);
+    const g = () => S.unk ? S.gU : +el('selG').value, mask = v => S.hid ? '？' : v;
+    function draw() {
+        c.fillStyle = '#080a0f'; c.fillRect(0, 0, W, H); const T = S.T, sc = 40, X = x => 20 + x * sc, Y = y => 372 - y * sc;
+        c.strokeStyle = '#3a4558'; c.lineWidth = 2; c.beginPath(); c.moveTo(0, 376); c.lineTo(W, 376); c.stroke();
+        c.strokeStyle = '#c3d0e4'; c.lineWidth = 4; c.beginPath(); for (let i = 0; i <= T.n; i += 5) i ? c.lineTo(X(T.xs[i]), Y(T.ys[i])) : c.moveTo(X(T.xs[i]), Y(T.ys[i])); c.stroke();
+        const q = at(T, S.st.s), nx = -Math.sin(q.phi), ny = Math.cos(q.phi), px = X(q.x) + nx * 9, py = Y(q.y) - ny * 9;
+        c.fillStyle = S.fell ? '#ff6b81' : '#ffcc00'; c.beginPath(); c.arc(px, py, 9, 0, 7); c.fill();
+        if (S.st.N > 0.01) arrow(c, px, py, px + nx * Math.min(80, S.st.N * 2.2), py - ny * Math.min(80, S.st.N * 2.2), '#ff7ad9', 3);
+        arrow(c, px, py, px, py + g() * 2.2, '#ffcc00', 3);
+        txt(c, `h = ${h0().toFixed(2)} m`, X(0) + 14, Y(h0()) - 12, '#00d4ff', 18); txt(c, `R = ${R().toFixed(2)} m`, X(7), Y(R()) + 6, '#ff9f43', 17, 'center');
+        c.strokeStyle = '#00e676'; c.setLineDash([4, 5]); c.lineWidth = 1.5; c.beginPath(); c.moveTo(X(0), Y(h0())); c.lineTo(X(18), Y(h0())); c.stroke(); c.setLineDash([]);
+        // 能量長條
+        const E0 = g() * h0(), K = S.st.v * S.st.v / 2, U = g() * q.y, Q = Math.max(0, E0 - K - U), bw = 250, bx = 490, by = 16; let x0 = bx;
+        [[K, '#00e676', '動能'], [U, '#00d4ff', '位能'], [Q, '#ff6b81', '熱']].forEach(([v, col, nm], i) => { const w = v / E0 * bw; c.fillStyle = col; c.fillRect(x0, by, w, 22); x0 += w; txt(c, nm, bx + i * 86, by + 44, col, 17); });
+        c.strokeStyle = '#8a99ad'; c.lineWidth = 1.5; c.strokeRect(bx, by, bw, 22);
+        if (S.fell) txt(c, '在迴圈裡脫離軌道！', 300, 100, '#ff6b81', 24, 'center');
+        txt(c, '粉紅：正向力　黃：重力', 14, 396, '#9aa8bd', 16);
+    }
+    function panels() {
+        const T = S.T, q = at(T, S.st.s), M = m(), K = 0.5 * M * S.st.v ** 2, U = M * g() * q.y, E0 = M * g() * h0(), kJ = v => mask((v / 1000).toFixed(2));
+        el('dash').innerHTML = [meter('速率 v', mask(Math.abs(S.st.v).toFixed(2)), 'm/s', '#00e676'), meter('高度 y', q.y.toFixed(2), 'm', '#00d4ff'), meter('動能 K', kJ(K), 'kJ', '#00e676'), meter('重力位能 U', kJ(U), 'kJ', '#00d4ff'), meter('摩擦生熱', kJ(Math.max(0, E0 - K - U)), 'kJ', '#ff6b81'),
+            meter('正向力 ÷ 重量 N／mg', mask((S.st.N / g()).toFixed(2)), '倍', '#ff7ad9'), meter('過迴圈所需最低高度 2.5R', (2.5 * R()).toFixed(2), 'm', '#ff9f43'), meter('時間 t', S.st.t.toFixed(2), 's')].join('');
+        el('status').innerHTML = S.fell ? '<b>脫離軌道</b>：到不了頂點（或頂點速率小於 √(gR)），正向力變成零後就離開軌道。把起點調高或把迴圈調小。' : S.st.rest ? '車停下來了：力學能全部變成熱。' : mu() === 0 ? (h0() >= 2.5 * R() ? '光滑軌道，h ≥ 2.5R：可以通過迴圈頂點。' : '<b>h &lt; 2.5R</b>：光滑軌道也過不了迴圈頂點。') : '有摩擦：力學能一路減少，變成熱。';
+        const h = S.hist, tm = Math.max(4, S.st.t), e = E0 / 1000;
+        graph(el('g1'), { xmin: 0, xmax: tm, ymin: 0, ymax: Math.sqrt(2 * g() * h0()) * 1.15, title: '速率–時間圖', xl: 't (s)', yl: '|v| (m/s)', series: [{ pts: h.map(p => [p[0], Math.abs(p[1])]), col: '#00e676', w: 2.5 }] });
+        graph(el('g2'), { xmin: 0, xmax: tm, ymin: 0, ymax: e * 1.15, title: '能量–時間圖', xl: 't (s)', yl: '能量 (kJ)', series: [{ pts: [[0, e], [tm, e]], col: '#ffcc00', w: 1.5, dash: [5, 5] }, { pts: h.map(p => [p[0], M * p[1] * p[1] / 2000]), col: '#00e676', w: 2 }, { pts: h.map(p => [p[0], M * g() * p[2] / 1000]), col: '#00d4ff', w: 2 }, { pts: h.map(p => [p[0], Math.max(0, e - M * p[1] * p[1] / 2000 - M * g() * p[2] / 1000)]), col: '#ff6b81', w: 2 }] });
+    }
+    function renderExp() {
+        rows('recBody', S.recs.map((r, i) => [i + 1, r.h.toFixed(2), r.mu.toFixed(3), r.v.toFixed(2), (r.v * r.v).toFixed(1)]));
+        const pts = S.recs.map(r => [r.h, r.v * r.v]), cl = S.recs.filter(r => r.mu === 0).map(r => [r.h, r.v * r.v]), k = cl.length >= 2 ? fitThroughOrigin(cl) : null, ym = Math.max(20, ...pts.map(p => p[1])) * 1.15;
+        graph(el('gFit'), { xmin: 0, xmax: 8.5, ymin: 0, ymax: ym, title: 'v²–h 圖（青：光滑，紅：有摩擦）', xl: 'h (m)', yl: 'v² (m²/s²)', series: k ? [{ pts: [[0, 0], [8.5, k * 8.5]], col: '#ffcc00', w: 2 }] : [], dots: S.recs.map(r => ({ x: r.h, y: r.v * r.v, col: r.mu === 0 ? '#00d4ff' : '#ff6b81' })) });
+        el('fitTxt').innerHTML = k ? `光滑軌道數據的斜率 = <b>${k.toFixed(2)}</b> m/s² = 2g → g = <b id="gFitVal">${(k / 2).toFixed(2)}</b> m/s²。` + (S.unk ? (S.hid ? '　按「揭曉」對答案。' : `　正確答案 g = <b id="gTrue">${S.gU.toFixed(2)}</b> m/s²。`) : '') : '在光滑軌道（μ = 0）記錄 2 個以上不同高度，就會畫出最佳直線。';
+        el('btnUnk').textContent = S.unk ? '回到已知星球' : '🎲 未知星球'; el('btnRev').disabled = !(S.unk && S.hid); el('selG').disabled = S.unk;
+    }
+    el('btnRec').addEventListener('click', () => { const r = run(h0(), R(), h2(), mu(), g()); if (r.vBottom === null) { el('fitTxt').textContent = '車子到不了最低點。'; return; } S.recs.push({ h: h0(), mu: mu(), v: r.vBottom }); renderExp(); });
+    el('btnClr').addEventListener('click', () => { S.recs = []; renderExp(); });
+    el('btnUnk').addEventListener('click', () => { S.unk = !S.unk; S.hid = S.unk; S.recs = []; if (S.unk) S.gU = [1.62, 3.71, 8.87, 11.15, 24.79][Math.floor(Math.random() * 5)]; reset(); renderExp(); });
+    el('btnRev').addEventListener('click', () => { S.hid = false; renderExp(); });
+    el('btnPlay').addEventListener('click', () => { if (S.fell || S.st.rest || S.st.s >= S.T.L - 0.06) reset(); S.playing = true; }); el('btnPause').addEventListener('click', () => S.playing = false); el('btnReset').addEventListener('click', reset); el('selG').addEventListener('change', reset);
+    reset(); renderExp(); let fn = 0;
+    loop(dt => { if (S.playing) { const n = Math.ceil(dt * +el('selSpd').value / 5e-4); for (let i = 0; i < n && S.playing; i++) { if (stepCar(S.T, S.st, mu(), g(), 5e-4)) { S.fell = true; S.playing = false; } if (S.st.rest || S.st.s >= S.T.L - 0.05 || S.st.t > 80) S.playing = false; }
+            S.hist.push([S.st.t, S.st.v, at(S.T, S.st.s).y]); if (S.hist.length > 4000) S.hist.splice(0, 800); } draw(); if (!(fn++ % 3)) panels(); });
+
+})();
+</script>
+</body>
+</html>

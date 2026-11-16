@@ -452,6 +452,29 @@ def t_static(ctx):
     check("梯子 對梯頂的合力矩也為零", tau_top, 0, abs_=1e-6)
 
 
+def t_coaster(ctx):
+    pg = open_page(ctx, "energy-coaster", frozen=True)
+    g = 9.8
+    run = lambda h, R, h2, mu, gg=g: pg.evaluate("a => { const r = LabTest.run(...a); delete r.T; return r; }", [h, R, h2, mu, gg])
+    for h in (2.0, 6.0, 8.0):
+        check(f"雲霄飛車 h={h} 最低點速率 √(2gh)", run(h, 0.8, 0, 0)["vBottom"], math.sqrt(2 * g * h), 0.003)
+    r = run(6, 2, 3, 0)
+    check("雲霄飛車 迴圈頂速率 √(2g(h−2R))", r["vTop"], math.sqrt(2 * g * 2), 0.005); check("雲霄飛車 迴圈頂正向力 N/m = v²/R − g", r["nTop"], g, 0.02)
+    check("雲霄飛車 h=6、R=2 通過迴圈與山丘", (0 if r["fell"] else 1) + (1 if r["passedHill"] else 0), 2, abs_=0)
+    check("雲霄飛車 h = 2.5R×1.01 可通過", 0 if run(5.05, 2, 0, 0)["fell"] else 1, 1, abs_=0); check("雲霄飛車 h = 2.5R×0.99 脫離軌道", 1 if run(4.95, 2, 0, 0)["fell"] else 0, 1, abs_=0)
+    check("雲霄飛車 山丘比起點高：過不去", 1 if run(4, 0.8, 5, 0)["passedHill"] else 0, 0, abs_=0)
+    check("雲霄飛車 月球上最低點速率", run(6, 1, 0, 0, 1.62)["vBottom"], math.sqrt(2 * 1.62 * 6), 0.003)
+    f = pg.evaluate("""() => { const T = LabTest.build(6, 2, 0), st = { s: 0, v: 0, t: 0, heat: 0 }; const r = LabTest.run(6, 2, 0, 0.05, 9.8); return [r.vBottom, r.heat]; }""")
+    check("雲霄飛車 有摩擦時最低點速率變小", 1 if f[0] < math.sqrt(2 * g * 6) * 0.99 else 0, 1, abs_=0)
+    set_val(pg, "h0", 6); set_val(pg, "R", 2); set_val(pg, "mu", 0.05); set_val(pg, "m", 500); set_val(pg, "selSpd", 1); pg.click("#btnPlay"); step(pg, 90)
+    k, u, q = meter(pg, "動能"), meter(pg, "重力位能"), meter(pg, "摩擦生熱")
+    check("雲霄飛車 K + U + 熱 = mgh（kJ）", k + u + q, 500 * g * 6 / 1000, 0.002); check("雲霄飛車 摩擦生熱 > 0", 1 if q > 0.05 else 0, 1, abs_=0)
+    set_val(pg, "mu", 0); pg.click("#btnUnk")
+    for h in (2, 4, 6, 8): set_val(pg, "h0", h); pg.click("#btnRec")
+    est = num(text(pg, "gFitVal")); pg.click("#btnRev")
+    check("雲霄飛車 未知星球：斜率/2 = g", est, num(text(pg, "gTrue")), 0.01)
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
          "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing,
@@ -459,7 +482,8 @@ TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_proje
          "elevator": t_elevator,
          "measurement": t_measure,
          "kepler": t_kepler,
-         "static-equilibrium": t_static}
+         "static-equilibrium": t_static,
+         "energy-coaster": t_coaster}
 
 
 def main():
