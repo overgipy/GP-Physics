@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LC 振盪與電磁波 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/lab-mobile.css">
+    <link rel="stylesheet" href="../shared/touch.css">
+    <style>
+        .control-group.off { display: none; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
+        [hidden] { display: none !important; }
+        .analog { font-family: inherit; font-size: .92rem; }
+        .analog th, .analog td { text-align: center; padding: 7px 6px; }
+        .analog th { color: var(--yellow); }
+        .analog td:first-child { color: var(--text-muted); text-align: left; }
+        .analog .lc { color: var(--cyan); } .analog .sp { color: var(--green); }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>⚡ LC 振盪與電磁波</h1>
+    <p class="subtitle">電場能 ⇄ 磁場能　｜　ω = 1／√(LC)　T = 2π√(LC)　c = fλ</p>
+</header>
+
+<div class="container">
+    <div class="card sticky-sim">
+        <div class="card-title"><span id="cTitle">LC 振盪電路</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div>
+        <div class="canvas-wrap"><canvas id="scene" width="760" height="400"></canvas></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">選擇模式與條件</div>
+        <div class="mode-bar" id="modeBar">
+            <button class="mode-btn active" data-m="lc"><b>① LC 振盪</b>電容放電 → 電感 → 反向充電，可加電阻看阻尼</button>
+            <button class="mode-btn" data-m="em"><b>② 電磁波與調諧</b>LC 決定頻率，天線輻射出 c = fλ 的電磁波</button>
+        </div>
+        <div class="controls-grid">
+            <div class="control-group" data-for="lc"><div class="control-label"><span>電感 L</span><b style="color:var(--orange)"><span id="lblL">10</span> mH</b></div><input type="range" id="slL" min="1" max="100" step="1" value="10"><div class="sub-note" id="lNote"></div></div>
+            <div class="control-group" data-for="lc"><div class="control-label"><span>電容 C</span><b style="color:var(--cyan)"><span id="lblC">10</span> μF</b></div><input type="range" id="slC" min="1" max="100" step="1" value="10"></div>
+            <div class="control-group" data-for="lc"><div class="control-label"><span>初始電荷 Q<sub>0</sub></span><b style="color:var(--yellow)"><span id="lblQ">50</span> μC</b></div><input type="range" id="slQ" min="10" max="100" step="5" value="50"><div class="sub-note" id="qNote"></div></div>
+            <div class="control-group" data-for="lc"><div class="control-label"><span>電阻 R</span><b style="color:var(--red)"><span id="lblR">0.0</span> Ω</b></div><input type="range" id="slR" min="0" max="200" step="0.5" value="0"><div class="sub-note" id="rNote"></div></div>
+            <div class="control-group" data-for="em" hidden><div class="control-label"><span>電感 L</span><b style="color:var(--orange)"><span id="lblLr">200</span> μH</b></div><input type="range" id="slLr" min="50" max="500" step="10" value="200"></div>
+            <div class="control-group" data-for="em" hidden><div class="control-label"><span>可變電容 C</span><b style="color:var(--cyan)"><span id="lblCr">100</span> pF</b></div><input type="range" id="slCr" min="20" max="500" step="5" value="100"><div class="sub-note">轉動收音機的選台旋鈕，就是在改變 C</div></div>
+            <div class="control-group"><div class="control-label">播放速度</div><select id="selSpd"><option value="0.5">0.5 倍</option><option value="1" selected>1 倍</option><option value="2">2 倍</option></select><div class="sub-note" id="spdNote"></div></div>
+        </div>
+        <div class="preset-row" id="presetRow" data-for="em" hidden>
+            <span class="lbl">快速設定（調到這個頻率附近）：</span>
+            <button class="chip" data-l="500" data-c="400">長波 約 356 kHz</button>
+            <button class="chip" data-l="200" data-c="125">AM 中波 約 1007 kHz</button>
+            <button class="chip" data-l="100" data-c="40">短波 約 2.5 MHz</button>
+        </div>
+        <div class="btn-row"><button class="btn green" id="btnPlay">▶ 播放</button><button class="btn secondary" id="btnPause">⏸ 暫停</button><button class="btn secondary" id="btnReset">↺ 重新放電</button></div>
+    </div>
+
+    <div class="card"><div class="card-title">即時數據</div><div class="dashboard" id="dash"></div><div class="status" id="status"></div></div>
+
+    <div class="card" data-for="lc">
+        <div class="card-title">電荷、電流與能量對時間的圖</div>
+        <div class="two-col">
+            <div class="graph-box"><canvas id="gQ" width="480" height="260"></canvas></div>
+            <div class="graph-box"><canvas id="gI" width="480" height="260"></canvas></div>
+            <div class="graph-box"><canvas id="gE" width="480" height="260"></canvas></div>
+        </div>
+        <div class="legend"><span style="--c:#00d4ff">電場能 U<sub>E</sub> = q²／2C</span><span style="--c:#ff9f43">磁場能 U<sub>B</sub> = ½Li²</span><span style="--c:#ffcc00">總電磁能</span></div>
+    </div>
+
+    <div class="card" data-for="lc">
+        <div class="card-title">與彈簧振子的類比</div>
+        <div class="table-scroll" style="max-height:none">
+        <table class="analog">
+            <thead><tr><th></th><th class="lc">LC 電路</th><th class="sp">彈簧振子</th></tr></thead>
+            <tbody>
+                <tr><td>「位置」</td><td class="lc">電荷 q（C）</td><td class="sp">位移 x（m）</td></tr>
+                <tr><td>「速度」</td><td class="lc">電流 i = Δq／Δt（A）</td><td class="sp">速度 v = Δx／Δt（m/s）</td></tr>
+                <tr><td>慣性</td><td class="lc">電感 L（H）</td><td class="sp">質量 m（kg）</td></tr>
+                <tr><td>回復的強弱</td><td class="lc">1／C（1/F）</td><td class="sp">彈力常數 k（N/m）</td></tr>
+                <tr><td>阻力</td><td class="lc">電阻 R（Ω）</td><td class="sp">阻力係數 b（kg/s）</td></tr>
+                <tr><td>「位能」</td><td class="lc">電場能 q²／2C</td><td class="sp">彈力位能 ½kx²</td></tr>
+                <tr><td>「動能」</td><td class="lc">磁場能 ½Li²</td><td class="sp">動能 ½mv²</td></tr>
+                <tr><td>角頻率</td><td class="lc">ω = 1／√(LC)</td><td class="sp">ω = √(k／m)</td></tr>
+                <tr><td>週期</td><td class="lc">T = 2π√(LC)</td><td class="sp">T = 2π√(m／k)</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <div class="fit-text">畫面下方的小彈簧與電路同步運動：木塊的位移對應電容上的電荷，木塊的速度對應電流。</div>
+    </div>
+
+    <div class="card" data-for="lc">
+        <div class="card-title"><span id="expTitle">實驗：用 T²–LC 圖求比例常數</span></div>
+        <div class="fit-text" id="expHint"></div>
+        <div class="btn-row" style="margin:8px 0"><button class="btn orange" id="btnRec">⏱ 測量並記錄</button><button class="btn secondary" id="btnClr">清除數據</button><button class="btn secondary" id="btnUnk">🎲 未知電感</button><button class="btn secondary" id="btnRev" disabled>揭曉</button></div>
+        <div class="check-row"><label><input type="checkbox" id="chkNoise" checked> 加入量測誤差（±0.5%）</label></div>
+        <div class="two-col">
+            <div class="graph-box"><canvas id="gFit" width="480" height="320"></canvas></div>
+            <div class="table-scroll"><table><thead><tr><th>#</th><th>L (mH)</th><th>C (μF)</th><th id="thX">LC (10⁻⁶ H·F)</th><th>T (ms)</th><th>T² (ms²)</th></tr></thead><tbody id="recBody"></tbody></table></div>
+        </div>
+        <div class="fit-text" id="fitTxt"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary>
+            <ul>
+                <li>理想 LC 電路（R = 0）：電荷 <b>q = Q₀ cos ωt</b>，電流 <b>i = Δq／Δt = −ωQ₀ sin ωt</b>；電流的最大值 I₀ = ωQ₀。q：庫侖（C）、i：安培（A）。</li>
+                <li>角頻率 <b>ω = 1／√(LC)</b>（rad/s），週期 <b>T = 2π√(LC)</b>（s），頻率 <b>f = 1／(2π√(LC))</b>（Hz）。L：亨利（H）、C：法拉（F）。</li>
+                <li>能量：電場能 <b>U<sub>E</sub> = q²／2C</b>、磁場能 <b>U<sub>B</sub> = ½Li²</b>（J）；理想時 U<sub>E</sub> + U<sub>B</sub> = Q₀²／2C 守恆，一個週期內互換兩次。</li>
+                <li>有電阻（RLC 串聯）：L(Δi／Δt) + Ri + q／C = 0；衰減率 α = R／2L，振盪角頻率 <b>ω′ = √(1／LC − R²／4L²)</b>；臨界電阻 <b>R<sub>c</sub> = 2√(L／C)</b>（Ω），R ≥ R<sub>c</sub> 就不再振盪。電阻的發熱功率 P = i²R（W）。</li>
+                <li>電磁波：<b>c = fλ</b>，真空中 c = 3.00 × 10⁸ m/s；電場 E、磁場 B 與前進方向三者互相垂直，E 與 B 同相，E／B = c。λ：公尺（m）。</li>
+            </ul>
+            <p class="assume">理想化假設：導線與電感的電阻、電容的漏電都併入一個可調的 R（預設 0）；元件為理想的集總元件，不計電路本身輻射造成的能量損失；電流方向規定「流進上極板為正」。畫面上的 q、i 用解析解計算，動畫時間已放慢（實際週期只有毫秒等級）。模式 ② 的電磁波是示意圖：波長依比例尺縮放，前進速率固定代表光速，實際頻率高達百萬赫。</p>
+        </details>
+        <details><summary>建議講解順序</summary>
+            <ol>
+                <li>R = 0，先看電路：電容帶滿電（電場最強）→ 放電、電流增大（磁場增強）→ 電容放完時電流最大 → 電感讓電流繼續流，電容反向充電。</li>
+                <li>對照 q–t 與 i–t 圖：q 最大時 i = 0；q = 0 時 |i| 最大，兩者相差四分之一週期。</li>
+                <li>看能量圖：電場能與磁場能輪流消長，總和不變；能量變化的頻率是 q 的兩倍。</li>
+                <li>對照下方的小彈簧與類比表：L 像質量（慣性）、1／C 像彈力常數。</li>
+                <li>改變 L 或 C：預測週期變大還是變小？改變 Q₀：週期會變嗎？（不會，只改變振幅）</li>
+                <li>把 R 慢慢加大：振幅指數衰減，總能量變成熱；超過臨界電阻後不再振盪。</li>
+                <li>實驗模式：記錄 5 組以上，作 T²–LC 圖，斜率應接近 4π² ≈ 39.5；再用「未知電感」由 T²–C 圖的斜率求 L。</li>
+                <li>切到模式 ②：LC 的頻率就是發射（或接收）電磁波的頻率，用 c = fλ 算波長，調到指定電台。</li>
+            </ol>
+        </details>
+        <details><summary>可以問學生的問題</summary>
+            <ul>
+                <li>C 變成 4 倍，週期變成幾倍？（2 倍）L 與 C 都加倍呢？（2 倍）</li>
+                <li>電容上的電荷為零的瞬間，電路的能量在哪裡？（全部是電感的磁場能）</li>
+                <li>初始電荷加倍，週期、最大電流、總能量各變成幾倍？（不變、2 倍、4 倍）</li>
+                <li>為什麼用 T² 對 LC 作圖，而不是 T 對 LC？（T² = 4π²·LC 才是通過原點的直線）</li>
+                <li>收音機 L = 200 μH，要收聽 1000 kHz 的電台，C 要調到多少？（C = 1／(4π²f²L) ≈ 127 pF）</li>
+                <li>頻率 1000 kHz 的電磁波，波長是多少？（λ = c／f = 300 m）</li>
+            </ul>
+        </details>
+        <details><summary>常見迷思</summary>
+            <ul>
+                <li><b>「電容放完電，電流就停了」</b>：電容放完電時電流反而最大；電感的「慣性」讓電流繼續流，替電容反向充電。</li>
+                <li><b>「初始電荷越多，振盪越快」</b>：週期只由 L、C 決定，與 Q₀ 無關（就像彈簧振子的週期與振幅無關）。</li>
+                <li><b>「電場能與磁場能同時最大」</b>：兩者此消彼長，一個最大時另一個為零。</li>
+                <li><b>「電磁波的 E 與 B 相差 90°」</b>：電路中的 q 與 i 相差四分之一週期，但傳播出去的電磁波，E 與 B 是同相的。</li>
+                <li><b>「頻率越高的電磁波跑得越快」</b>：真空中所有電磁波的速率都是 c，頻率高只是波長短。</li>
+            </ul>
+        </details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script src="../shared/lab.js"></script>
+<script>
+(() => {
+    'use strict';
+    const { el, arrow, txt, graph, meter, fitLine, noise } = Lab;
+    const TAU = 2 * Math.PI, C_LIGHT = 2.998e8, FOUR_PI2 = 4 * Math.PI * Math.PI;
+    const c = el('scene').getContext('2d'), W = 760, H = 400;
+
+    /* ---------- 物理 ---------- */
+    // RLC 串聯自由振盪的解析解：L q″ + R q′ + q／C = 0，q(0) = Q0，i(0) = 0，i = dq/dt
+    function lcState(L, C, R, Q0, t) {
+        const a = R / (2 * L), w0 = 1 / Math.sqrt(L * C), d = w0 * w0 - a * a;
+        if (d > 1e-9 * w0 * w0) {                     // 欠阻尼：會振盪
+            const w1 = Math.sqrt(d), e = Math.exp(-a * t);
+            return { q: Q0 * e * (Math.cos(w1 * t) + a / w1 * Math.sin(w1 * t)), i: -Q0 * w0 * w0 / w1 * e * Math.sin(w1 * t), regime: 'under', w0, w1, a };
+        }
+        if (d < -1e-9 * w0 * w0) {                    // 過阻尼
+            const s = Math.sqrt(-d), e1 = Math.exp((-a + s) * t), e2 = Math.exp((-a - s) * t);
+            return { q: Q0 * ((e1 + e2) / 2 + a / s * (e1 - e2) / 2), i: -Q0 * w0 * w0 / s * (e1 - e2) / 2, regime: 'over', w0, w1: null, a };
+        }
+        const e = Math.exp(-a * t);                   // 臨界阻尼
+        return { q: Q0 * e * (1 + a * t), i: -Q0 * a * a * t * e, regime: 'crit', w0, w1: null, a };
+    }
+    const period = (L, C) => TAU * Math.sqrt(L * C);
+    const emFreq = (L, C) => 1 / (TAU * Math.sqrt(L * C));
+    window.LabTest = { lcState, period, emFreq };      // 給自動測試用
+
+    /* ---------- 狀態 ---------- */
+    const S = { mode: 'lc', L: 10e-3, C: 10e-6, Q0: 50e-6, R: 0, spd: 1, t: 0, playing: true,
+        Lr: 200e-6, Cr: 100e-12, ph: 0, recs: [], unk: false, hid: false };
+    const T0 = () => period(S.L, S.C);
+    const now = () => lcState(S.L, S.C, S.R, S.Q0, S.t);
+    const U0 = () => S.Q0 * S.Q0 / (2 * S.C);
+    const mask = v => (S.unk && S.hid) ? '？' : v;
+
+    /* ---------- 場景：LC 電路 ---------- */
+    const BOX = { x1: 70, y1: 60, x2: 420, y2: 290 };
+    function loopPoint(s) {      // 沿迴路逆時針（上導線向左、左支路向下…）走 s∈[0,1) 的位置
+        const w = BOX.x2 - BOX.x1, h = BOX.y2 - BOX.y1, P = 2 * (w + h); let d = ((s % 1) + 1) % 1 * P;
+        if (d < w) return [BOX.x2 - d, BOX.y1]; d -= w;
+        if (d < h) return [BOX.x1, BOX.y1 + d]; d -= h;
+        if (d < w) return [BOX.x1 + d, BOX.y2]; d -= w;
+        return [BOX.x2, BOX.y2 - d];
+    }
+    function drawLC() {
+        const st = now(), qn = st.q / S.Q0, I0 = S.Q0 * st.w0, inorm = st.i / I0;
+        c.fillStyle = '#080a0f'; c.fillRect(0, 0, W, H);
+        const { x1, y1, x2, y2 } = BOX, ym = (y1 + y2) / 2, gap = 26;
+        // 導線
+        c.strokeStyle = '#8a99ad'; c.lineWidth = 3; c.lineJoin = 'round';
+        c.beginPath(); c.moveTo(x1, ym - gap); c.lineTo(x1, y1); c.lineTo(x2, y1); c.lineTo(x2, ym - 62); c.stroke();
+        c.beginPath(); c.moveTo(x1, ym + gap); c.lineTo(x1, y2); c.lineTo(x2, y2); c.lineTo(x2, ym + 62); c.stroke();
+        // 電阻（R > 0 才畫）
+        if (S.R > 0) {
+            const rx = (x1 + x2) / 2; c.fillStyle = '#080a0f'; c.fillRect(rx - 44, y1 - 12, 88, 24);
+            c.strokeStyle = '#ff4d6d'; c.lineWidth = 3; c.beginPath(); c.moveTo(rx - 44, y1);
+            for (let k = 0; k < 8; k++) c.lineTo(rx - 39 + k * 11, y1 + (k % 2 ? 10 : -10));
+            c.lineTo(rx + 44, y1); c.stroke(); txt(c, 'R', rx, y1 - 26, '#ff4d6d', 17, 'center');
+        }
+        // 電容：上下兩片極板
+        const pw = 64, colTop = qn >= 0 ? '#ff4d6d' : '#4d8dff', colBot = qn >= 0 ? '#4d8dff' : '#ff4d6d', aq = Math.min(1, Math.abs(qn));
+        c.lineWidth = 7; c.lineCap = 'butt';
+        c.strokeStyle = aq > 0.03 ? colTop : '#8a99ad'; c.beginPath(); c.moveTo(x1 - pw / 2, ym - gap); c.lineTo(x1 + pw / 2, ym - gap); c.stroke();
+        c.strokeStyle = aq > 0.03 ? colBot : '#8a99ad'; c.beginPath(); c.moveTo(x1 - pw / 2, ym + gap); c.lineTo(x1 + pw / 2, ym + gap); c.stroke();
+        const nSign = Math.round(aq * 4);
+        for (let k = 0; k < nSign; k++) {
+            const px = x1 - pw / 2 + (k + .5) * pw / nSign;
+            txt(c, qn >= 0 ? '+' : '−', px, ym - gap - 15, colTop, 18, 'center'); txt(c, qn >= 0 ? '−' : '+', px, ym + gap + 15, colBot, 18, 'center');
+        }
+        // 電場箭頭（由正極板指向負極板，長度 ∝ |q|）
+        if (aq > 0.06) for (let k = -1; k <= 1; k++) {
+            const ex = x1 + k * 20, len = (2 * gap - 14) * aq, dir = qn >= 0 ? 1 : -1;
+            arrow(c, ex, ym - dir * len / 2, ex, ym + dir * len / 2, '#00d4ff', 2.5, 8);
+        }
+        txt(c, 'C', x1 - pw / 2 - 20, ym, '#00d4ff', 19, 'center'); txt(c, 'E', x1 + pw / 2 + 14, ym, '#00d4ff', 16, 'center');
+        // 電感：線圈
+        c.strokeStyle = '#ff9f43'; c.lineWidth = 3.5; c.beginPath();
+        for (let k = 0; k < 6; k++) { const cy = ym - 62 + 10.3 + k * 20.7; c.moveTo(x2, cy - 10.3); c.bezierCurveTo(x2 + 34, cy - 10.3, x2 + 34, cy + 10.3, x2, cy + 10.3); }
+        c.stroke(); txt(c, 'L', x2 + 50, ym - 44, '#ff9f43', 19, 'center');
+        // 磁場箭頭（沿線圈軸，長度 ∝ |i|）
+        if (Math.abs(inorm) > 0.06) {
+            const len = 88 * Math.min(1, Math.abs(inorm)), dir = inorm > 0 ? -1 : 1;
+            arrow(c, x2 + 14, ym - dir * len / 2, x2 + 14, ym + dir * len / 2, '#ffe14d', 3, 10);
+            txt(c, 'B', x2 + 50, ym + 6, '#ffe14d', 16, 'center');
+        }
+        // 流動的電荷：沿迴路的位移 ∝ 已搬動的電荷 (q − Q0)
+        const shift = 0.11 * (st.q - S.Q0) / S.Q0;
+        for (let k = 0; k < 22; k++) {
+            const [dx, dy] = loopPoint(k / 22 + shift);
+            if (Math.abs(dx - x1) < 1 && Math.abs(dy - ym) < gap + 4) continue;            // 電容間隙內沒有電荷通過
+            c.fillStyle = '#ffcc00'; c.beginPath(); c.arc(dx, dy, 4.2, 0, 7); c.fill();
+        }
+        // 電流方向（i > 0：逆時針，下導線向右）
+        if (Math.abs(inorm) > 0.06) {
+            const dir = inorm > 0 ? 1 : -1, ax = (x1 + x2) / 2, len = 30 + 34 * Math.min(1, Math.abs(inorm));
+            arrow(c, ax - dir * len / 2, y2 - 20, ax + dir * len / 2, y2 - 20, '#ffcc00', 3, 10);
+            txt(c, '電流 i', ax, y2 - 40, '#ffcc00', 16, 'center');
+        }
+        // 能量長條
+        const bx = 500, by = 300, bh = 215, U = U0(), ue = st.q * st.q / (2 * S.C), ub = S.L * st.i * st.i / 2, heat = Math.max(0, U - ue - ub);
+        const bars = [['電場能', ue, '#00d4ff'], ['磁場能', ub, '#ff9f43']]; if (S.R > 0) bars.push(['熱', heat, '#ff4d6d']);
+        const bwid = S.R > 0 ? 52 : 70, bgap = S.R > 0 ? 26 : 40;
+        txt(c, '能量', bx + (bars.length * bwid + (bars.length - 1) * bgap) / 2, 40, '#c3d0e4', 17, 'center');
+        c.strokeStyle = '#ffcc0099'; c.setLineDash([6, 5]); c.lineWidth = 1.5; c.beginPath(); c.moveTo(bx - 12, by - bh); c.lineTo(bx + bars.length * (bwid + bgap) - bgap + 12, by - bh); c.stroke(); c.setLineDash([]);
+        bars.forEach((b, k) => {
+            const x = bx + k * (bwid + bgap), hgt = bh * Math.min(1, b[1] / U);
+            c.fillStyle = '#141923'; c.fillRect(x, by - bh, bwid, bh); c.fillStyle = b[2]; c.fillRect(x, by - hgt, bwid, hgt);
+            txt(c, b[0], x + bwid / 2, by + 18, b[2], 16, 'center');
+        });
+        // 彈簧類比
+        const sy = 356, wallX = 70, eqX = 250, amp = 110, bxs = eqX + amp * qn, bw = 44;
+        c.strokeStyle = '#3a4558'; c.lineWidth = 2; c.beginPath(); c.moveTo(wallX, sy - 28); c.lineTo(wallX, sy + 22); c.moveTo(wallX, sy + 22); c.lineTo(440, sy + 22); c.stroke();
+        c.strokeStyle = '#00e676'; c.lineWidth = 2.5; c.beginPath(); c.moveTo(wallX, sy);
+        const n = 14, sl = bxs - bw / 2 - wallX; for (let k = 1; k <= n; k++) c.lineTo(wallX + sl * (k - .5) / n, sy + (k % 2 ? -9 : 9)); c.lineTo(bxs - bw / 2, sy); c.stroke();
+        c.fillStyle = '#1d2432'; c.strokeStyle = '#00e676'; c.lineWidth = 2; c.beginPath(); c.rect(bxs - bw / 2, sy - 20, bw, 40); c.fill(); c.stroke();
+        txt(c, 'm', bxs, sy, '#00e676', 16, 'center');
+        c.strokeStyle = '#3a4558'; c.setLineDash([4, 4]); c.beginPath(); c.moveTo(eqX, sy - 30); c.lineTo(eqX, sy + 22); c.stroke(); c.setLineDash([]);
+        txt(c, '類比：x ↔ q，v ↔ i', 470, sy, '#9aa8bd', 15, 'left');
+    }
+
+    /* ---------- 場景：電磁波 ---------- */
+    function drawEM() {
+        c.fillStyle = '#080a0f'; c.fillRect(0, 0, W, H);
+        const f = emFreq(S.Lr, S.Cr), lam = C_LIGHT / f, lamPx = lam * 0.5, k = TAU / lamPx, ax0 = 150, ay = 205, A = Math.min(82, 30 + lamPx * 0.5);
+        const wt = S.ph * TAU * 130 / lamPx;                         // 圖上的前進速率固定（代表光速 c）
+        // LC 電路示意與天線
+        c.strokeStyle = '#8a99ad'; c.lineWidth = 2.5; c.strokeRect(28, ay + 40, 74, 62);
+        txt(c, 'L', 46, ay + 71, '#ff9f43', 17, 'center'); txt(c, 'C', 84, ay + 71, '#00d4ff', 17, 'center');
+        c.beginPath(); c.moveTo(65, ay + 40); c.lineTo(65, ay - 105); c.stroke();
+        const sgn = Math.cos(wt) >= 0; txt(c, sgn ? '+' : '−', 80, ay - 96, sgn ? '#ff4d6d' : '#4d8dff', 20, 'center'); txt(c, sgn ? '−' : '+', 80, ay + 24, sgn ? '#4d8dff' : '#ff4d6d', 20, 'center');
+        txt(c, '天線', 65, ay - 122, '#c3d0e4', 15, 'center');
+        // 傳播軸
+        arrow(c, ax0 - 30, ay, W - 16, ay, '#5a6a82', 2, 10);
+        txt(c, '→ 傳播方向（速率 c）', 500, 36, '#9aa8bd', 15, 'center');
+        const Bx = -0.22, By = 0.3;                                  // B 以斜投影表示「垂直紙面」的方向
+        const val = x => Math.sin(k * (x - ax0) - wt);
+        // B 場（先畫，在後面）
+        c.strokeStyle = '#ff9f43'; c.lineWidth = 2.4; c.beginPath();
+        for (let x = ax0; x <= W - 40; x += 3) { const v = val(x) * A * .8; x === ax0 ? c.moveTo(x + Bx * v, ay + By * v) : c.lineTo(x + Bx * v, ay + By * v); } c.stroke();
+        for (let x = ax0; x <= W - 40; x += 22) { const v = val(x) * A * .8; if (Math.abs(v) > 7) arrow(c, x, ay, x + Bx * v, ay + By * v, '#ff9f43aa', 1.6, 6); }
+        // E 場
+        c.strokeStyle = '#00d4ff'; c.lineWidth = 2.8; c.beginPath();
+        for (let x = ax0; x <= W - 40; x += 3) { const v = val(x) * A; x === ax0 ? c.moveTo(x, ay - v) : c.lineTo(x, ay - v); } c.stroke();
+        for (let x = ax0; x <= W - 40; x += 22) { const v = val(x) * A; if (Math.abs(v) > 7) arrow(c, x, ay, x, ay - v, '#00d4ffaa', 1.6, 6); }
+        txt(c, 'E（電場）', ax0 + 6, 36, '#00d4ff', 17, 'left'); txt(c, 'B（磁場）', ax0 + 110, 36, '#ff9f43', 17, 'left');
+        // 波長標記
+        const xa = ax0 + 40, xb = xa + lamPx;
+        if (xb < W - 30) { c.strokeStyle = '#ffcc00'; c.lineWidth = 2; c.beginPath(); c.moveTo(xa, 352); c.lineTo(xb, 352); c.moveTo(xa, 345); c.lineTo(xa, 359); c.moveTo(xb, 345); c.lineTo(xb, 359); c.stroke(); txt(c, `λ = ${lam.toFixed(0)} m`, (xa + xb) / 2, 374, '#ffcc00', 16, 'center'); }
+        else txt(c, `λ = ${lam.toFixed(0)} m（超出畫面）`, 420, 368, '#ffcc00', 16, 'center');
+        // 比例尺
+        c.strokeStyle = '#c3d0e4'; c.lineWidth = 2; c.beginPath(); c.moveTo(W - 86, 60); c.lineTo(W - 36, 60); c.stroke(); txt(c, '100 m', W - 61, 44, '#c3d0e4', 14, 'center');
+    }
+
+    /* ---------- 面板 ---------- */
+    function bandName(f) { return f < 531e3 ? '長波' : f <= 1602e3 ? 'AM 中波廣播' : '短波'; }
+    function panels() {
+        if (S.mode === 'em') {
+            const f = emFreq(S.Lr, S.Cr), lam = C_LIGHT / f;
+            el('dash').innerHTML = meter('頻率 f', f >= 1e6 ? (f / 1e6).toFixed(3) : (f / 1e3).toFixed(1), f >= 1e6 ? 'MHz' : 'kHz', '#ffcc00') + meter('週期 T', (1e6 / f).toFixed(3), 'μs', '#c3d0e4') + meter('波長 λ = c／f', lam.toFixed(1), 'm', '#00e676') + meter('角頻率 ω', (TAU * f / 1e6).toFixed(2), '×10⁶ rad/s', '#c3d0e4') + meter('光速 c', '3.00', '×10⁸ m/s', '#35d6ff') + meter('波段', bandName(f), '', '#ff9f43');
+            el('status').innerHTML = `f = 1／(2π√(LC)) = <b>${(f / 1e3).toFixed(1)} kHz</b>，λ = c／f = <b>${lam.toFixed(1)} m</b>（${bandName(f)}）。LC 增大 → 頻率降低、波長變長；波速不變。`;
+            return;
+        }
+        const st = now(), U = U0(), ue = st.q * st.q / (2 * S.C), ub = S.L * st.i * st.i / 2, T = T0();
+        el('dash').innerHTML = meter('電荷 q', (st.q * 1e6).toFixed(1), 'μC', '#00d4ff') + meter('電流 i', (st.i * 1e3).toFixed(1), 'mA', '#ffcc00') + meter('電容電壓 V = q／C', (st.q / S.C).toFixed(2), 'V', '#c3d0e4')
+            + meter('電場能 U_E', (ue * 1e6).toFixed(1), 'μJ', '#00d4ff') + meter('磁場能 U_B', mask((ub * 1e6).toFixed(1)), 'μJ', '#ff9f43') + meter('總電磁能', mask(((ue + ub) * 1e6).toFixed(1)), 'μJ', '#ffcc00')
+            + meter('週期 T = 2π√(LC)', mask((T * 1e3).toFixed(3)), 'ms', '#00e676') + meter('頻率 f', mask((1 / T).toFixed(1)), 'Hz', '#00e676');
+        const Rc = 2 * Math.sqrt(S.L / S.C);
+        let s = `ω = 1／√(LC) = <b>${mask(st.w0.toFixed(0))} rad/s</b>，初始總能量 Q₀²／2C = <b>${(U * 1e6).toFixed(1)} μJ</b>，最大電流 ωQ₀ = <b>${mask((st.w0 * S.Q0 * 1e3).toFixed(1))} mA</b>。`;
+        if (S.R > 0) s += st.regime === 'under' ? ` 欠阻尼：振幅隨時間衰減，振盪週期 2π／ω′ = <b>${mask((TAU / st.w1 * 1e3).toFixed(3))} ms</b>（臨界電阻 R<sub>c</sub> = ${mask(Rc.toFixed(1))} Ω）；已有 <b>${Math.max(0, (U - ue - ub) * 1e6).toFixed(1)} μJ</b> 變成熱。`
+            : st.regime === 'crit' ? ` 臨界阻尼：恰好不振盪，最快回到零。` : ` 過阻尼（R &gt; R<sub>c</sub> = ${mask(Rc.toFixed(1))} Ω）：不再振盪，電荷緩慢放完。`;
+        else s += ' 理想情況（R = 0）：電場能與磁場能互換，總和不變。';
+        el('status').innerHTML = s;
+        el('runState').textContent = `t = ${(S.t * 1e3).toFixed(2)} ms`;
+    }
+    function graphs() {
+        if (S.mode !== 'lc') return;
+        const T = T0(), Wn = 4 * T, t0 = Math.floor(S.t / Wn) * Wn, N = 260, I0 = S.Q0 / Math.sqrt(S.L * S.C), U = U0();
+        const full = { q: [], i: [], ue: [], ub: [], ut: [] }, done = { q: [], i: [], ue: [], ub: [], ut: [] };
+        for (let k = 0; k <= N; k++) {
+            const t = t0 + Wn * k / N, st = lcState(S.L, S.C, S.R, S.Q0, t), ms = t * 1e3, ue = st.q * st.q / (2 * S.C) * 1e6, ub = S.L * st.i * st.i / 2 * 1e6;
+            const row = { q: [ms, st.q * 1e6], i: [ms, st.i * 1e3], ue: [ms, ue], ub: [ms, ub], ut: [ms, ue + ub] };
+            for (const key in row) { full[key].push(row[key]); if (t <= S.t) done[key].push(row[key]); }
+        }
+        const st = now(), tm = S.t * 1e3, x0 = t0 * 1e3, x1 = (t0 + Wn) * 1e3, hideAxis = S.unk && S.hid;
+        const xl = hideAxis ? '時間 t（刻度隱藏）' : '時間 t (ms)';
+        const g = (id, o) => { const r = graph(el(id), Object.assign({ xmin: x0, xmax: x1, xl, vline: tm }, o)); if (hideAxis) { const x = el(id).getContext('2d'); x.fillStyle = '#0d121b'; x.fillRect(40, el(id).height - 39, el(id).width - 40, 18); } return r; };
+        g('gQ', { title: 'q–t 圖（電容上的電荷）', yl: 'q (μC)', ymin: -S.Q0 * 1.15e6, ymax: S.Q0 * 1.15e6, series: [{ pts: full.q, col: '#00d4ff44', w: 1.5 }, { pts: done.q, col: '#00d4ff' }], dots: [{ x: tm, y: st.q * 1e6, col: '#00d4ff', r: 5 }] });
+        g('gI', { title: 'i–t 圖（電流）', yl: 'i (mA)', ymin: -I0 * 1.15e3, ymax: I0 * 1.15e3, series: [{ pts: full.i, col: '#ffcc0044', w: 1.5 }, { pts: done.i, col: '#ffcc00' }], dots: [{ x: tm, y: st.i * 1e3, col: '#ffcc00', r: 5 }] });
+        g('gE', { title: '能量–t 圖', yl: '能量 (μJ)', ymin: 0, ymax: U * 1.12e6, series: [{ pts: full.ue, col: '#00d4ff44', w: 1.5 }, { pts: full.ub, col: '#ff9f4344', w: 1.5 }, { pts: done.ue, col: '#00d4ff', label: 'U_E' }, { pts: done.ub, col: '#ff9f43', label: 'U_B' }, { pts: done.ut, col: '#ffcc00', w: 2, dash: [6, 4], label: '總和' }] });
+    }
+
+    /* ---------- 實驗 ---------- */
+    function renderExp() {
+        el('expTitle').textContent = S.unk ? '實驗：未知電感 —— 用 T²–C 圖求 L' : '實驗：用 T²–LC 圖求比例常數';
+        el('expHint').innerHTML = S.unk
+            ? '電感值被藏起來了。改變電容 C 後按「測量並記錄」（至少 3 種 C），作 T² 對 C 的圖；因為 T² = 4π²L·C，直線斜率 = 4π²L，所以 <b>L = 斜率／4π²</b>。算好再按「揭曉」。'
+            : '改變 L 或 C 後按「測量並記錄」，系統會量 10 個週期取平均，作 T² 對 LC 的圖。理論上 T² = 4π²·LC，直線斜率應接近 <b>4π² ≈ 39.5</b>。';
+        el('thX').textContent = S.unk ? 'C (μF)' : 'LC (10⁻⁶ H·F)';
+        el('btnUnk').textContent = S.unk ? '↩ 回到已知電感' : '🎲 未知電感';
+        el('btnRev').disabled = !(S.unk && S.hid);
+        el('slL').disabled = S.unk;
+        el('lblL').textContent = mask((S.L * 1e3).toFixed(0));
+        el('lNote').textContent = S.unk ? (S.hid ? '未知電感：數值隱藏中' : '已揭曉') : '';
+        const xs = r => S.unk ? r.C * 1e6 : r.L * r.C * 1e6;
+        el('recBody').innerHTML = S.recs.map((r, k) => `<tr><td>${k + 1}</td><td>${mask((r.L * 1e3).toFixed(0))}</td><td>${(r.C * 1e6).toFixed(0)}</td><td>${S.unk ? (r.C * 1e6).toFixed(0) : (r.L * r.C * 1e6).toFixed(3)}</td><td>${(r.T * 1e3).toFixed(3)}</td><td>${(r.T * r.T * 1e6).toFixed(3)}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:#6a7a92">尚無數據</td></tr>';
+        const pts = S.recs.map(r => [xs(r), r.T * r.T * 1e6]), fit = fitLine(pts);
+        const xmax = Math.max(S.unk ? 20 : 0.2, ...pts.map(p => p[0])) * 1.15, ymax = Math.max(1, ...pts.map(p => p[1])) * 1.15;
+        graph(el('gFit'), { title: S.unk ? 'T²–C 圖' : 'T²–LC 圖', xl: S.unk ? 'C (μF)' : 'LC (10⁻⁶ H·F)', yl: 'T² (ms²)', xmin: 0, xmax, ymin: 0, ymax,
+            series: fit ? [{ pts: [[0, fit.b], [xmax, fit.m * xmax + fit.b]], col: '#ff9f43', w: 2, label: '最適直線' }] : [], dots: pts.map(p => ({ x: p[0], y: p[1], col: '#ffcc00', r: 5 })) });
+        let s = pts.length < 2 ? '至少記錄 2 組（建議 5 組以上、而且 L 或 C 要有變化）才能畫出最適直線。' : !fit ? '這幾組的橫軸數值都相同，請改變 L 或 C 再測。' : '';
+        if (fit) {
+            if (S.unk) {
+                const Lest = fit.m / FOUR_PI2 * 1e3;
+                s = `最適直線斜率 = <b>${fit.m.toFixed(4)} ms²/μF</b>（= 4π²L，L 以 H 為單位）→ L = 斜率／4π² = <b>${Lest.toFixed(1)} mH</b>。`;
+                if (!S.hid) s += ` 揭曉：真正的電感是 <b>${(S.L * 1e3).toFixed(0)} mH</b>，誤差 ${(Math.abs(Lest - S.L * 1e3) / (S.L * 1e3) * 100).toFixed(1)}%。`;
+            } else s = `最適直線斜率 = <b>${fit.m.toFixed(2)}</b>（理論值 4π² = 39.48，誤差 ${(Math.abs(fit.m - FOUR_PI2) / FOUR_PI2 * 100).toFixed(1)}%），截距 ${fit.b.toFixed(3)} ms²。橫軸與縱軸都以 10⁻⁶ 為單位，所以斜率沒有單位。`;
+        }
+        el('fitTxt').innerHTML = s;
+    }
+    function record() {
+        const st = lcState(S.L, S.C, S.R, S.Q0, 0);
+        if (st.regime !== 'under') { el('fitTxt').innerHTML = '<b>電阻太大，電路不會振盪，量不到週期。</b>請把 R 調小（或調成 0）再測。'; return; }
+        const T = TAU / st.w1 * (1 + (el('chkNoise').checked ? noise(0.005) : 0));
+        S.recs.push({ L: S.L, C: S.C, T }); renderExp();
+    }
+
+    /* ---------- 介面 ---------- */
+    function syncLabels() {
+        el('lblL').textContent = mask((S.L * 1e3).toFixed(0)); el('lblC').textContent = (S.C * 1e6).toFixed(0); el('lblQ').textContent = (S.Q0 * 1e6).toFixed(0); el('lblR').textContent = S.R.toFixed(1);
+        el('qNote').textContent = `起始電壓 V₀ = Q₀／C = ${(S.Q0 / S.C).toFixed(2)} V`;
+        const Rc = 2 * Math.sqrt(S.L / S.C);
+        el('rNote').textContent = S.R === 0 ? '0 = 理想（沒有能量損失）' : (S.unk && S.hid) ? '有電阻：振盪會衰減' : `臨界電阻 2√(L／C) = ${Rc.toFixed(1)} Ω`;
+        el('lblLr').textContent = (S.Lr * 1e6).toFixed(0); el('lblCr').textContent = (S.Cr * 1e12).toFixed(0);
+        el('spdNote').textContent = S.mode === 'lc' ? '1 倍：一個週期約播放 4 秒' : '';
+    }
+    function restart() { S.t = 0; S.playing = true; }
+    function setMode(m) {
+        S.mode = m; document.querySelectorAll('#modeBar .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.m === m));
+        document.querySelectorAll('[data-for]').forEach(e => { e.hidden = e.dataset.for !== m; });
+        el('cTitle').textContent = m === 'lc' ? 'LC 振盪電路' : '電磁波（示意圖）'; el('btnReset').textContent = m === 'lc' ? '↺ 重新放電' : '↺ 重新開始';
+        if (m === 'em') el('runState').textContent = '';
+        restart(); S.ph = 0; syncLabels(); panels(); graphs(); if (m === 'lc') renderExp();
+    }
+    const bind = (id, fn) => el(id).addEventListener('input', () => { fn(+el(id).value); restart(); syncLabels(); panels(); graphs(); });
+    bind('slL', v => { if (!S.unk) S.L = v * 1e-3; }); bind('slC', v => S.C = v * 1e-6); bind('slQ', v => S.Q0 = v * 1e-6); bind('slR', v => S.R = v);
+    bind('slLr', v => S.Lr = v * 1e-6); bind('slCr', v => S.Cr = v * 1e-12);
+    el('selSpd').addEventListener('change', () => S.spd = +el('selSpd').value);
+    document.querySelectorAll('#modeBar .mode-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.m)));
+    document.querySelectorAll('#presetRow .chip').forEach(b => b.addEventListener('click', () => { el('slLr').value = b.dataset.l; el('slCr').value = b.dataset.c; el('slLr').dispatchEvent(new Event('input')); el('slCr').dispatchEvent(new Event('input')); }));
+    el('btnPlay').addEventListener('click', () => S.playing = true); el('btnPause').addEventListener('click', () => S.playing = false);
+    el('btnReset').addEventListener('click', () => { restart(); S.ph = 0; panels(); graphs(); });
+    el('btnRec').addEventListener('click', record);
+    el('btnClr').addEventListener('click', () => { S.recs = []; renderExp(); });
+    el('btnUnk').addEventListener('click', () => {
+        S.unk = !S.unk; S.recs = [];
+        if (S.unk) { S.hid = true; S.L = (5 + Math.floor(Math.random() * 76)) * 1e-3; }      // 5–80 mH 的整數值
+        else { S.hid = false; S.L = +el('slL').value * 1e-3; }
+        restart(); syncLabels(); panels(); graphs(); renderExp();
+    });
+    el('btnRev').addEventListener('click', () => { S.hid = false; el('slL').value = Math.round(S.L * 1e3); syncLabels(); panels(); graphs(); renderExp(); });
+
+    let last = null, fn = 0;
+    function frame(ts) {
+        if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05); last = ts;
+        if (S.playing) { if (S.mode === 'lc') S.t += dt * T0() / 4 * S.spd; else S.ph += dt * S.spd; }
+        S.mode === 'lc' ? drawLC() : drawEM();
+        if (!(fn++ % 3)) { panels(); graphs(); }
+        requestAnimationFrame(frame);
+    }
+    syncLabels(); panels(); graphs(); renderExp(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

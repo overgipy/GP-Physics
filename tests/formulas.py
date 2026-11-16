@@ -149,8 +149,57 @@ def t_shared(ctx):
     pg.close()
 
 
+def t_lc(ctx):
+    pg = open_page(ctx, "lc-circuit", frozen=True)
+    L, C, Q = 20e-3, 50e-6, 80e-6
+    set_val(pg, "slL", 20); set_val(pg, "slC", 50); set_val(pg, "slQ", 80); set_val(pg, "slR", 0); step(pg, 47)
+    T = 2 * math.pi * math.sqrt(L * C)
+    check("LC 週期 T = 2π√(LC)（ms）", meter(pg, "週期 T"), T * 1e3, 0.001)
+    check("LC 頻率 f（Hz）", meter(pg, "頻率 f"), 1 / T, 0.002)
+    check("LC 總電磁能 = Q₀²/2C（任意時刻，μJ）", meter(pg, "總電磁能"), Q * Q / (2 * C) * 1e6, 0.003)
+    check("LC 最大電流 ωQ₀（mA）", after("最大電流 ωQ₀ =", text(pg, "status")), Q / math.sqrt(L * C) * 1e3, 0.003)
+    # 解析解本身：R = 0 時能量守恆、q 與 i 相差四分之一週期
+    worst = pg.evaluate("""([L, C, Q]) => { let w = 0; const U = Q * Q / 2 / C, T = 2 * Math.PI * Math.sqrt(L * C);
+        for (let k = 0; k < 400; k++) { const s = LabTest.lcState(L, C, 0, Q, k * T / 97); w = Math.max(w, Math.abs(s.q * s.q / 2 / C + L * s.i * s.i / 2 - U) / U); } return w; }""", [L, C, Q])
+    check("LC 解析解能量守恆（最大相對偏差）", worst, 0, abs_=1e-9)
+    quarter = pg.evaluate("([L, C, Q]) => LabTest.lcState(L, C, 0, Q, Math.PI / 2 * Math.sqrt(L * C))", [L, C, Q])
+    check("LC t = T/4 時 q = 0", quarter["q"] / Q, 0, abs_=1e-9)
+    check("LC t = T/4 時 |i| = ωQ₀", abs(quarter["i"]), Q / math.sqrt(L * C), 1e-9)
+    # RLC：欠阻尼週期與臨界電阻
+    set_val(pg, "slR", 20); step(pg, 10)
+    w1 = math.sqrt(1 / (L * C) - (20 / (2 * L)) ** 2)
+    check("RLC 欠阻尼週期 2π/ω′（ms）", after("2π／ω′ =", text(pg, "status")), 2 * math.pi / w1 * 1e3, 0.001)
+    check("RLC 臨界電阻 2√(L/C)（Ω）", after("R c =|Rc =", text(pg, "status").replace("R c", "Rc")), 2 * math.sqrt(L / C), 0.003)
+    num_ok = pg.evaluate("""([L, C, Q]) => { // 解析解 vs RK4
+        const R = 20, T = 2 * Math.PI * Math.sqrt(L * C), n = 40000, dt = 2.3 * T / n; let q = Q, i = 0;
+        const f = (q, i) => [i, -(R * i + q / C) / L];
+        for (let k = 0; k < n; k++) { const a = f(q, i), b = f(q + a[0] * dt / 2, i + a[1] * dt / 2), c = f(q + b[0] * dt / 2, i + b[1] * dt / 2), d = f(q + c[0] * dt, i + c[1] * dt);
+            q += dt / 6 * (a[0] + 2 * b[0] + 2 * c[0] + d[0]); i += dt / 6 * (a[1] + 2 * b[1] + 2 * c[1] + d[1]); }
+        const s = LabTest.lcState(L, C, R, Q, 2.3 * T); return Math.abs(s.q - q) / Q; }""", [L, C, Q])
+    check("RLC 解析解 vs RK4 數值積分（相對偏差）", num_ok, 0, abs_=1e-7)
+    # 實驗：T²–LC 圖的斜率 = 4π²
+    set_val(pg, "slR", 0); pg.uncheck("#chkNoise")
+    for l, c in ((10, 10), (10, 40), (30, 40), (50, 60), (80, 90)):
+        set_val(pg, "slL", l); set_val(pg, "slC", c); pg.click("#btnRec")
+    check("LC 實驗 T²–LC 斜率 = 4π²", after("斜率 =", text(pg, "fitTxt")), 4 * math.pi ** 2, 0.002)
+    # 未知電感：由 T²–C 斜率求 L，與揭曉值比較
+    pg.click("#btnUnk")
+    for c in (10, 30, 60, 90):
+        set_val(pg, "slC", c); pg.click("#btnRec")
+    est = after("斜率／4π² =", text(pg, "fitTxt")); pg.click("#btnRev")
+    true_l = after("真正的電感是", text(pg, "fitTxt"))
+    check("LC 未知電感：推算值 vs 揭曉值（mH）", est, true_l or -1, 0.01)
+    # 電磁波
+    pg.click('[data-m="em"]'); set_val(pg, "slLr", 200); set_val(pg, "slCr", 125); step(pg, 10)
+    f = 1 / (2 * math.pi * math.sqrt(200e-6 * 125e-12))
+    check("電磁波 f = 1/(2π√(LC))（MHz）", meter(pg, "頻率 f"), f / 1e6, 0.001)
+    check("電磁波 λ = c/f（m）", meter(pg, "波長"), 2.998e8 / f, 0.001)
+    pg.close()
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
-         "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler}
+         "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
+         "lc-circuit": t_lc}
 
 
 def main():
