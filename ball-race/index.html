@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雙珠競走 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/lab-mobile.css">
+    <link rel="stylesheet" href="../shared/touch.css">
+    <style>
+        [hidden] { display: none !important; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        input.ans { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 8px; font-size: 1rem; width: 7em; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>🏁 雙珠競走</h1>
+    <p class="subtitle">終點速率相同 v = √(2gh)，為什麼走凹槽的先到？</p>
+</header>
+
+<div class="container">
+<div class="card sticky-sim"><div class="card-title"><span id="cTitle">雙珠競走：誰先到終點？</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div><div class="canvas-wrap"><canvas id="scene" width="760" height="400"></canvas></div></div><div class="card"><div class="card-title">比賽條件</div><div class="controls-grid"><div class="control-group"><div class="control-label"><span>起始高度 h</span><b style="color:var(--yellow)"><span id="hL"></span> cm</b></div><input type="range" id="h" min="5" max="50" step="1" value="25"><div class="sub-note">兩顆珠子從同樣高度由靜止釋放</div></div><div class="control-group"><div class="control-label"><span>A 珠質量（上方平直軌道）</span><b style="color:var(--cyan)"><span id="mAL"></span> g</b></div><input type="range" id="mA" min="5" max="200" step="5" value="20"></div><div class="control-group"><div class="control-label"><span>B 珠質量（下方起伏軌道）</span><b style="color:var(--orange)"><span id="mBL"></span> g</b></div><input type="range" id="mB" min="5" max="200" step="5" value="20"></div><div class="control-group"><div class="control-label"><span>B 軌道的凹陷深度</span><b style="color:var(--green)"><span id="dL"></span> cm</b></div><input type="range" id="d" min="-15" max="30" step="1" value="15"><div class="sub-note">正值 = 往下凹；負值 = 往上凸；0 = 和 A 一樣平直</div></div><div class="control-group"><div class="control-label">B 軌道起伏的個數</div><select id="selN"><option value="1" selected>1 個</option><option value="2">2 個</option><option value="3">3 個</option></select></div><div class="control-group"><div class="control-label">珠子怎麼動</div><select id="selK"><option value="1" selected>滑動（串在光滑軌道上）</option><option value="0.7142857">滾動（實心球，不打滑）</option></select></div><div class="control-group"><div class="control-label">播放速度</div><select id="selSpd"><option value="0.25">0.25 倍</option><option value="0.5" selected>0.5 倍</option><option value="1">1 倍</option></select></div></div><div class="btn-row" style="margin:8px 0"><button class="btn green" id="btnPlay">🏁 開始比賽</button><button class="btn secondary" id="btnReset">↺ 回到起點</button></div></div><div class="card"><div class="card-title">比賽結果</div><div class="dashboard" id="dash"></div><div class="status" id="status"></div></div><div class="card"><div class="card-title">v–t 圖與水平位置–t 圖</div><div class="two-col"><div class="graph-box"><canvas id="g1" width="480" height="260"></canvas></div><div class="graph-box"><canvas id="g2" width="480" height="260"></canvas></div></div><div class="legend"><span style="--c:#00d4ff">A 珠（平直）</span><span style="--c:#ff9f43">B 珠（起伏）</span></div></div><div class="card"><div class="card-title">挑戰：先預測，再比賽</div><div class="fit-text" id="qTxt">按「出題」會隨機設定高度、質量與軌道形狀，並把時間藏起來。先選你的預測，珠子才會出發。</div><div class="btn-row" style="margin:8px 0"><button class="btn orange" id="btnQ">🎲 出題</button></div><div class="btn-row" id="pick" style="margin:8px 0"><button class="btn secondary" data-a="A">A 先到</button><button class="btn secondary" data-a="B">B 先到</button><button class="btn secondary" data-a="T">同時到</button></div><div class="fit-text" id="qRes"></div></div><div class="card"><div class="card-title">比賽紀錄</div><div class="table-scroll"><table><thead><tr><th>#</th><th>h (cm)</th><th>m<sub>A</sub> (g)</th><th>m<sub>B</sub> (g)</th><th>凹陷 (cm)</th><th>t<sub>A</sub> (s)</th><th>t<sub>B</sub> (s)</th><th>先到</th></tr></thead><tbody id="recBody"></tbody></table></div><div class="btn-row" style="margin:8px 0"><button class="btn secondary" id="btnClr">清除紀錄</button></div></div>
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary><ul><li>力學能守恆：由靜止從高度 h 滑下，<b>mgh = ½mv²</b>，所以 <b>v = √(2gh)</b>——與質量無關，只看下降的高度。</li><li>兩顆珠子起點、終點高度都相同，所以<b>到終點時速率相同</b>。</li><li>B 珠掉進凹槽時，又下降了深度 d，速率變成 <b>v = √(2g(h + d))</b>，比 A 珠快；爬出凹槽後才回到與 A 相同的速率。</li><li>所需時間看的是<b>全程的平均速率</b>：t = 路程／平均速率。B 的路程只長一點點，但中段快很多，所以先到。</li><li>往上凸的軌道相反：爬上去時變慢（v = √(2g(h − |d|))），所以比較晚到；若凸起比起點還高，就過不去。</li><li>滾動的實心球：一部分能量變成轉動動能，<b>v = √(10gh／7)</b>，一樣與質量、半徑無關，結論不變。</li></ul>
+            <p class="assume">理想化假設：珠子視為質點，軌道光滑、不計空氣阻力；滑動模式是珠子串在軌道上（不會飛離）；滾動模式假設純滾動不打滑，且不計球的大小對軌跡的影響。兩條軌道的斜坡段完全相同。</p></details>
+        <details><summary>建議講解順序</summary><ol><li>先讓 B 軌道深度為 0：兩條軌道一樣，同時到。</li><li>把 B 調成往下凹 15 cm，先請學生舉手預測——多數人會猜「同時」或「A 先到，因為路比較短」。</li><li>比賽後看 v–t 圖：B 在中段明顯比較快，終點速率卻一樣。</li><li>把 B 珠調得很重或很輕再比：結果完全不變。</li><li>改成往上凸：B 變慢、晚到；凸得比起點高就過不去。</li><li>改變起始高度、凹槽個數，最後用「挑戰」讓學生先預測再驗證。</li></ol></details>
+        <details><summary>可以問學生的問題</summary><ul><li>兩顆珠子到終點的速率誰大？為什麼？（一樣大，下降的總高度相同）</li><li>B 走的路比較長，為什麼反而先到？（中段速率大，平均速率大得多）</li><li>把 B 珠換成 10 倍重，結果會變嗎？（不會，加速度與速率都和質量無關）</li><li>起始高度越低，B 贏得越多還是越少？（越多：A 全程都慢，凹槽帶來的加速相對更明顯）</li><li>在 v–t 圖上，怎麼看出兩顆珠子走過的路程？（曲線下的面積）</li></ul></details>
+        <details><summary>常見迷思</summary><ul><li><b>「終點速率一樣，所以同時到」</b>：到達時間取決於整段路的平均速率，不是終點那一瞬間的速率。</li><li><b>「路徑短的一定先到」</b>：要比的是時間 = 路程 ÷ 平均速率，路程短不保證時間短。</li><li><b>「重的珠子滑得比較快」</b>：v = √(2gh)，與質量無關。</li><li><b>「B 掉下去又爬上來，一來一回沒有賺到」</b>：能量上沒有賺，但「在低處的那段時間跑得快」是實實在在省下的時間。</li></ul></details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script src="../shared/lab.js"></script>
+<script>
+(() => {
+    'use strict';
+    const { el, rad, deg, arrow, txt, graph, meter, fitLine, fitThroughOrigin, noise, niceStep } = Lab;
+    const $$ = s => [...document.querySelectorAll(s)];
+    // 滑桿：顯示目前數值（id + 'L'），拖動時呼叫 cb；回傳讀值函式
+    function sl(id, dp, cb) { const e = el(id), lb = el(id + 'L'), up = () => { if (lb) lb.textContent = (+e.value).toFixed(dp); };
+        e.addEventListener('input', () => { up(); cb && cb(); }); up(); return () => +e.value; }
+    // 模式切換：有 data-for 的區塊只在對應模式顯示
+    function showFor(m) { $$('[data-for]').forEach(e => e.hidden = !e.dataset.for.split(' ').includes(m));
+        $$('#modeBar .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.m === m)); }
+    function onMode(cb) { $$('#modeBar .mode-btn').forEach(b => b.addEventListener('click', () => { showFor(b.dataset.m); cb(b.dataset.m); })); }
+    const rows = (id, arr) => el(id).innerHTML = arr.map(r => '<tr>' + r.map(v => `<td>${v}</td>`).join('') + '</tr>').join('') || '<tr><td colspan="9" style="text-align:center;color:#6a7a92">尚無數據</td></tr>';
+    // 動畫迴圈：fn(dt)；dt 為秒，最大 0.05
+    function loop(fn) { let last = null; const f = ts => { if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05); last = ts; fn(dt); requestAnimationFrame(f); }; requestAnimationFrame(f); }
+    // 畫布拖曳：cb(x, y, 階段)；x、y 為畫布座標，階段為 'down'／'move'／'up'
+    function dragOn(cv, cb) { let on = false; cv.style.touchAction = 'none'; const P = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
+        cv.addEventListener('pointerdown', e => { on = true; cv.setPointerCapture(e.pointerId); cb(...P(e), 'down'); }); cv.addEventListener('pointermove', e => { if (on) cb(...P(e), 'move'); });
+        const up = e => { if (on) { on = false; cb(...P(e), 'up'); } }; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up); }
+
+    const c = el('scene').getContext('2d'), W = 760, H = 400, G = 9.8, LEN = 3, RAMP = 0.5, V0 = 0.8, V1 = 2.6;
+    // 軌道折線（公尺）：斜坡 → 平直 →（B：n 個起伏）→ 平直到終點
+    function track(h, d, n) { const p = []; for (let i = 0; i <= 1500; i++) { const x = LEN * i / 1500; let y;
+            if (x <= RAMP) y = h * (1 - Math.sin(Math.PI * x / (2 * RAMP))); else if (x > V0 && x < V1 && d) y = -d / 2 * (1 - Math.cos(2 * Math.PI * n * (x - V0) / (V1 - V0))); else y = 0; p.push([x, y]); } return p; }
+    // 沿折線的時間表：每一小段視為等加速度，dt = 2ds／(v₁ + v₂)；k = 1 滑動、5／7 滾動
+    function timing(p, h, k) { const T = [0], Vv = [0]; let len = 0, ok = true;
+        for (let i = 1; i < p.length; i++) { const e = 2 * G * k * (h - p[i][1]); if (e <= 0 && i < p.length - 1 || !ok) { ok = false; T.push(Infinity); Vv.push(0); continue; } const v = Math.sqrt(Math.max(e, 0)), ds = Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]); len += ds; T.push(T[i - 1] + 2 * ds / (v + Vv[i - 1])); Vv.push(v); }
+        return { T, V: Vv, len, ok, total: T[T.length - 1], stop: ok ? -1 : T.findIndex(t => !isFinite(t)) - 1 }; }
+    const race = (hcm, dcm, n, k) => { const h = hcm / 100, a = timing(track(h, 0, 1), h, k), b = timing(track(h, dcm / 100, n), h, k); return { tA: a.total, tB: b.total, vA: a.V[a.V.length - 1], vB: b.ok ? b.V[b.V.length - 1] : 0, lenA: a.len, lenB: b.len, okB: b.ok }; };
+    window.LabTest = { race, track, timing };
+    const S = { t: 0, playing: false, hid: false, done: false, recs: [], pA: null, pB: null, tA: null, tB: null, score: [0, 0], pred: null };
+    const build = () => { const hh = h() / 100; S.pA = track(hh, 0, 1); S.pB = track(hh, d() / 100, +el('selN').value); S.tA = timing(S.pA, hh, k()); S.tB = timing(S.pB, hh, k()); S.t = 0; S.playing = false; S.done = false; };
+    const h = sl('h', 0, () => build()), mA = sl('mA', 0, () => build()), mB = sl('mB', 0, () => build()), d = sl('d', 0, () => build()), k = () => +el('selK').value;
+    const at = (tm, t) => { const lim = tm.ok ? tm.T.length - 1 : tm.stop; if (t >= tm.T[lim]) return lim; let a = 0, b = lim; while (b - a > 1) { const m = (a + b) >> 1; tm.T[m] <= t ? a = m : b = m; } return a + (t - tm.T[a]) / (tm.T[b] - tm.T[a]); };
+    const lerp = (p, f) => { const i = Math.min(Math.floor(f), p.length - 2), u = f - i; return [p[i][0] + u * (p[i + 1][0] - p[i][0]), p[i][1] + u * (p[i + 1][1] - p[i][1])]; };
+    const tEnd = () => Math.max(S.tA.total, S.tB.ok ? S.tB.total : S.tA.total);
+    function draw() {
+        c.fillStyle = '#080a0f'; c.fillRect(0, 0, W, H); const sc = 232, x0 = 30;
+        [[S.pA, S.tA, 132, '#00d4ff', 'A', mA()], [S.pB, S.tB, 300, '#ff9f43', 'B', mB()]].forEach(([p, tm, by, col, nm, m]) => { const X = x => x0 + x * sc, Y = y => by - y * sc;
+            c.strokeStyle = '#c3d0e4'; c.lineWidth = 3; c.beginPath(); p.forEach((q, i) => i ? c.lineTo(X(q[0]), Y(q[1])) : c.moveTo(X(q[0]), Y(q[1]))); c.stroke();
+            c.strokeStyle = '#00e676'; c.lineWidth = 3; c.beginPath(); c.moveTo(X(LEN), by - 26); c.lineTo(X(LEN), by + 8); c.stroke();
+            const [bx, byy] = lerp(p, at(tm, S.t)), r = 6 + Math.sqrt(m) * 0.5; c.fillStyle = col; c.beginPath(); c.arc(X(bx), Y(byy) - r, r, 0, 7); c.fill();
+            txt(c, `${nm} 珠 ${m} g`, X(1.1), by - 34, col, 18); if (!tm.ok) txt(c, '凸起比起點高：過不去', X(1.9), by - 34, '#ff6b81', 18);
+            if (S.done && tm.ok && !S.hid) txt(c, `${tm.total.toFixed(3)} s`, X(LEN) - 8, by - 34, col, 20, 'right'); });
+        txt(c, '終點', x0 + LEN * sc, 96, '#00e676', 17, 'center'); txt(c, `t = ${Math.min(S.t, tEnd()).toFixed(2)} s`, 14, 392, '#c3d0e4', 18);
+        c.strokeStyle = '#ffcc00'; c.setLineDash([4, 4]); c.lineWidth = 1.5; [132, 300].forEach(by => { c.beginPath(); c.moveTo(x0, by - h() / 100 * sc); c.lineTo(x0 + 90, by - h() / 100 * sc); c.stroke(); }); c.setLineDash([]); txt(c, `h = ${h()} cm`, x0 + 96, 132 - h() / 100 * sc + 6, '#ffcc00', 17);
+    }
+    function panels() {
+        const a = S.tA, b = S.tB, q = v => S.hid ? '？' : v, vA = a.V[a.V.length - 1], win = !b.ok ? 'A（B 過不去）' : Math.abs(a.total - b.total) < 5e-4 ? '同時' : a.total < b.total ? 'A' : 'B';
+        el('dash').innerHTML = [meter('A 珠時間', q(a.total.toFixed(3)), 's', '#00d4ff'), meter('B 珠時間', q(b.ok ? b.total.toFixed(3) : '—'), 's', '#ff9f43'), meter('先到的是', q(win), '', '#00e676'), meter('時間差', q(b.ok ? Math.abs(a.total - b.total).toFixed(3) : '—'), 's', '#ffcc00'),
+            meter('A 終點速率', q(vA.toFixed(3)), 'm/s', '#00d4ff'), meter('B 終點速率', q(b.ok ? b.V[b.V.length - 1].toFixed(3) : '—'), 'm/s', '#ff9f43'), meter('B 在最低（高）點的速率', q(b.ok ? Math.sqrt(2 * G * k() * (h() + d()) / 100).toFixed(3) : '—'), 'm/s', '#ff9f43'), meter('路程 A／B', a.len.toFixed(3) + '／' + b.len.toFixed(3), 'm')].join('');
+        el('status').innerHTML = S.hid ? '挑戰中：先選預測。' : d() === 0 ? '兩條軌道完全相同：同時到。' : d() > 0 ? 'B 掉進凹槽時比 A 快，爬出來後才回到相同速率——<b>中段賺到時間</b>。' : (b.ok ? 'B 爬上凸起時比 A 慢：<b>晚到</b>。' : '凸起高度超過起始高度：能量不夠，過不去。');
+        const te = tEnd(), ser = (tm, p, i, col) => ({ pts: tm.T.map((t, j) => [t, i ? p[j][0] : tm.V[j]]).filter((q, j) => isFinite(q[0]) && j % 6 === 0), col, w: 2.5 }), vm = Math.sqrt(2 * G * k() * (h() + Math.max(d(), 0)) / 100) * 1.15, tn = Math.min(S.t, te);
+        if (S.hid && !S.done) ['g1', 'g2'].forEach(id => { const x = el(id).getContext('2d'); x.fillStyle = '#080a0f'; x.fillRect(0, 0, 480, 260); txt(x, '挑戰中：圖形隱藏', 240, 130, '#6a7a92', 18, 'center'); });
+        else { graph(el('g1'), { xmin: 0, xmax: te, ymin: 0, ymax: vm, title: 'v–t 圖', xl: 't (s)', yl: 'v (m/s)', series: [ser(S.tA, S.pA, 0, '#00d4ff'), ser(S.tB, S.pB, 0, '#ff9f43')], vline: tn });
+            graph(el('g2'), { xmin: 0, xmax: te, ymin: 0, ymax: 3.2, title: '水平位置–t 圖', xl: 't (s)', yl: 'x (m)', series: [ser(S.tA, S.pA, 1, '#00d4ff'), ser(S.tB, S.pB, 1, '#ff9f43')], vline: tn }); }
+    }
+    const winner = () => !S.tB.ok || S.tA.total < S.tB.total - 5e-4 ? 'A' : S.tB.total < S.tA.total - 5e-4 ? 'B' : 'T';
+    function finish() { S.done = true; S.playing = false; const w = winner(); S.recs.push([S.recs.length + 1, h(), mA(), mB(), d(), S.tA.total.toFixed(3), S.tB.ok ? S.tB.total.toFixed(3) : '過不去', { A: 'A', B: 'B', T: '同時' }[w]]); rows('recBody', S.recs);
+        if (S.hid) { S.hid = false; const ok = S.pred === w; S.score[0] += ok ? 1 : 0; S.score[1]++; el('qRes').innerHTML = (ok ? '✅ 預測正確！' : '❌ 預測錯了。') + `結果：<b id="qTrue">${{ A: 'A 先到', B: 'B 先到', T: '同時到' }[w]}</b>。目前答對 ${S.score[0]}／${S.score[1]} 題。`; } }
+    el('btnPlay').addEventListener('click', () => { if (S.hid) { el('qRes').textContent = '請先選一個預測。'; return; } if (S.done || S.t > 0) { S.t = 0; S.done = false; } S.playing = true; });
+    el('btnReset').addEventListener('click', () => { if (!S.hid) build(); }); el('btnClr').addEventListener('click', () => { S.recs = []; rows('recBody', []); });
+    ['selN', 'selK'].forEach(id => el(id).addEventListener('change', build));
+    const setV = (id, v) => { el(id).value = v; el(id).dispatchEvent(new Event('input')); };
+    el('btnQ').addEventListener('click', () => { const R = (a, b) => a + Math.floor(Math.random() * (b - a + 1)); setV('h', R(8, 45)); setV('mA', R(1, 40) * 5); setV('mB', R(1, 40) * 5); setV('d', [R(5, 30), R(5, 30), -R(3, 12), 0][R(0, 3)]); el('selN').value = R(1, 3); build(); S.hid = true; S.pred = null; el('qRes').textContent = '請選擇你的預測。'; });
+    $$('#pick button').forEach(b => b.addEventListener('click', () => { if (!S.hid) { el('qRes').textContent = '先按「出題」。'; return; } S.pred = b.dataset.a; S.t = 0; S.playing = true; el('qRes').textContent = `你的預測：${b.textContent}。比賽開始！`; }));
+    build(); rows('recBody', []); let fn = 0;
+    loop(dt => { if (S.playing) { S.t += dt * +el('selSpd').value; if (S.t >= tEnd()) { S.t = tEnd(); finish(); } } draw(); if (!(fn++ % 3)) panels(); });
+
+})();
+</script>
+</body>
+</html>

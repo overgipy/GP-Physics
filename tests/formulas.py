@@ -548,6 +548,36 @@ def t_decay(ctx):
     check("衰變 未知核種半衰期（7% 內）", est, num(text(pg, "thTrue")), 0.07)
 
 
+def t_race(ctx):
+    pg = open_page(ctx, "ball-race", frozen=True)
+    g = 9.8
+    for i, v in (("h", 25), ("mA", 20), ("mB", 20), ("d", 15)): set_val(pg, i, v)
+    step(pg, 6); v = math.sqrt(2 * g * 0.25)
+    check("雙珠 A 終點速率 √(2gh)", meter(pg, "A 終點速率"), v, 0.001); check("雙珠 B 終點速率與 A 相同", meter(pg, "B 終點速率"), v, 0.001)
+    check("雙珠 B 在谷底速率 √(2g(h+d))", meter(pg, "B 在最低"), math.sqrt(2 * g * 0.40), 0.001)
+    # 獨立驗算 A：斜坡段用細分的能量法數值積分 + 平直段 2.5 m 等速
+    N = 200000; t = 0.0; px, py, pv = 0.0, 0.25, 0.0
+    for i in range(1, N + 1):
+        x = 0.5 * i / N; y = 0.25 * (1 - math.sin(math.pi * x)); vv = math.sqrt(2 * g * (0.25 - y)); t += 2 * math.hypot(x - px, y - py) / (vv + pv); px, py, pv = x, y, vv
+    check("雙珠 A 時間（獨立數值積分）", meter(pg, "A 珠時間"), t + 2.5 / v, 0.002)
+    tA, tB = meter(pg, "A 珠時間"), meter(pg, "B 珠時間")
+    check("雙珠 凹槽軌道 B 先到", 1 if tB < tA - 0.01 else 0, 1, abs_=0)
+    set_val(pg, "mB", 200); set_val(pg, "mA", 5); step(pg, 6)
+    check("雙珠 改變質量時間不變（A）", meter(pg, "A 珠時間"), tA, 1e-9); check("雙珠 改變質量時間不變（B）", meter(pg, "B 珠時間"), tB, 1e-9)
+    set_val(pg, "d", 0); step(pg, 6); check("雙珠 軌道相同時同時到", meter(pg, "時間差"), 0, abs_=1e-6)
+    set_val(pg, "d", -10); step(pg, 6); check("雙珠 凸起軌道 B 晚到", 1 if meter(pg, "B 珠時間") > meter(pg, "A 珠時間") + 0.01 else 0, 1, abs_=0)
+    set_val(pg, "h", 8); set_val(pg, "d", -12); step(pg, 6)
+    check("雙珠 凸起高於起點：過不去", 1 if "過不去" in " ".join(str(v) for _, v in meters(pg)) else 0, 1, abs_=0)
+    set_val(pg, "h", 25); set_val(pg, "d", 15); set_val(pg, "selK", "0.7142857"); step(pg, 6)
+    check("雙珠 滾動實心球終點速率 √(10gh/7)", meter(pg, "A 終點速率"), math.sqrt(10 * g * 0.25 / 7), 0.001)
+    check("雙珠 滾動時間 = 滑動時間 × √(7/5)", meter(pg, "A 珠時間"), tA * math.sqrt(7 / 5), 0.001)
+    set_val(pg, "selK", "1"); set_val(pg, "selSpd", 1); pg.click("#btnPlay"); step(pg, 200)
+    check("雙珠 比賽後寫入紀錄", 1 if "B" in text(pg, "recBody") else 0, 1, abs_=0)
+    pg.click("#btnQ"); step(pg, 4); r = pg.evaluate("""() => { const g = id => +document.getElementById(id).value, r = LabTest.race(g('h'), g('d'), g('selN'), 1); return !r.okB || r.tA < r.tB - 5e-4 ? 'A' : r.tB < r.tA - 5e-4 ? 'B' : 'T'; }""")
+    pg.click(f'#pick [data-a="{r}"]'); step(pg, 600)
+    check("雙珠 挑戰：預測正確被判定答對", 1 if "預測正確" in text(pg, "qRes") else 0, 1, abs_=0)
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
          "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing,
@@ -559,7 +589,8 @@ TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_proje
          "current-balance": t_balance,
          "transformer": t_transformer,
          "microwave": t_microwave,
-         "radioactive-decay": t_decay}
+         "radioactive-decay": t_decay,
+         "ball-race": t_race}
 
 
 def main():
