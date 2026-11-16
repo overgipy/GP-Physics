@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電梯中的視重：超重與失重 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/lab-mobile.css">
+    <link rel="stylesheet" href="../shared/touch.css">
+    <style>
+        [hidden] { display: none !important; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        input.ans { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 8px; font-size: 1rem; width: 7em; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>🛗 電梯中的視重：超重與失重</h1>
+    <p class="subtitle">磅秤讀數 N = m(g + a)　｜　a = −g 時完全失重</p>
+</header>
+
+<div class="container">
+<div class="card sticky-sim"><div class="card-title"><span id="cTitle">電梯裡的磅秤：讀數是正向力，不是重力</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div><div class="canvas-wrap"><canvas id="scene" width="760" height="400"></canvas></div></div><div class="card"><div class="card-title">選擇行程與條件</div><div class="preset-row"><span class="lbl">行程：</span><button class="chip on" data-k="up">⬆ 上樓</button><button class="chip" data-k="down">⬇ 下樓</button><button class="chip" data-k="fall">✂ 鋼纜斷裂（自由落下後煞車）</button></div><div class="controls-grid"><div class="control-group"><div class="control-label"><span>乘客質量 m</span><b style="color:var(--cyan)"><span id="mL"></span> kg</b></div><input type="range" id="m" min="30" max="100" step="1" value="60"></div><div class="control-group"><div class="control-label"><span>啟動與煞車的加速度大小</span><b style="color:var(--red)"><span id="aL"></span> m/s²</b></div><input type="range" id="a" min="0.5" max="4" step="0.1" value="2"><div class="sub-note">中段等速 3 秒</div></div><div class="control-group"><div class="control-label">播放速度</div><select id="selSpd"><option value="0.5">0.5 倍</option><option value="1" selected>1 倍</option><option value="2">2 倍</option></select></div></div><div class="btn-row" style="margin:8px 0"><button class="btn green" id="btnPlay">▶ 出發</button><button class="btn secondary" id="btnPause">⏸ 暫停</button><button class="btn secondary" id="btnReset">↺ 重來</button></div></div><div class="card"><div class="card-title">即時數據</div><div class="dashboard" id="dash"></div><div class="status" id="status"></div></div><div class="card"><div class="card-title">a–t、v–t 與磅秤讀數–t 圖</div><div class="two-col"><div class="graph-box"><canvas id="g1" width="480" height="260"></canvas></div><div class="graph-box"><canvas id="g2" width="480" height="260"></canvas></div><div class="graph-box"><canvas id="g3" width="480" height="260"></canvas></div></div></div><div class="card"><div class="card-title">挑戰：由磅秤讀數求電梯加速度</div><div class="fit-text" id="chHint">按「出題」後，加速度滑桿會被隱藏。按「出發」觀察<b>啟動階段</b>的磅秤讀數，算出電梯啟動的加速度大小。</div><div class="btn-row" style="margin:8px 0"><button class="btn orange" id="btnQ">🎲 出題</button><button class="btn secondary" id="btnA">對答案</button></div><div class="check-row"><label>加速度大小 = <input class="ans" id="ans" type="number" step="0.1" inputmode="decimal"> m/s²</label></div><div class="fit-text" id="chRes"></div></div>
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary><ul><li>取向上為正，對乘客：<b>N − mg = ma</b>，所以磅秤讀數（正向力）<b>N = m(g + a)</b>（N）。</li><li>磅秤刻度常用公斤重：讀數 = N／g = <b>m(1 + a／g)</b>（kgw）。</li><li>a &gt; 0（加速度向上）：N &gt; mg，<b>超重</b>；a &lt; 0（加速度向下）：N &lt; mg，<b>失重</b>；a = −g：N = 0，<b>完全失重</b>。</li><li>加速度的方向不等於運動方向：上樓快到站時（向上減速）與下樓剛啟動時（向下加速），加速度都向下。</li><li>符號：m 質量（kg）；g = 9.8 m/s²；a 電梯加速度（m/s²，向上為正）；N 磅秤對人的正向力（N）。</li></ul>
+            <p class="assume">理想化假設：人與電梯一起運動（相對靜止）；啟動、煞車階段的加速度是定值，中段等速；磅秤瞬間反應、沒有彈簧的晃動。鋼纜斷裂時不計空氣阻力與軌道摩擦，之後安全煞車以 15 m/s² 減速。</p></details>
+        <details><summary>建議講解順序</summary><ol><li>先問：電梯等速上升時，磅秤讀數比靜止時大嗎？播放「上樓」，看中段讀數。</li><li>看啟動階段：加速度向上，讀數變大；對照 a–t 圖與讀數–t 圖，形狀完全一樣。</li><li>看到站前：速度還是向上，但讀數變小——決定讀數的是加速度，不是速度。</li><li>播放「下樓」，請學生先畫出讀數–t 圖再對照。</li><li>鋼纜斷裂：讀數歸零，人「飄」起來；煞車時讀數暴增。</li><li>最後做挑戰：只看讀數反推加速度。</li></ol></details>
+        <details><summary>可以問學生的問題</summary><ul><li>60 kg 的人在以 2 m/s² 向上加速的電梯裡，磅秤讀數是多少公斤重？（約 72.2 kgw）</li><li>讀數變小時，電梯一定在往下走嗎？（不一定，也可能是向上減速）</li><li>完全失重時，重力消失了嗎？（沒有，重力仍是 mg，只是正向力為零）</li><li>太空站裡的太空人為什麼飄浮？（與太空站一起做自由落體式的圓周運動）</li><li>電梯等速下降與靜止，讀數有差別嗎？（沒有，加速度都是零）</li></ul></details>
+        <details><summary>常見迷思</summary><ul><li><b>「超重就是重力變大」</b>：重力 mg 沒變，變的是磅秤給人的正向力。</li><li><b>「往上就超重、往下就失重」</b>：要看加速度方向，不是速度方向。</li><li><b>「失重就是沒有重力」</b>：完全失重是 N = 0，物體仍受重力並以 g 加速。</li><li><b>「等速上升時讀數比較大」</b>：等速時合力為零，N = mg，與靜止相同。</li></ul></details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script src="../shared/lab.js"></script>
+<script>
+(() => {
+    'use strict';
+    const { el, rad, deg, arrow, txt, graph, meter, fitLine, fitThroughOrigin, noise, niceStep } = Lab;
+    const $$ = s => [...document.querySelectorAll(s)];
+    // 滑桿：顯示目前數值（id + 'L'），拖動時呼叫 cb；回傳讀值函式
+    function sl(id, dp, cb) { const e = el(id), lb = el(id + 'L'), up = () => { if (lb) lb.textContent = (+e.value).toFixed(dp); };
+        e.addEventListener('input', () => { up(); cb && cb(); }); up(); return () => +e.value; }
+    // 模式切換：有 data-for 的區塊只在對應模式顯示
+    function showFor(m) { $$('[data-for]').forEach(e => e.hidden = !e.dataset.for.split(' ').includes(m));
+        $$('#modeBar .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.m === m)); }
+    function onMode(cb) { $$('#modeBar .mode-btn').forEach(b => b.addEventListener('click', () => { showFor(b.dataset.m); cb(b.dataset.m); })); }
+    const rows = (id, arr) => el(id).innerHTML = arr.map(r => '<tr>' + r.map(v => `<td>${v}</td>`).join('') + '</tr>').join('') || '<tr><td colspan="9" style="text-align:center;color:#6a7a92">尚無數據</td></tr>';
+    // 動畫迴圈：fn(dt)；dt 為秒，最大 0.05
+    function loop(fn) { let last = null; const f = ts => { if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05); last = ts; fn(dt); requestAnimationFrame(f); }; requestAnimationFrame(f); }
+
+    const c = el('scene').getContext('2d'), W = 760, H = 400, G = 9.8;
+    const scaleN = (m, a) => Math.max(0, m * (G + a));
+    const S = { kind: 'up', t: 0, playing: false, hid: false, aU: 2 };
+    const m = sl('m', 0, () => 0), aS = sl('a', 1, () => { S.t = 0; });
+    const aMag = () => S.hid ? S.aU : aS();
+    const segs = () => S.kind === 'up' ? [[2, aMag()], [3, 0], [2, -aMag()]] : S.kind === 'down' ? [[2, -aMag()], [3, 0], [2, aMag()]] : [[1.2, -G], [G * 1.2 / 15, 15]];
+    const total = () => segs().reduce((s, x) => s + x[0], 0);
+    // 回傳時刻 t 的 [加速度, 速度, 位置]
+    function kin(t) { let v = 0, y = 0, a = 0, t0 = 0; for (const [d, ac] of segs()) { const u = Math.min(Math.max(t - t0, 0), d); if (t >= t0 && t < t0 + d) a = ac; y += v * u + 0.5 * ac * u * u; v += ac * u; t0 += d; } return [t >= t0 || t < 0 ? 0 : a, v, y]; }
+    window.LabTest = { scaleN, kin, seek: t => { S.t = t; S.playing = false; }, hidden: () => S.aU };
+    function draw() {
+        c.fillStyle = '#080a0f'; c.fillRect(0, 0, W, H);
+        const [a, v, y] = kin(S.t), yEnd = kin(total())[2], span = Math.max(Math.abs(yEnd), 1), top = 40, bot = 300, carH = 120;
+        const frac = yEnd >= 0 ? y / span : 1 + y / span, cy = bot - frac * (bot - top) - (yEnd >= 0 ? 0 : 0), cx = 70, cw = 170, N = scaleN(m(), a), k = 0.12;
+        c.strokeStyle = '#3a4558'; c.lineWidth = 2; c.strokeRect(cx - 14, 14, cw + 28, 376);
+        for (let i = 0; i <= 6; i++) { const yy = 20 + i * 60; c.beginPath(); c.moveTo(cx - 14, yy); c.lineTo(cx - 4, yy); c.stroke(); }
+        const y0 = Math.min(Math.max(cy - 30, 20), 264); c.strokeStyle = '#8a99ad';
+        if (S.kind !== 'fall' || S.t === 0) { c.beginPath(); c.moveTo(cx + cw / 2, 14); c.lineTo(cx + cw / 2, y0); c.stroke(); }
+        c.fillStyle = '#141923'; c.fillRect(cx, y0, cw, carH); c.strokeStyle = '#00d4ff'; c.lineWidth = 3; c.strokeRect(cx, y0, cw, carH);
+        const fx = cx + cw / 2, fy = y0 + carH - 10, lift = N === 0 && S.t > 0 ? 14 : 0;
+        c.fillStyle = '#ff9f43'; c.fillRect(fx - 34, fy, 68, 8);
+        c.strokeStyle = '#f0f3f8'; c.lineWidth = 4; c.beginPath(); c.arc(fx, fy - 78 - lift, 11, 0, 7); c.moveTo(fx, fy - 67 - lift); c.lineTo(fx, fy - 30 - lift); c.lineTo(fx - 12, fy - 2 - lift); c.moveTo(fx, fy - 30 - lift); c.lineTo(fx + 12, fy - 2 - lift); c.moveTo(fx - 16, fy - 50 - lift); c.lineTo(fx + 16, fy - 50 - lift); c.stroke();
+        arrow(c, fx + 46, fy - 40, fx + 46, fy - 40 + m() * G * k * 0.6, '#ffcc00', 4); txt(c, 'mg', fx + 54, fy - 4, '#ffcc00', 18);
+        if (N > 0) arrow(c, fx - 46, fy - 4, fx - 46, fy - 4 - N * k * 0.6, '#00e676', 4); txt(c, 'N', fx - 68, fy - 30, '#00e676', 18);
+        // 右側：磅秤大錶面
+        const dx = 520, dy = 190, R = 130, kg = N / G, mx = 200;
+        c.fillStyle = '#141923'; c.beginPath(); c.arc(dx, dy, R, 0, 7); c.fill(); c.strokeStyle = '#3a4558'; c.lineWidth = 3; c.stroke();
+        for (let i = 0; i <= 20; i++) { const an = Math.PI * 0.75 + i / 20 * Math.PI * 1.5, r1 = i % 5 ? R - 12 : R - 22; c.beginPath(); c.moveTo(dx + Math.cos(an) * r1, dy + Math.sin(an) * r1); c.lineTo(dx + Math.cos(an) * (R - 4), dy + Math.sin(an) * (R - 4)); c.strokeStyle = '#8a99ad'; c.lineWidth = i % 5 ? 1.5 : 3; c.stroke(); if (!(i % 5)) txt(c, String(i * 10), dx + Math.cos(an) * (R - 40), dy + Math.sin(an) * (R - 40) + 6, '#c3d0e4', 17, 'center'); }
+        const an0 = Math.PI * 0.75 + m() / mx * Math.PI * 1.5; c.strokeStyle = '#4a586e'; c.setLineDash([5, 5]); c.beginPath(); c.moveTo(dx, dy); c.lineTo(dx + Math.cos(an0) * (R - 30), dy + Math.sin(an0) * (R - 30)); c.stroke(); c.setLineDash([]);
+        const an = Math.PI * 0.75 + Math.min(kg, mx) / mx * Math.PI * 1.5; arrow(c, dx, dy, dx + Math.cos(an) * (R - 26), dy + Math.sin(an) * (R - 26), '#ff6b81', 5, 14);
+        txt(c, kg.toFixed(1) + ' kgw', dx, dy + 104, '#00e676', 26, 'center'); txt(c, '磅秤讀數（虛線：靜止時）', dx, 362, '#9aa8bd', 17, 'center');
+        const st = Math.abs(a) < 1e-9 ? '正常' : N === 0 ? '完全失重' : a > 0 ? '超重' : '失重';
+        txt(c, st, dx, 30, st === '正常' ? '#c3d0e4' : st === '超重' ? '#ff6b81' : '#00d4ff', 24, 'center');
+        if (Math.abs(a) > 1e-9 && !S.hid) { arrow(c, 300, 200, 300, 200 - Math.sign(a) * 60, '#ff6b81', 5, 14); txt(c, 'a', 312, 205, '#ff6b81', 20); }
+        if (Math.abs(v) > 1e-6) { arrow(c, 350, 200, 350, 200 - Math.sign(v) * Math.min(70, 12 + Math.abs(v) * 6), '#00d4ff', 5, 14); txt(c, 'v', 362, 205, '#00d4ff', 20); }
+    }
+    function panels() {
+        const [a, v] = kin(S.t), N = scaleN(m(), a), T = total(), q = S.hid ? '？' : null;
+        el('dash').innerHTML = [meter('磅秤讀數 N', N.toFixed(1), 'N', '#00e676'), meter('磅秤讀數（公斤重）', (N / G).toFixed(2), 'kgw', '#00e676'), meter('重力 mg', (m() * G).toFixed(1), 'N', '#ffcc00'),
+            meter('電梯加速度 a（向上為正）', q || a.toFixed(2), 'm/s²', '#ff6b81'), meter('電梯速度 v（向上為正）', q || v.toFixed(2), 'm/s', '#00d4ff'), meter('時間 t', S.t.toFixed(2), 's')].join('');
+        el('status').innerHTML = Math.abs(a) < 1e-9 ? '加速度為零（靜止或等速）：<b>N = mg</b>。' : N === 0 ? '<b>完全失重</b>：人與電梯一起以 g 落下，磅秤讀數為零。' : a > 0 ? '加速度向上：<b>N &gt; mg，超重</b>。' : '加速度向下：<b>N &lt; mg，失重</b>。';
+        const P = i => Array.from({ length: 281 }, (_, j) => { const t = T * j / 280, k = kin(Math.min(t, T - 1e-6)); return [t, i === 2 ? scaleN(m(), k[0]) / G : k[i]]; }), cur = kin(S.t);
+        const am = Math.max(...segs().map(s => Math.abs(s[1])), 1) * 1.2, vm = Math.max(...P(1).map(p => Math.abs(p[1])), 1) * 1.2, nm = Math.max(...P(2).map(p => p[1])) * 1.15;
+        if (S.hid) { ['g1', 'g2'].forEach(id => { const x = el(id).getContext('2d'); x.fillStyle = '#080a0f'; x.fillRect(0, 0, 480, 260); txt(x, '挑戰中：圖形隱藏', 240, 130, '#6a7a92', 18, 'center'); }); }
+        else { graph(el('g1'), { xmin: 0, xmax: T, ymin: -am, ymax: am, title: 'a–t 圖', xl: 't (s)', yl: 'a (m/s²)', series: [{ pts: P(0), col: '#ff6b81', w: 2.5 }], vline: S.t });
+            graph(el('g2'), { xmin: 0, xmax: T, ymin: -vm, ymax: vm, title: 'v–t 圖', xl: 't (s)', yl: 'v (m/s)', series: [{ pts: P(1), col: '#00d4ff', w: 2.5 }], vline: S.t }); }
+        graph(el('g3'), { xmin: 0, xmax: T, ymin: 0, ymax: nm, title: '磅秤讀數–t 圖', xl: 't (s)', yl: '讀數 (kgw)', series: [{ pts: [[0, m()], [T, m()]], col: '#4a586e', w: 1.5, dash: [5, 5] }, { pts: P(2).slice(0, Math.max(2, Math.ceil(S.t / T * 280) + 1)), col: '#00e676', w: 2.5 }], dots: [{ x: S.t, y: scaleN(m(), cur[0]) / G }] });
+    }
+    const reset = () => { S.t = 0; S.playing = false; };
+    $$('.chip[data-k]').forEach(b => b.addEventListener('click', () => { S.kind = b.dataset.k; $$('.chip[data-k]').forEach(x => x.classList.toggle('on', x === b)); reset(); }));
+    el('btnPlay').addEventListener('click', () => { if (S.t >= total()) S.t = 0; S.playing = true; });
+    el('btnPause').addEventListener('click', () => S.playing = false); el('btnReset').addEventListener('click', reset);
+    el('btnQ').addEventListener('click', () => { S.hid = true; S.aU = 0.6 + Math.floor(Math.random() * 30) / 10; el('a').disabled = true; el('aL').textContent = '？'; el('chRes').textContent = '題目已出好：按「出發」，看啟動階段的讀數。'; if (S.kind === 'fall') $$('.chip[data-k]')[0].click(); reset(); });
+    el('btnA').addEventListener('click', () => { if (!S.hid) { el('chRes').textContent = '先按「出題」。'; return; } const x = Math.abs(parseFloat(el('ans').value)), ok = Math.abs(x - S.aU) <= 0.1;
+        el('chRes').innerHTML = (ok ? '✅ 答對了！' : '❌ 再想想。') + `正確答案 a = <b id="chTrue">${S.aU.toFixed(1)}</b> m/s²（由 N − mg = ma，a = g × (讀數 − m)／m）。`; S.hid = false; el('a').disabled = false; el('a').value = S.aU; el('aL').textContent = S.aU.toFixed(1); });
+    let fn = 0; loop(dt => { if (S.playing) { S.t += dt * +el('selSpd').value; if (S.t >= total()) { S.t = total(); S.playing = false; } } draw(); if (!(fn++ % 3)) panels(); });
+
+})();
+</script>
+</body>
+</html>

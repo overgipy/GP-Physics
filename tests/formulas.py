@@ -355,10 +355,28 @@ def t_atwood(ctx):
     check("連體 拉不動時 T = m₂g", meter(pg, "繩張力"), 0.15 * 9.8, 0.002)
 
 
+def t_elevator(ctx):
+    pg = open_page(ctx, "elevator", frozen=True)
+    set_val(pg, "m", 60); set_val(pg, "a", 2)
+    for kind, t, a, name in (("up", 1, 2, "上樓啟動"), ("up", 3.5, 0, "上樓等速"), ("up", 6, -2, "上樓煞車"), ("down", 1, -2, "下樓啟動"), ("down", 6, 2, "下樓煞車"), ("fall", 0.6, -9.8, "自由落下")):
+        pg.click(f'[data-k="{kind}"]'); pg.evaluate("t => LabTest.seek(t)", t); step(pg, 6)
+        check(f"電梯 {name} N = m(g+a)", meter(pg, "磅秤讀數 N"), 60 * (9.8 + a), 0.001, 0.06)
+    pg.click('[data-k="up"]'); pg.evaluate("LabTest.seek(3.5)"); step(pg, 6)
+    check("電梯 等速段速度 v = a·t₁", meter(pg, "電梯速度"), 4, 0.003)
+    k = pg.evaluate("LabTest.kin(7)")
+    check("電梯 行程總位移 = v–t 圖面積", k[2], 0.5 * 4 * 2 * 2 + 4 * 3, 1e-6); check("電梯 到站速度為零", k[1], 0, abs_=1e-9)
+    pg.click("#btnQ"); pg.evaluate("LabTest.seek(1)"); step(pg, 6)
+    kgw = meter(pg, "公斤重"); est = 9.8 * (kgw - 60) / 60
+    pg.fill("#ans", f"{est:.2f}"); pg.click("#btnA")
+    check("電梯 挑戰：由讀數反推 a", est, num(text(pg, "chTrue")), 0.02)
+    check("電梯 挑戰判定答對", 1.0 if "答對" in text(pg, "chRes") else 0.0, 1.0)
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
          "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing,
-         "atwood": t_atwood}
+         "atwood": t_atwood,
+         "elevator": t_elevator}
 
 
 def main():
