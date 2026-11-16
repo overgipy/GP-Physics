@@ -42,14 +42,16 @@
         
         canvas { 
             border: 1px solid #444; background: #000; 
-            width: 150px; height: 150px; /* 顯示大小 */
+            width: min(150px, 36vw); height: min(150px, 36vw); /* 顯示大小 */
             image-rendering: pixelated; /* 保持像素感 */
             border-radius: 4px;
         }
         
         .arrow { font-size: 24px; color: #444; }
+        @media (max-width: 480px) { body { padding: 12px; } .visuals { padding: 12px; gap: 6px; } .controls { min-width: 0; } }
 
         .loading { color: #ffcc00; font-size: 12px; margin-top: 5px; min-height: 18px; text-align: center;}
+        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
     </style>
 </head>
 <body>

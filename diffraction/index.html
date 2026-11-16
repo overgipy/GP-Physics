@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>水波繞射：高畫質版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
@@ -45,7 +45,7 @@
             display: flex; justify-content: center;
             margin-bottom: 10px;
         }
-        canvas { border-radius: 4px; border: 1px solid #333; }
+        canvas { box-sizing: border-box; border-radius: 4px; border: 1px solid #333; }
 
         /* 分析區 */
         .analysis-container {
@@ -56,6 +56,7 @@
         .ratio-text { font-size: 16px; margin-bottom: 5px; color: #fff; }
         .comment-text { color: #aaa; font-size: 14px; line-height: 1.4; }
         .highlight { color: #ffcc00; font-weight: bold; }
+        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
     </style>
 </head>
 <body>

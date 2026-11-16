@@ -24,6 +24,7 @@
             min-height: 100vh;
         }
         header {
+            box-sizing: border-box;
             padding: 15px;
             text-align: center;
             background: rgba(0,0,0,0.3);
@@ -60,6 +61,15 @@
             box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
         canvas { border-radius: 12px; }
+        #canvas-container { max-width: 100%; }
+        #atomCanvas { max-width: 100%; height: auto; display: block; }
+        @media (max-width: 700px) {
+            .back-link { position: static; display: inline-block; margin-bottom: 6px; }
+            header { padding: 10px; margin-bottom: 12px; }
+            h1 { font-size: 1.4rem; }
+            .controls { min-width: 0; width: 100%; padding: 16px; }
+            .main-container { gap: 16px; }
+        }
 
         /* 右側控制區 */
         .controls {
@@ -165,6 +175,7 @@
             border: 1px solid rgba(255,255,255,0.1);
         }
 
+        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
     </style>
 </head>
 <body>

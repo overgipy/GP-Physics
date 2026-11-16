@@ -74,6 +74,7 @@
         .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
         .lg-red::before { background: var(--red); } .lg-orange::before { background: var(--orange); } .lg-blue::before { background: var(--blue); } .lg-green::before { background: var(--green); }
         footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
+        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
     </style>
 </head>
 <body>

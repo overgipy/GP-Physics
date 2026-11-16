@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>多孔狹縫干涉實驗</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
@@ -38,7 +38,7 @@
             width: 100%; max-width: 600px; 
             display: flex; justify-content: center; margin-bottom: 10px;
         }
-        canvas { border-radius: 4px; border: 1px solid #333; }
+        canvas { box-sizing: border-box; border-radius: 4px; border: 1px solid #333; }
 
         .analysis-container {
             width: 100%; max-width: 600px;
@@ -48,6 +48,7 @@
         .status-text { font-size: 15px; line-height: 1.4; color: #ddd; }
         .highlight { color: #00d4ff; font-weight: bold; }
         .warn { color: #ff5555; }
+        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
     </style>
 </head>
 <body>

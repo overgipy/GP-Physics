@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>折射與全反射實驗</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
@@ -40,10 +40,15 @@
             display: flex; justify-content: center; margin-bottom: 15px;
             position: relative;
         }
-        canvas { border-radius: 4px; border: 1px solid #333; cursor: crosshair; }
+        canvas { box-sizing: border-box; border-radius: 4px; border: 1px solid #333; cursor: crosshair; touch-action: none; }
+        .preset-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+        .preset-btn { flex: 1 1 0; min-width: 62px; background: #222; color: #ddd; border: 1px solid #444; border-radius: 8px; padding: 7px 4px; font-size: 13px; cursor: pointer; line-height: 1.3; }
+        .preset-btn small { display: block; color: #00d4ff; font-family: monospace; font-size: 11px; }
+        .preset-btn.on { border-color: #00d4ff; background: #0c2a33; color: #fff; }
+        .swap-btn { width: 100%; margin-top: 12px; background: #3a465b; color: #fff; border: none; border-radius: 8px; padding: 9px; font-size: 14px; font-weight: bold; cursor: pointer; }
 
         .dashboard {
-            width: 100%; max-width: 600px;
+            box-sizing: border-box; width: 100%; max-width: 600px;
             background: #111; padding: 15px; border-radius: 12px; border: 1px solid #333;
             display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
         }
@@ -64,7 +69,7 @@
         .tab-btn.active { border-color: #00d4ff; background: #0c2a33; color: #fff; font-weight: bold; }
         #exp { display: none; width: 100%; max-width: 600px; flex-direction: column; gap: 12px; margin-top: 15px; }
         body.exp-mode #exp { display: flex; }
-        body.exp-mode #grpN1, body.exp-mode #grpN2 { display: none; }
+        body.exp-mode #grpN1, body.exp-mode #grpN2, body.exp-mode #btnSwapMedia { display: none; }
         .xcard { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 14px 16px; box-sizing: border-box; }
         .xcard h3 { margin: 0 0 8px; font-size: 15px; color: #ffcc00; }
         .xrow { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
@@ -85,6 +90,7 @@
         .xdetails ul, .xdetails ol { margin: 6px 0; padding-left: 20px; }
         .highlight-r { color: #ff4444; } /* 紅色：能量不足 */
 
+        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
     </style>
 </head>
 <body>
@@ -103,11 +109,24 @@
         <div class="slider-group" id="grpN1">
             <div class="slider-label">上層折射率 n₁ <b id="val_n1">1.50</b></div>
             <input type="range" id="sl_n1" min="1.00" max="2.50" value="1.50" step="0.01">
+            <div class="preset-row" data-side="1">
+                <button class="preset-btn" data-n="1.00">空氣<small>1.00</small></button>
+                <button class="preset-btn" data-n="1.33">水<small>1.33</small></button>
+                <button class="preset-btn" data-n="1.50">玻璃<small>1.50</small></button>
+                <button class="preset-btn" data-n="2.42">鑽石<small>2.42</small></button>
+            </div>
         </div>
         <div class="slider-group" id="grpN2">
             <div class="slider-label">下層折射率 n₂ <b id="val_n2">1.00</b></div>
             <input type="range" id="sl_n2" min="1.00" max="2.50" value="1.00" step="0.01">
+            <div class="preset-row" data-side="2">
+                <button class="preset-btn" data-n="1.00">空氣<small>1.00</small></button>
+                <button class="preset-btn" data-n="1.33">水<small>1.33</small></button>
+                <button class="preset-btn" data-n="1.50">玻璃<small>1.50</small></button>
+                <button class="preset-btn" data-n="2.42">鑽石<small>2.42</small></button>
+            </div>
         </div>
+        <button class="swap-btn" id="btnSwapMedia" type="button">⇅ 上下介質對調（體驗光路可逆）</button>
     </div>
 
     <div id="canvas-container"></div>
@@ -550,6 +569,28 @@
         setInterval(refresh, 150);
         window.__rx = { X, t2of, isTIR, reading, recordCritical, record, autoScan, refresh };
     })();
+    
+        // 介質預設與上下對調：直接改滑桿值（draw 每幀讀取）
+        (function () {
+            function setN(side, v) {
+                const sl = document.getElementById('sl_n' + side);
+                sl.value = v; sl.dispatchEvent(new Event('input', { bubbles: true }));
+                syncPresets();
+            }
+            function syncPresets() {
+                document.querySelectorAll('.preset-row').forEach(row => {
+                    const v = parseFloat(document.getElementById('sl_n' + row.dataset.side).value);
+                    row.querySelectorAll('.preset-btn').forEach(b => b.classList.toggle('on', Math.abs(parseFloat(b.dataset.n) - v) < 0.005));
+                });
+            }
+            document.querySelectorAll('.preset-btn').forEach(b => b.addEventListener('click', () => setN(b.parentElement.dataset.side, b.dataset.n)));
+            document.getElementById('btnSwapMedia').addEventListener('click', () => {
+                const a = document.getElementById('sl_n1').value, c = document.getElementById('sl_n2').value;
+                setN(1, c); setN(2, a);
+            });
+            ['sl_n1', 'sl_n2'].forEach(id => document.getElementById(id).addEventListener('input', syncPresets));
+            syncPresets();
+        })();
     </script>
 </body>
 </html>
