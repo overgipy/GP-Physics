@@ -4,77 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>直導線的磁場：電流磁場與地磁水平分量 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/touch.css">
     <style>
         :root {
-            --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432;
-            --text-main: #f0f3f8; --text-muted: #9aa8bd;
-            --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676;
             /* 磁場配色：地磁水平分量＝青、導線電流磁場＝橘、合磁場＝黃 */
-            --bh: #35d6ff; --bw: #ff9f43; --bt: #ffe14d; --red: #ff4d6d;
+            --bh: #35d6ff; --bw: #ff9f43; --bt: #ffe14d;
         }
-        * { box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
-            background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px;
-            display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6;
-        }
-        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; }
-        .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
-        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; }
-        h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; }
-        .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
-        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
-        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
-        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
-        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
         .mode-btn { flex: 1 1 260px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 10px 12px; font-size: .95rem; cursor: pointer; text-align: left; }
-        .mode-btn b { display: block; color: var(--cyan); }
-        .mode-btn.active { border-color: var(--cyan); background: #12303a; }
-        .mode-desc { font-size: .92rem; color: var(--text-muted); margin-bottom: 12px; }
-        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
-        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; }
         .control-group.off { opacity: .45; }
-        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; }
-        .control-label b { font-family: monospace; font-size: 1.05rem; }
-        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
-        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
         input[type=range]:disabled { cursor: not-allowed; }
-        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
-        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; }
-        .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
-        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; }
-        button.btn.secondary { background: #3a465b; color: #fff; }
-        button.btn.green { background: var(--green); color: #00210f; }
-        button.btn:disabled { opacity: .4; cursor: not-allowed; }
-        button.btn:not(:disabled):hover { filter: brightness(1.12); }
-        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; }
-        canvas { display: block; width: 100%; height: auto; }
-        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; }
         .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
         .lg-bh::before { background: var(--bh); } .lg-bw::before { background: var(--bw); } .lg-bt::before { background: var(--bt); } .lg-n::before { background: var(--red); }
-        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #111622; font-size: 1rem; }
-        .status b { color: var(--yellow); }
-        .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
         .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 10px; }
-        .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; }
-        .meter-title { font-size: .82rem; color: var(--text-muted); }
-        .meter-value { font-size: 1.3rem; font-weight: bold; font-family: monospace; }
-        .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
-        .c-bh { color: var(--bh); } .c-bw { color: var(--bw); } .c-bt { color: var(--bt); } .c-red { color: var(--red); } .c-y { color: var(--yellow); }
+        .c-bh { color: var(--bh); } .c-bw { color: var(--bw); } .c-bt { color: var(--bt); } .c-y { color: var(--yellow); }
         table { width: 100%; border-collapse: collapse; font-size: .88rem; font-family: monospace; }
         th, td { border-bottom: 1px solid #263044; padding: 5px 6px; text-align: right; }
         th { color: var(--text-muted); font-weight: normal; }
         .table-scroll { max-height: 300px; overflow-y: auto; }
         .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
-        .fit-text b { color: var(--yellow); }
-        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
-        summary { cursor: pointer; font-weight: bold; color: var(--cyan); }
-        details ol, details ul { margin: 8px 0 2px; padding-left: 22px; }
-        details li { margin-bottom: 4px; }
-        .assume { font-size: .88rem; color: var(--text-muted); }
-        footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
-        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
     </style>
 </head>
 <body>
@@ -217,13 +165,15 @@
 </div>
 <footer>© 李捷物理實驗室</footer>
 
+<script src="../shared/lab.js"></script>
 <script>
 (() => {
     'use strict';
+    const { arrow, txt, niceStep5: niceStep } = Lab;
     const MU0 = 4 * Math.PI * 1e-7;
-    const el = id => document.getElementById(id);
+    const el = Lab.el;
     const sc = el('scene'), c = sc.getContext('2d');
-    const rad = d => d * Math.PI / 180, deg = r => r * 180 / Math.PI;
+    const rad = Lab.rad, deg = Lab.deg;
     const S = {
         mode: 'A', I: 3, r: 3, dir: 1, BH: 35, hidden: false, speed: 2,
         phi: 0, om: 0,                        // 指針角度（向西為正）與角速度
@@ -249,14 +199,6 @@
     const settled = () => { const p = params(); return Math.abs(S.phi - p.th) < rad(0.3) && Math.abs(S.om) < rad(1.0); };
 
     // ===================== 繪圖工具 =====================
-    function arrow(ctx, x1, y1, x2, y2, color, w = 3, head = 10, dash = null) {
-        const len = Math.hypot(x2 - x1, y2 - y1); if (len < 2) return;
-        const a = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(head, len * .6);
-        ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round'; if (dash) ctx.setLineDash(dash);
-        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(a) * hl * .6, y2 - Math.sin(a) * hl * .6); ctx.stroke(); ctx.setLineDash([]);
-        ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - hl * Math.cos(a - .45), y2 - hl * Math.sin(a - .45)); ctx.lineTo(x2 - hl * Math.cos(a + .45), y2 - hl * Math.sin(a + .45)); ctx.closePath(); ctx.fill(); ctx.restore();
-    }
-    function txt(ctx, s, x, y, color, size = 14, align = 'left') { ctx.save(); ctx.font = `bold ${size}px sans-serif`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y); ctx.restore(); }
 
     // ---------- 俯視圖 ----------
     const CX = 380, CY = 225, RC = 175;
@@ -340,7 +282,6 @@
     }
 
     // ===================== 圖表 =====================
-    function niceStep(r) { const t = r / 5, q = Math.pow(10, Math.floor(Math.log10(t))), n = t / q; return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * q; }
     function plot(cv, o) {
         const x = cv.getContext('2d'), W = cv.width, H = cv.height, L = 58, R = 16, T = 34, B = 46, pw = W - L - R, ph = H - T - B;
         const PX = v => L + (v - o.xmin) / (o.xmax - o.xmin) * pw, PY = v => T + ph - (v - o.ymin) / (o.ymax - o.ymin) * ph;
@@ -407,7 +348,7 @@
 
     // ===================== 數據與狀態 =====================
     function renderDash() {
-        const p = params(), hid = S.hidden, m = (t, v, u, cl = '') => `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value ${cl}">${v}<span class="unit">${u}</span></div></div>`;
+        const p = params(), hid = S.hidden, m = Lab.meterClass;
         el('dash').innerHTML = m('電流 I', S.I.toFixed(1), 'A', 'c-bw') + m('距離 r', S.r.toFixed(1), 'cm', 'c-bw') + m('導線磁場 B導線', p.Bw.toFixed(2), 'μT', 'c-bw') + m('地磁水平分量 B_H', hid ? '？' : S.BH.toFixed(1), 'μT', 'c-bh') +
             m('比值 B導線 ÷ B_H = tanθ', hid ? '？' : p.ratio.toFixed(3), '', 'c-bt') + m('指針偏轉角（即時）', Math.abs(deg(S.phi)).toFixed(1), '°', 'c-red') + m('理論偏轉角 θ', hid ? '？' : Math.abs(deg(p.th)).toFixed(1), '°', 'c-bt');
         const st = settled();

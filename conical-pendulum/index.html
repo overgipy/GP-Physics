@@ -4,70 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>圓周運動：錐動擺 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/touch.css">
     <style>
-        :root {
-            --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432;
-            --text-main: #f0f3f8; --text-muted: #9aa8bd;
-            --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676; --blue: #4da3ff; --red: #ff4d6d; --net: #ffe14d;
+        :root { --blue: #4da3ff; --net: #ffe14d;
         }
-        * { box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
-            background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px;
-            display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6;
-        }
-        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; }
-        .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
-        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; }
-        h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; }
-        .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
-        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
-        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
-        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
-        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
-        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; }
         .control-group.off { opacity: .45; }
-        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; }
-        .control-label b { font-family: monospace; font-size: 1.05rem; }
-        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
-        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
         input[type=range]:disabled { cursor: not-allowed; }
-        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
         .radio-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; }
         .radio-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; background: var(--bg-control); padding: 8px 12px; border: 2px solid #2c3749; border-radius: 8px; }
         .radio-row label.sel { border-color: var(--cyan); background: #12303a; }
-        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; }
         .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
         button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 18px; font-size: 1rem; font-weight: bold; cursor: pointer; min-width: 100px; }
-        button.btn.secondary { background: #3a465b; color: #fff; }
         button.btn.danger { background: var(--red); color: #fff; }
-        button.btn:disabled { opacity: .4; cursor: not-allowed; }
-        button.btn:not(:disabled):hover { filter: brightness(1.12); }
-        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; }
-        canvas { display: block; width: 100%; height: auto; }
-        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; }
         .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
         .lg-red::before { background: var(--red); } .lg-net::before { background: var(--net); } .lg-blue::before { background: var(--blue); } .lg-green::before { background: var(--green); }
-        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #111622; font-size: 1rem; }
-        .status b { color: var(--yellow); }
-        .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
         .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
-        .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; }
-        .meter-title { font-size: .82rem; color: var(--text-muted); }
-        .meter-value { font-size: 1.3rem; font-weight: bold; font-family: monospace; }
-        .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
-        .c-blue { color: var(--blue); } .c-red { color: var(--red); } .c-green { color: var(--green); } .c-yellow { color: var(--yellow); } .c-net { color: var(--net); }
+        .c-blue { color: var(--blue); } .c-green { color: var(--green); } .c-yellow { color: var(--yellow); } .c-net { color: var(--net); }
         .check-box { margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
         .eq { background: #111622; border: 1px dashed #2f3b50; border-radius: 8px; padding: 8px 12px; font-family: monospace; font-size: .92rem; }
         .eq .ok { color: var(--green); }
-        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
-        summary { cursor: pointer; font-weight: bold; color: var(--cyan); }
-        details ol, details ul { margin: 8px 0 2px; padding-left: 22px; }
-        details li { margin-bottom: 4px; }
-        .assume { font-size: .88rem; color: var(--text-muted); }
-        footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
-        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
+        @media (pointer: coarse) { button.btn { padding-top: 10px; padding-bottom: 10px; } }
     </style>
 </head>
 <body>
@@ -203,15 +160,17 @@
 </div>
 <footer>© 李捷物理實驗室</footer>
 
+<script src="../shared/lab.js"></script>
 <script>
 (() => {
     'use strict';
+    const { arrow, txt, niceStep5: niceStep } = Lab;
     const G = 9.8;
-    const el = id => document.getElementById(id);
+    const el = Lab.el;
     const cv = el('scene'), c = cv.getContext('2d');
     const S = { drive: 'theta', theta: 30, omega: 3.36, L: 1.0, m: 0.2, speed: 1, playing: true, phi: 0, t: 0, trail: [], cut: null };
     const TH_MIN = 5, TH_MAX = 80;
-    const rad = d => d * Math.PI / 180;
+    const rad = Lab.rad;
 
     // ===================== 物理 =====================
     // 穩定錐動擺：T cosθ = mg，T sinθ = m ω² r，r = L sinθ  →  ω² = g/(L cosθ)
@@ -246,16 +205,6 @@
     }
 
     // ===================== 繪圖工具 =====================
-    function arrow(ctx, x1, y1, x2, y2, color, w = 3, head = 10, dash = null) {
-        const len = Math.hypot(x2 - x1, y2 - y1); if (len < 2) return;
-        const a = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(head, len * .6);
-        ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round'; if (dash) ctx.setLineDash(dash);
-        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(a) * hl * .6, y2 - Math.sin(a) * hl * .6); ctx.stroke(); ctx.setLineDash([]);
-        ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - hl * Math.cos(a - .45), y2 - hl * Math.sin(a - .45)); ctx.lineTo(x2 - hl * Math.cos(a + .45), y2 - hl * Math.sin(a + .45)); ctx.closePath(); ctx.fill(); ctx.restore();
-    }
-    function txt(ctx, s, x, y, color, size = 14, align = 'left') {
-        ctx.save(); ctx.font = `bold ${size}px sans-serif`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y); ctx.restore();
-    }
 
     function drawScene(p) {
         c.clearRect(0, 0, 760, 500); c.fillStyle = '#080a0f'; c.fillRect(0, 0, 760, 500);
@@ -369,7 +318,6 @@
     }
 
     // ===================== 圖表 =====================
-    function niceStep(range) { const t = range / 5, q = Math.pow(10, Math.floor(Math.log10(t))), n = t / q; return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * q; }
     function drawGraph(p) {
         const q = el('selGraph').value, cvs = el('gMain'), x = cvs.getContext('2d'), W = cvs.width, H = cvs.height, Lm = 62, R = 16, T = 34, B = 46, pw = W - Lm - R, ph = H - T - B;
         const f = { period: th => solve(th, S.L, S.m).Tp, omega: th => solve(th, S.L, S.m).w, tension: th => solve(th, S.L, S.m).T, speed: th => solve(th, S.L, S.m).v }[q];
@@ -394,7 +342,7 @@
 
     // ===================== 即時數據 =====================
     function updateInfo(p) {
-        const m = (t, v, u, cl = '') => `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value ${cl}">${v}<span class="unit">${u}</span></div></div>`;
+        const m = Lab.meterClass;
         el('dash').innerHTML = m('夾角 θ', p.theta.toFixed(1), '°', 'c-yellow') + m('圓周半徑 r = L sinθ', p.r.toFixed(3), 'm', 'c-yellow') + m('角速度 ω', p.w.toFixed(3), 'rad/s', 'c-yellow') + m('週期 Tp', p.Tp.toFixed(3), 's', 'c-yellow') +
             m('轉速', (p.w * 60 / (2 * Math.PI)).toFixed(1), 'rpm', 'c-yellow') + m('速率 v = ωr', p.v.toFixed(3), 'm/s', 'c-blue') + m('向心加速度 ω²r', p.ac.toFixed(3), 'm/s²', 'c-green') + m('繩張力 T', p.T.toFixed(3), 'N', 'c-red') +
             m('重力 mg', p.mg.toFixed(3), 'N', 'c-red') + m('向心力 F合', p.Fc.toFixed(3), 'N', 'c-net');

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>牛頓第二定律實驗：滑車與砝碼 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/touch.css">
     <style>
         :root {
             --bg-main: #0a0c10;
@@ -32,7 +33,6 @@
         header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; }
         h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; }
         .subtitle { margin: 4px 0 0; font-size: 0.95rem; color: var(--text-muted); }
-
         .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
         .card {
             background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px;
@@ -43,7 +43,6 @@
             margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344;
             display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;
         }
-
         /* 模式切換 */
         .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
         .mode-btn {
@@ -54,7 +53,6 @@
         .mode-btn b { display: block; color: var(--cyan); }
         .mode-btn.active { border-color: var(--cyan); background: #12303a; }
         .mode-desc { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px; min-height: 1.4em; }
-
         /* 控制區 */
         .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
         .control-group { background: rgba(255,255,255,0.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; }
@@ -64,7 +62,6 @@
         .sub-note { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
         input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
         select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: 0.95rem; width: 100%; }
-
         .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: 0.95rem; }
         .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
         .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -76,12 +73,10 @@
         button.btn.green { background: var(--green); color: #00210f; }
         button.btn:disabled { opacity: 0.4; cursor: not-allowed; }
         button.btn:not(:disabled):hover { filter: brightness(1.12); }
-
         /* 場景 */
         .canvas-wrap { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; }
         canvas { display: block; width: 100%; height: auto; }
         .status-line { margin-top: 8px; font-size: 0.95rem; min-height: 1.5em; color: var(--yellow); }
-
         /* 儀表板 */
         .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
         .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; }
@@ -92,11 +87,9 @@
         .check-box { margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
         .eq { background: #111622; border: 1px dashed #2f3b50; border-radius: 8px; padding: 8px 12px; font-family: monospace; font-size: 0.95rem; }
         .eq .ok { color: var(--green); }
-
         /* 圖表 */
         .graphs { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 12px; }
         .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 4px; }
-
         /* 數據表 */
         .data-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; font-family: monospace; }
@@ -105,7 +98,6 @@
         .table-scroll { max-height: 300px; overflow-y: auto; }
         .fit-text { margin-top: 8px; font-size: 0.92rem; color: #c3d0e4; }
         .fit-text b { color: var(--yellow); }
-
         /* 教學提示 */
         details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
         summary { cursor: pointer; font-weight: bold; color: var(--cyan); }
@@ -116,7 +108,7 @@
         .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
         .lg-red::before { background: var(--red); } .lg-blue::before { background: var(--blue); } .lg-green::before { background: var(--green); }
         footer { margin: 18px 0 8px; color: #667; font-size: 0.85rem; }
-        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
+        @media (pointer: coarse) { button.btn { padding-top: 10px; padding-bottom: 10px; } }
     </style>
 </head>
 <body>
@@ -285,11 +277,13 @@
 
 <footer>© 李捷物理實驗室</footer>
 
+<script src="../shared/lab.js"></script>
 <script>
 (() => {
     'use strict';
 
     // ===================== 常數與狀態 =====================
+    const { niceStep5: niceStep } = Lab;
     const G = 9.8;                 // 重力加速度 (m/s²)
     const S_MAX = 0.60;            // 行程：滑車從靜止出發到擋板的距離 (m)
     const PX_PER_M = 400;          // 畫面比例：1 m = 400 px
@@ -301,7 +295,7 @@
     const HANGER_SIZE = 36;
     const TAPE_DT = 0.1;           // 紙帶計數點的時間間隔 (s)
 
-    const el = id => document.getElementById(id);
+    const el = Lab.el;
     const scene = el('scene'), sc = scene.getContext('2d');
 
     const state = {
@@ -376,21 +370,7 @@
     }
 
     // ===================== 繪圖工具 =====================
-    function arrow(c, x1, y1, x2, y2, color, w = 3, head = 9) {
-        const len = Math.hypot(x2 - x1, y2 - y1);
-        if (len < 1.5) return;
-        const ang = Math.atan2(y2 - y1, x2 - x1);
-        const hl = Math.min(head, len * 0.6);
-        c.save();
-        c.strokeStyle = color; c.fillStyle = color; c.lineWidth = w; c.lineCap = 'round';
-        c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2 - Math.cos(ang) * hl * 0.6, y2 - Math.sin(ang) * hl * 0.6); c.stroke();
-        c.beginPath();
-        c.moveTo(x2, y2);
-        c.lineTo(x2 - hl * Math.cos(ang - 0.45), y2 - hl * Math.sin(ang - 0.45));
-        c.lineTo(x2 - hl * Math.cos(ang + 0.45), y2 - hl * Math.sin(ang + 0.45));
-        c.closePath(); c.fill();
-        c.restore();
-    }
+    function arrow(c, x1, y1, x2, y2, color, w = 3, head = 9) { Lab.arrow(c, x1, y1, x2, y2, color, w, head, null, 1.5); }
     function label(c, text, x, y, color, size = 15, align = 'left') {
         c.save(); c.font = `bold ${size}px sans-serif`; c.fillStyle = color; c.textAlign = align; c.textBaseline = 'middle';
         c.fillText(text, x, y); c.restore();
@@ -527,11 +507,6 @@
     }
 
     // ===================== 圖表 =====================
-    function niceStep(range) {
-        const target = range / 5, p = Math.pow(10, Math.floor(Math.log10(target)));
-        const n = target / p;
-        return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * p;
-    }
     function drawGraph(cv, o) {
         const c = cv.getContext('2d'), W = cv.width, H = cv.height;
         const L = 62, R = 16, Tp = 32, B = 46;

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>三力平衡：力桌實驗 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/touch.css">
     <style>
         :root {
             --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432;
@@ -67,7 +68,7 @@
         .assume { font-size: .88rem; color: var(--text-muted); }
         .sub-note { font-size: .85rem; color: var(--text-muted); margin-top: 6px; }
         footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
-        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
+        @media (pointer: coarse) { button.btn { padding-top: 10px; padding-bottom: 10px; } }
     </style>
 </head>
 <body>
@@ -172,16 +173,18 @@
 </div>
 <footer>© 李捷物理實驗室</footer>
 
+<script src="../shared/lab.js"></script>
 <script>
 (() => {
     'use strict';
+    const { arrow } = Lab;
     const G = 9.8;
     const PX_PER_N = 60;
     const TOL_OK = 0.01, TOL_NEAR = 0.05;       // N
     const M_MIN = 10, M_MAX = 250;               // g
     const COLORS = ['#ff4d6d', '#ff9f43', '#ff6bd6'];
     const NET = '#ffe14d';
-    const el = id => document.getElementById(id);
+    const el = Lab.el;
     const cv = el('table'), c = cv.getContext('2d');
     const CX = 380, CY = 340, RT = 245;           // 力桌中心與半徑
 
@@ -190,7 +193,7 @@
 
     // ===== 物理 =====
     const mag = f => f.m / 1000 * G;                                   // N
-    const rad = d => d * Math.PI / 180;
+    const rad = Lab.rad;
     const vec = f => ({ x: mag(f) * Math.cos(rad(f.th)), y: mag(f) * Math.sin(rad(f.th)) });
     function sums() {
         let x = 0, y = 0;
@@ -226,20 +229,6 @@
     }
 
     // ===== 繪圖工具 =====
-    function arrow(ctx, x1, y1, x2, y2, color, w = 3, head = 10, dash = null) {
-        const len = Math.hypot(x2 - x1, y2 - y1);
-        if (len < 2) return;
-        const a = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(head, len * 0.6);
-        ctx.save();
-        ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round';
-        if (dash) ctx.setLineDash(dash);
-        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(a) * hl * .6, y2 - Math.sin(a) * hl * .6); ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.beginPath(); ctx.moveTo(x2, y2);
-        ctx.lineTo(x2 - hl * Math.cos(a - .45), y2 - hl * Math.sin(a - .45));
-        ctx.lineTo(x2 - hl * Math.cos(a + .45), y2 - hl * Math.sin(a + .45));
-        ctx.closePath(); ctx.fill(); ctx.restore();
-    }
     function text(ctx, s, x, y, color, size = 14, align = 'left', bold = true) {
         ctx.save(); ctx.font = `${bold ? 'bold ' : ''}${size}px sans-serif`; ctx.fillStyle = color;
         ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y); ctx.restore();

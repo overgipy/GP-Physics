@@ -4,38 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>馬達與發電機：可切換模式的比較 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/touch.css">
     <style>
-        :root { --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432; --text-main: #f0f3f8; --text-muted: #9aa8bd; --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676;
-            --vel: #4d8dff; --fmag: #ff4d6d; --cur: #ffb020; --bfield: #35d6ff; --flux: #35d6ff; --mom: #d28bff; }
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6; }
-        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; } .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
-        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; } h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; } .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
-        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
-        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
-        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
-        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-        .mode-btn { flex: 1 1 260px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 12px 14px; font-size: .95rem; cursor: pointer; text-align: left; } .mode-btn b { display: block; font-size: 1.1rem; color: var(--cyan); } .mode-btn.active { border-color: var(--cyan); background: #12303a; }
-        .mode-desc { font-size: .95rem; color: var(--text-muted); margin-bottom: 12px; }
-        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
-        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; } .control-group.off { display: none; }
-        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; } .control-label b { font-family: monospace; font-size: 1.05rem; }
-        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
-        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
-        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
-        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; } .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
-        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; } button.btn.secondary { background: #3a465b; color: #fff; } button.btn.green { background: var(--green); color: #00210f; } button.btn.orange { background: #ff9f43; color: #2a1500; }
-        button.btn:disabled { opacity: .4; cursor: not-allowed; } button.btn:not(:disabled):hover { filter: brightness(1.12); }
-        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; } canvas { display: block; width: 100%; height: auto; }
-        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; } .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
-        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #111622; font-size: 1rem; } .status b { color: var(--yellow); }
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; } .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; } .meter-title { font-size: .82rem; color: var(--text-muted); } .meter-value { font-size: 1.25rem; font-weight: bold; font-family: monospace; } .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
-        .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+        :root { --cur: #ffb020; --mom: #d28bff; }
+        .mode-btn { flex: 1 1 260px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 12px 14px; font-size: .95rem; cursor: pointer; text-align: left; } .mode-btn b { display: block; font-size: 1.1rem; color: var(--cyan); }
+        .mode-desc { font-size: .95rem; color: var(--text-muted); margin-bottom: 12px; } .control-group.off { display: none; } .control-label b { font-family: monospace; font-size: 1.05rem; } .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); } .status b { color: var(--yellow); } .meter-value { font-size: 1.25rem; font-weight: bold; font-family: monospace; }
         table.cmp { width: 100%; border-collapse: collapse; font-size: .95rem; } table.cmp th, table.cmp td { border: 1px solid #263044; padding: 8px 10px; text-align: left; vertical-align: top; } table.cmp th { background: #111a2a; color: var(--cyan); } table.cmp td:first-child { color: var(--yellow); white-space: nowrap; font-weight: bold; }
-        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; } summary { cursor: pointer; font-weight: bold; color: var(--cyan); } details ol, details ul { margin: 8px 0 2px; padding-left: 22px; } details li { margin-bottom: 4px; }
-        .assume { font-size: .88rem; color: var(--text-muted); } footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
-        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
     </style>
 </head>
 <body>
@@ -157,10 +132,12 @@
 </div>
 <footer>© 李捷物理實驗室</footer>
 
+<script src="../shared/lab.js"></script>
 <script>
 (() => {
     'use strict';
-    const el = id => document.getElementById(id), cv = el('view').getContext('2d'), cc = el('circ').getContext('2d');
+    const { arrow, txt } = Lab;
+    const el = Lab.el, cv = el('view').getContext('2d'), cc = el('circ').getContext('2d');
     const AREA = 0.02, LEN = 0.2, WID = 0.1, RC = 2.0, J = 0.1, BF = 0.02;
     const S = { mode: 'motor', ring: 'comm', B: 0.5, N: 50, V: 6, tL: 0, drive: 'fixed', wSet: 15, RL: 4, slow: 0.5, phi: 0.5, w: 0, t: 0, playing: true, hist: [], ema: { pin: 0, loss: 0, mech: 0, out: 0 } };
     const K = () => S.N * S.B * AREA;
@@ -189,8 +166,6 @@
     function init(keep) { S.t = 0; S.hist = []; S.ema = { pin: 0, loss: 0, mech: 0, out: 0 }; if (!keep) { S.phi = 0.5; S.w = S.mode === 'gen' ? S.wSet : 0; } S.playing = true; syncUI(); }
 
     // ===================== 繪圖工具 =====================
-    function arrow(ctx, x1, y1, x2, y2, color, w = 3, head = 10) { const len = Math.hypot(x2 - x1, y2 - y1); if (len < 2) return; const a = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(head, len * .6); ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(a) * hl * .6, y2 - Math.sin(a) * hl * .6); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - hl * Math.cos(a - .45), y2 - hl * Math.sin(a - .45)); ctx.lineTo(x2 - hl * Math.cos(a + .45), y2 - hl * Math.sin(a + .45)); ctx.closePath(); ctx.fill(); ctx.restore(); }
-    function txt(ctx, s, x, y, color, size = 14, align = 'left') { ctx.save(); ctx.font = `bold ${size}px sans-serif`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y); ctx.restore(); }
     function wireSym(ctx, x, y, out, col, r = 13) { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.strokeStyle = '#2a1500'; ctx.lineWidth = 2.6; if (out) { ctx.fillStyle = '#2a1500'; ctx.beginPath(); ctx.arc(x, y, 4, 0, 7); ctx.fill(); } else { const d = r * .45; ctx.beginPath(); ctx.moveTo(x - d, y - d); ctx.lineTo(x + d, y + d); ctx.moveTo(x + d, y - d); ctx.lineTo(x - d, y + d); ctx.stroke(); } }
 
     // ===================== 端視圖 =====================
@@ -224,7 +199,7 @@
         txt(c, S.mode === 'motor' ? '⚡→⚙ 馬達' : '⚙→⚡ 發電機', 14, 22, '#00d4ff', 18);
         txt(c, `轉動方向：${S.w >= 0 ? '逆時針' : '順時針'}`, 446, 22, '#9aa8bd', 13, 'right');
     }
-    const deg = r => r * 180 / Math.PI;
+    const deg = Lab.deg;
 
     // ===================== 電路示意圖 =====================
     function drawCirc() {
@@ -289,7 +264,7 @@
 
     // ===================== 儀表 =====================
     function renderDash() {
-        const q = coil(S.phi, S.w), pw = powers(q), m = (t, v, u, col = '#c3d0e4') => `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value" style="color:${col}">${v}<span class="unit">${u}</span></div></div>`, e = S.ema; let h = '', msg = '';
+        const q = coil(S.phi, S.w), pw = powers(q), m = Lab.meter, e = S.ema; let h = '', msg = '';
         const rpm = Math.abs(S.w) * 60 / (2 * Math.PI);
         if (S.mode === 'motor') {
             const eff = e.pin > 0.05 ? e.out / e.pin * 100 : 0, back = K() * Math.abs(S.w) * 2 / Math.PI;

@@ -1,0 +1,8 @@
+/* 李捷物理實驗室 — shared/lab-exp.css
+   實驗模式用：資料表格（table / th / td）與停用中的滑桿。
+   有些舊單元沒有這幾條規則（或表格另有樣式），所以獨立成一檔，由需要的單元引用。 */
+input[type=range]:disabled { cursor: not-allowed; opacity: .5; }
+table { width: 100%; border-collapse: collapse; font-size: .88rem; font-family: monospace; }
+th { border-bottom: 1px solid #263044; padding: 5px 6px; text-align: right; }
+td { border-bottom: 1px solid #263044; padding: 5px 6px; text-align: right; }
+th { color: var(--text-muted); font-weight: normal; }

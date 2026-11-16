@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>光電效應實驗 - 進階版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <link rel="stylesheet" href="../shared/touch.css">
     <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: #000; color: #eee; margin: 0; padding: 10px;
             display: flex; flex-direction: column; align-items: center;
             overscroll-behavior: none;
         }
         .nav { width: 100%; margin-bottom: 10px; }
         .nav a { color: #00d4ff; text-decoration: none; font-size: 14px; }
-
         /* 控制面板 */
         .controls-container {
             width: 100%; max-width: 600px;
@@ -25,7 +25,6 @@
         .slider-group:last-child { margin-bottom: 0; }
         .slider-label { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px; color: #ccc; }
         .slider-label b { color: #00d4ff; font-family: monospace; font-size: 1.1em; }
-        
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%;
@@ -34,15 +33,13 @@
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%; height: 4px; cursor: pointer; background: #444; border-radius: 2px;
         }
-
         /* 畫布與數據區 */
-        #canvas-container { 
-            width: 100%; max-width: 600px; 
+        #canvas-container {
+            width: 100%; max-width: 600px;
             display: flex; justify-content: center; margin-bottom: 15px;
             position: relative;
         }
         canvas { box-sizing: border-box; border-radius: 4px; border: 1px solid #333; background: #080808; }
-
         /* 結果顯示儀表板 */
         .dashboard {
             width: 100%; max-width: 600px;
@@ -55,7 +52,6 @@
         .meter-title { font-size: 12px; color: #888; margin-bottom: 5px; }
         .meter-value { font-size: 24px; font-weight: bold; color: #fff; }
         .meter-unit { font-size: 14px; color: #666; }
-        
         .highlight-g { color: #00ff00; } /* 綠色：有能量 */
         /* 分頁與實驗模式 */
         .tabs { width: 100%; max-width: 600px; display: flex; gap: 8px; margin-bottom: 12px; }
@@ -83,7 +79,7 @@
         .xdetails summary { cursor: pointer; color: #00d4ff; font-weight: bold; }
         .xdetails ul, .xdetails ol { margin: 6px 0; padding-left: 20px; }
         .highlight-r { color: #ff4444; } /* 紅色：能量不足 */
-        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
+        @media (pointer: coarse) { .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } }
     </style>
 </head>
 <body>
@@ -217,6 +213,7 @@
         </div>
     </div>
 
+    <script src="../shared/lab.js"></script>
     <script>
         let sl_f, sl_W, sl_I;
         window.hiddenW = false;          // 實驗模式「未知金屬」時，隱藏功函數
@@ -492,9 +489,10 @@
 
     <script>
     (() => {
+        const { niceStep5: niceStep } = Lab;
         const H_E = 0.41357;            // h/e：V／(10¹⁴ Hz)，也是 h = 4.1357×10⁻¹⁵ eV·s
         const E_C = 1.602176634e-19;    // C
-        const $ = id => document.getElementById(id);
+        const $ = Lab.el;
         const METALS = { Cs: 2.1, Na: 2.3, Zn: 4.3, Cu: 4.7 };
         const X = { on: false, W: 2.5, unknown: false, data: [], curves: [] };
         const COLORS = ['#ff4d6d', '#ffcc00', '#00e676', '#4da3ff', '#c792ea', '#ff9f43'];
@@ -523,7 +521,6 @@
         function reveal() { window.hiddenW = false; X.unknown = false; redraw(); }
 
         // ---------- 繪圖 ----------
-        function niceStep(range) { const t = range / 5, p = Math.pow(10, Math.floor(Math.log10(t))), n = t / p; return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * p; }
         function plot(cv, o) {
             const x = cv.getContext('2d'), W = cv.width, H = cv.height, L = 58, R = 16, T = 34, B = 46, pw = W - L - R, ph = H - T - B;
             const PX = v => L + (v - o.xmin) / (o.xmax - o.xmin) * pw, PY = v => T + ph - (v - o.ymin) / (o.ymax - o.ymin) * ph;

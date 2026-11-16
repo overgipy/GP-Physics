@@ -5,17 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>折射與全反射實驗</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <link rel="stylesheet" href="../shared/touch.css">
     <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: #000; color: #eee; margin: 0; padding: 10px;
             display: flex; flex-direction: column; align-items: center;
             overscroll-behavior: none;
         }
-        
         .nav { width: 100%; margin-bottom: 10px; }
         .nav a { color: #00d4ff; text-decoration: none; font-size: 14px; }
-
         .controls-container {
             width: 100%; max-width: 600px;
             background: #1a1a1a; padding: 15px 20px; border-radius: 12px;
@@ -25,7 +24,6 @@
         .slider-group:last-child { margin-bottom: 0; }
         .slider-label { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; color: #ccc; }
         .slider-label b { color: #00d4ff; font-family: monospace; font-size: 1.1em; }
-        
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%;
@@ -34,9 +32,8 @@
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%; height: 4px; cursor: pointer; background: #444; border-radius: 2px;
         }
-
-        #canvas-container { 
-            width: 100%; max-width: 600px; 
+        #canvas-container {
+            width: 100%; max-width: 600px;
             display: flex; justify-content: center; margin-bottom: 15px;
             position: relative;
         }
@@ -46,7 +43,6 @@
         .preset-btn small { display: block; color: #00d4ff; font-family: monospace; font-size: 11px; }
         .preset-btn.on { border-color: #00d4ff; background: #0c2a33; color: #fff; }
         .swap-btn { width: 100%; margin-top: 12px; background: #3a465b; color: #fff; border: none; border-radius: 8px; padding: 9px; font-size: 14px; font-weight: bold; cursor: pointer; }
-
         .dashboard {
             box-sizing: border-box; width: 100%; max-width: 600px;
             background: #111; padding: 15px; border-radius: 12px; border: 1px solid #333;
@@ -55,12 +51,11 @@
         .data-box { text-align: center; }
         .data-label { font-size: 12px; color: #888; margin-bottom: 5px; }
         .data-value { font-size: 20px; font-weight: bold; color: #fff; }
-        
         .warn-box {
             grid-column: span 2;
             background: #330000; border: 1px solid #ff4444; color: #ffaaaa;
             padding: 8px; border-radius: 6px; text-align: center; font-size: 14px;
-            display: none; 
+            display: none;
         }
         .info-text { font-size: 12px; color: #666; margin-top: 10px; text-align: center;}
         /* 分頁與實驗模式 */
@@ -89,8 +84,7 @@
         .xdetails summary { cursor: pointer; color: #00d4ff; font-weight: bold; }
         .xdetails ul, .xdetails ol { margin: 6px 0; padding-left: 20px; }
         .highlight-r { color: #ff4444; } /* 紅色：能量不足 */
-
-        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
+        @media (pointer: coarse) { .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } }
     </style>
 </head>
 <body>
@@ -226,6 +220,7 @@
         </div>
     </div>
 
+    <script src="../shared/lab.js"></script>
     <script>
         let sl_angle, sl_n1, sl_n2;
         window.hiddenN = 0;                // 0：不隱藏；1：隱藏 n₁；2：隱藏 n₂（實驗模式的未知介質）
@@ -464,9 +459,10 @@
 
     <script>
     (() => {
-        const $ = id => document.getElementById(id);
+        const { niceStep5: niceStep } = Lab;
+        const $ = Lab.el;
         const X = { on: false, type: 'A', n: 1.5, unknown: false, dataA: [], dataB: [], critB: [] };
-        const rad = d => d * Math.PI / 180, deg = r => r * 180 / Math.PI;
+        const rad = Lab.rad, deg = Lab.deg;
         const sliderSet = (id, v) => { const e = $(id); e.value = v; e.dispatchEvent(new Event('input')); };
         const th1 = () => parseFloat($('sl_angle').value);
         const noise = a => $('xNoise').checked ? (Math.random() + Math.random() - 1) * a : 0;
@@ -522,7 +518,6 @@
         }
 
         // ---------- 繪圖 ----------
-        function niceStep(range) { const t = range / 5, p = Math.pow(10, Math.floor(Math.log10(t))), n = t / p; return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * p; }
         function plot(cv, o) {
             const x = cv.getContext('2d'), W = cv.width, H = cv.height, L = 58, R = 16, T = 34, B = 46, pw = W - L - R, ph = H - T - B;
             const PX = v => L + (v - o.xmin) / (o.xmax - o.xmin) * pw, PY = v => T + ph - (v - o.ymin) / (o.ymax - o.ymin) * ph;

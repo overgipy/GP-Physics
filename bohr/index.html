@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>類氫原子模型 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/touch.css">
     <style>
         :root {
             --bg-color: #1a1a2e;
@@ -43,7 +44,6 @@
             padding: 5px 10px;
             border-radius: 5px;
         }
-        
         .main-container {
             display: flex;
             flex-wrap: wrap;
@@ -52,7 +52,6 @@
             width: 95%;
             max-width: 1200px;
         }
-
         /* 左側畫布區 */
         #canvas-container {
             position: relative;
@@ -70,7 +69,6 @@
             .controls { min-width: 0; width: 100%; padding: 16px; }
             .main-container { gap: 16px; }
         }
-
         /* 右側控制區 */
         .controls {
             flex: 1;
@@ -84,7 +82,6 @@
             gap: 20px;
             border: 1px solid rgba(255,255,255,0.1);
         }
-
         /* 區塊標題 */
         .control-section h3 {
             margin: 0 0 10px 0;
@@ -93,7 +90,6 @@
             border-bottom: 1px solid rgba(255,255,255,0.2);
             padding-bottom: 5px;
         }
-        
         /* 原子序輸入區 */
         .z-input-group {
             display: flex;
@@ -119,7 +115,6 @@
             color: var(--electron-color);
             font-weight: bold;
         }
-
         /* 按鈕群組 */
         .level-btn-group {
             display: grid;
@@ -145,7 +140,6 @@
             font-weight: bold;
             box-shadow: 0 0 10px var(--electron-color);
         }
-
         /* 數據顯示儀表板 */
         .data-grid {
             display: grid;
@@ -162,7 +156,6 @@
         .data-label { font-size: 0.8rem; color: #888; margin-bottom: 5px; }
         .data-value { font-size: 1.1rem; font-weight: bold; font-family: monospace; color: #fff; }
         .data-unit { font-size: 0.8rem; color: #aaa; }
-
         .photon-display {
             grid-column: span 2;
             padding: 15px;
@@ -174,8 +167,6 @@
             transition: background 0.3s, color 0.3s;
             border: 1px solid rgba(255,255,255,0.1);
         }
-
-        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
     </style>
 </head>
 <body>

@@ -4,40 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>電池小火車 - 李捷物理實驗室</title>
+<link rel="stylesheet" href="../shared/lab.css">
+<link rel="stylesheet" href="../shared/touch.css">
 <style>
-        :root { --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432; --text-main: #f0f3f8; --text-muted: #9aa8bd; --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676;
-            --i1: #ffb020; --i2: #ff7ad9; --flux: #35d6ff; --ind: #d28bff; --vel: #4d8dff; }
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6; }
-        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; } .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
-        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; } h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; } .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
-        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
-        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
-        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
-        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-        .mode-btn { flex: 1 1 220px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 10px 12px; font-size: .92rem; cursor: pointer; text-align: left; } .mode-btn b { display: block; color: var(--cyan); } .mode-btn.active { border-color: var(--cyan); background: #12303a; }
-        .mode-desc { font-size: .92rem; color: var(--text-muted); margin-bottom: 12px; }
-        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
-        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; } .control-group.off { display: none; }
-        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; } .control-label b { font-family: monospace; font-size: 1.05rem; }
-        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
-        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
-        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
-        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; } .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
-        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; } button.btn.secondary { background: #3a465b; color: #fff; } button.btn.green { background: var(--green); color: #00210f; } button.btn.red { background: #ff6b81; color: #2a0008; } button.btn.orange { background: #ff9f43; color: #2a1500; }
-        button.btn:disabled { opacity: .4; cursor: not-allowed; } button.btn:not(:disabled):hover { filter: brightness(1.12); }
-        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; } canvas { display: block; width: 100%; height: auto; touch-action: pan-y; }
-        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; } .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
-        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #111622; font-size: 1rem; } .status b { color: var(--yellow); }
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; } .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; } .meter-title { font-size: .82rem; color: var(--text-muted); } .meter-value { font-size: 1.25rem; font-weight: bold; font-family: monospace; } .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
-        .opt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px; margin-bottom: 10px; }
-        .opt { background: var(--bg-control); border: 2px solid #2c3749; border-radius: 8px; padding: 8px 10px; cursor: pointer; font-size: .95rem; color: var(--text-main); text-align: left; } .opt:hover { border-color: #4a6a9a; } .opt.sel { border-color: var(--yellow); background: #2b2a14; } .opt.ok { border-color: var(--green); } .opt.bad { border-color: #ff6b81; }
-        .opt b { color: var(--cyan); margin-right: 6px; }
-        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; } .fit-text b { color: var(--yellow); }
-        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; } summary { cursor: pointer; font-weight: bold; color: var(--cyan); } details ol, details ul { margin: 8px 0 2px; padding-left: 22px; } details li { margin-bottom: 4px; }
-        .assume { font-size: .88rem; color: var(--text-muted); } footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
-        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
+        .mode-btn { flex: 1 1 220px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 10px 12px; font-size: .92rem; cursor: pointer; text-align: left; } .control-group.off { display: none; } canvas { display: block; width: 100%; height: auto; touch-action: pan-y; } .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); } .meter-value { font-size: 1.25rem; font-weight: bold; font-family: monospace; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
     </style>
 </head>
 <body>
@@ -127,10 +98,11 @@
     </div>
 </div>
 <footer>© 李捷物理實驗室</footer>
+<script src="../shared/lab.js"></script>
 <script>
 (() => {
     'use strict';
-    const el = id => document.getElementById(id), c = el('scene').getContext('2d');
+    const el = Lab.el, c = el('scene').getContext('2d');
     const am = 0.0075, tm = 0.003, Lb = 0.05, Rbat = 0.007, Rc = 0.008, V = 1.5, Br0 = 1.2, M = 0.031, g = 9.8, dw = 0.0008, rho = 1.7e-8, XC = Lb / 2 + tm / 2, TRACK = 0.6;
     // 磁場：兩磁鐵共四個端面。面上磁荷密度 ±Br。座標：x 軸向、r 徑向
     function faces(cfg) { const pl = cfg[0] === 'N' ? 1 : -1, pr = cfg[1] === 'N' ? 1 : -1; return [[-Lb / 2, pl], [-Lb / 2 - tm, -pl], [Lb / 2, pr], [Lb / 2 + tm, -pr]]; }
@@ -156,8 +128,8 @@
         S.lines = lines;
     }
     // ===== 繪圖 =====
-    function arrow(x1, y1, x2, y2, col, w = 3, h = 10) { const L = Math.hypot(x2 - x1, y2 - y1); if (L < 2) return; const an = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(h, L * .6); c.save(); c.strokeStyle = col; c.fillStyle = col; c.lineWidth = w; c.lineCap = 'round'; c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2 - Math.cos(an) * hl * .6, y2 - Math.sin(an) * hl * .6); c.stroke(); c.beginPath(); c.moveTo(x2, y2); c.lineTo(x2 - hl * Math.cos(an - .45), y2 - hl * Math.sin(an - .45)); c.lineTo(x2 - hl * Math.cos(an + .45), y2 - hl * Math.sin(an + .45)); c.closePath(); c.fill(); c.restore(); }
-    function txt(s, x, y, col, size = 14, al = 'left') { c.save(); c.font = `bold ${size}px sans-serif`; c.fillStyle = col; c.textAlign = al; c.textBaseline = 'middle'; c.fillText(s, x, y); c.restore(); }
+    function arrow(x1, y1, x2, y2, col, w = 3, h = 10) { Lab.arrow(c, x1, y1, x2, y2, col, w, h); }
+    function txt(s, x, y, col, size = 14, al = 'left') { Lab.txt(c, s, x, y, col, size, al); }
     const SC = 3000, CY = 175, CX = 380, tnow = () => Date.now() / 1000;
     function helixPt(xw) { const ph = S.hand * 2 * Math.PI * xw / S.p; return [Rc * Math.cos(ph), Rc * Math.sin(ph)]; }       // [y, z]
     function drawScene() {
@@ -195,7 +167,7 @@
         x.fillStyle = '#c3d0e4'; x.font = 'bold 13px sans-serif'; x.textAlign = 'left'; x.fillText(title, L, 16); x.font = '12px sans-serif'; x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText('時間 t (s)', L + pw / 2, H - 4); x.save(); x.translate(13, T + ph / 2); x.rotate(-Math.PI / 2); x.fillText(unit, 0, 0); x.restore();
     }
     function dash() {
-        const I = Icur(), F = kF() * I, m = (t, v, u, col = '#c3d0e4') => `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value" style="color:${col}">${v}<span class="unit">${u}</span></div></div>`;
+        const I = Icur(), F = kF() * I, m = Lab.meter;
         el('dash').innerHTML = m('電流 I', I.toFixed(3), 'A', '#ffb020') + m('總電阻', Rtot().toFixed(3), 'Ω') + m('磁力 F（＋＝向右）', F.toFixed(4), 'N', '#ff4d6d') + m('速度 v（＋＝向右）', S.v.toFixed(3), 'm/s', '#4d8dff') + m('位置 x', (S.x * 100).toFixed(1), 'cm') + m('反電動勢', (Math.abs(kF() * S.v)).toFixed(3), 'V') + m('電池功率 VI', (V * I).toFixed(3), 'W', '#00e676') + m('機械功率 Fv', (F * S.v).toFixed(4), 'W', '#4d8dff');
         const dir = Math.abs(F) < 1e-4 ? '幾乎不受力（兩側 B<sub>r</sub> 的力互相抵消）' : (F > 0 ? '<b>向右</b>' : '<b>向左</b>');
         el('status').innerHTML = `磁鐵靠電池的磁極：左 <b>${S.cfg[0]}</b>、右 <b>${S.cfg[1]}</b>；電流在線圈中沿軸向<b>${S.pos > 0 ? '向右' : '向左'}</b>前進（螺旋為${S.hand > 0 ? '右手' : '左手'}）。電池車受力：${dir}。`;

@@ -4,77 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>摩擦係數的測定 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/touch.css">
     <style>
-        :root {
-            --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432;
-            --text-main: #f0f3f8; --text-muted: #9aa8bd;
-            --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676; --blue: #4da3ff;
-            --red: #ff4d6d; --orange: #ff9f43;
+        :root { --blue: #4da3ff;
         }
-        * { box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
-            background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px;
-            display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6;
-        }
-        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; }
-        .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
-        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; }
-        h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; }
-        .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
-        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
-        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
-        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
-        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
         .mode-btn { flex: 1 1 260px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 10px 12px; font-size: .95rem; cursor: pointer; text-align: left; }
-        .mode-btn b { display: block; color: var(--cyan); }
-        .mode-btn.active { border-color: var(--cyan); background: #12303a; }
-        .mode-desc { font-size: .92rem; color: var(--text-muted); margin-bottom: 12px; }
-        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
-        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; }
         .control-group.hidden { display: none; }
-        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; }
-        .control-label b { font-family: monospace; font-size: 1.05rem; }
-        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
-        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
         input[type=range]:disabled { opacity: .4; cursor: not-allowed; }
-        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
-        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; }
-        .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
-        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; }
-        button.btn.secondary { background: #3a465b; color: #fff; }
-        button.btn.green { background: var(--green); color: #00210f; }
         button.btn.orange { background: var(--orange); color: #2a1600; }
-        button.btn:disabled { opacity: .4; cursor: not-allowed; }
-        button.btn:not(:disabled):hover { filter: brightness(1.12); }
-        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; }
-        canvas { display: block; width: 100%; height: auto; }
         .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; font-size: 1rem; border: 1px solid #333; background: #111622; }
-        .status b { color: var(--yellow); }
         .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)); gap: 10px; }
-        .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; }
-        .meter-title { font-size: .82rem; color: var(--text-muted); }
-        .meter-value { font-size: 1.3rem; font-weight: bold; font-family: monospace; }
-        .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
-        .c-blue { color: var(--blue); } .c-red { color: var(--red); } .c-green { color: var(--green); } .c-yellow { color: var(--yellow); } .c-orange { color: var(--orange); }
-        .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
-        table { width: 100%; border-collapse: collapse; font-size: .88rem; font-family: monospace; }
+        .c-blue { color: var(--blue); } .c-green { color: var(--green); } .c-yellow { color: var(--yellow); } .c-orange { color: var(--orange); }
         th, td { border-bottom: 1px solid #263044; padding: 5px 5px; text-align: right; }
-        th { color: var(--text-muted); font-weight: normal; }
         .table-scroll { max-height: 300px; overflow-y: auto; }
         .fit-text { margin-top: 8px; font-size: .92rem; color: #c3d0e4; }
-        .fit-text b { color: var(--yellow); }
-        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
-        summary { cursor: pointer; font-weight: bold; color: var(--cyan); }
-        details ol, details ul { margin: 8px 0 2px; padding-left: 22px; }
-        details li { margin-bottom: 4px; }
-        .assume { font-size: .88rem; color: var(--text-muted); }
-        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; }
         .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
         .lg-red::before { background: var(--red); } .lg-orange::before { background: var(--orange); } .lg-blue::before { background: var(--blue); } .lg-green::before { background: var(--green); }
-        footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
-        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
     </style>
 </head>
 <body>
@@ -231,11 +178,13 @@
 </div>
 <footer>© 李捷物理實驗室</footer>
 
+<script src="../shared/lab.js"></script>
 <script>
 (() => {
     'use strict';
+    const { niceStep5: niceStep, fitLineXY: fitLine } = Lab;
     const G = 9.8;
-    const el = id => document.getElementById(id);
+    const el = Lab.el;
     const cv = el('scene'), c = cv.getContext('2d');
     const MATS = { wood: [0.5, 0.4], steel: [0.74, 0.57], rubber: [1.0, 0.8], ice: [0.1, 0.03] };
     const MODE_DESC = {
@@ -302,16 +251,8 @@
     }
 
     // ===================== 繪圖工具 =====================
-    function arrow(x1, y1, x2, y2, color, w = 3, head = 10, dash = null) {
-        const len = Math.hypot(x2 - x1, y2 - y1); if (len < 2) return;
-        const a = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(head, len * .6);
-        c.save(); c.strokeStyle = color; c.fillStyle = color; c.lineWidth = w; c.lineCap = 'round'; if (dash) c.setLineDash(dash);
-        c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2 - Math.cos(a) * hl * .6, y2 - Math.sin(a) * hl * .6); c.stroke(); c.setLineDash([]);
-        c.beginPath(); c.moveTo(x2, y2); c.lineTo(x2 - hl * Math.cos(a - .45), y2 - hl * Math.sin(a - .45)); c.lineTo(x2 - hl * Math.cos(a + .45), y2 - hl * Math.sin(a + .45)); c.closePath(); c.fill(); c.restore();
-    }
-    function txt(s, x, y, color, size = 14, align = 'left', ctx = c) {
-        ctx.save(); ctx.font = `bold ${size}px sans-serif`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y); ctx.restore();
-    }
+    function arrow(x1, y1, x2, y2, color, w = 3, head = 10, dash = null) { Lab.arrow(c, x1, y1, x2, y2, color, w, head, dash); }
+    function txt(s, x, y, color, size = 14, align = 'left', ctx = c) { Lab.txt(ctx, s, x, y, color, size, align); }
 
     // ---------- 斜面 ----------
     function drawIncline() {
@@ -401,7 +342,6 @@
     }
 
     // ===================== 通用繪圖：折線／散點 =====================
-    function niceStep(range) { const t = range / 5, p = Math.pow(10, Math.floor(Math.log10(t))), n = t / p; return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * p; }
     function plot(cvs, o) {
         const x = cvs.getContext('2d'), W = cvs.width, H = cvs.height, L = 58, R = 16, T = 34, B = 46, pw = W - L - R, ph = H - T - B;
         const X = v => L + (v - o.xmin) / (o.xmax - o.xmin) * pw, Y = v => T + ph - (v - o.ymin) / (o.ymax - o.ymin) * ph;
@@ -421,12 +361,6 @@
             if (s.dots) s.dots.forEach(p => { x.fillStyle = s.color; x.beginPath(); x.arc(X(p.x), Y(p.y), 5, 0, 7); x.fill(); x.strokeStyle = '#0d121b'; x.lineWidth = 1; x.stroke(); });
             if (s.name) { x.fillStyle = s.color; x.font = 'bold 12px sans-serif'; x.textAlign = 'right'; x.fillText(s.name, L + pw - 8, T + 14 + (s.row || 0) * 16); }
         });
-    }
-    function fitLine(pts) {
-        const n = pts.length; if (n < 2) return null;
-        const sx = pts.reduce((s, p) => s + p.x, 0), sy = pts.reduce((s, p) => s + p.y, 0), sxx = pts.reduce((s, p) => s + p.x * p.x, 0), sxy = pts.reduce((s, p) => s + p.x * p.y, 0);
-        const den = n * sxx - sx * sx; if (Math.abs(den) < 1e-12) return null;
-        const m = (n * sxy - sx * sy) / den; return { m, b: (sy - m * sx) / n };
     }
 
     // ===================== 圖表 =====================
@@ -460,7 +394,7 @@
     // ===================== 數據 =====================
     function renderDash() {
         const W = S.M * G, th = S.theta * Math.PI / 180;
-        const m = (t, v, u, cl = '') => `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value ${cl}">${v}<span class="unit">${u}</span></div></div>`;
+        const m = Lab.meterClass;
         if (S.mode === 'incline') {
             el('dash').innerHTML = m('角度 θ', S.theta.toFixed(1), '°', 'c-yellow') + m('tan θ', Math.tan(th).toFixed(3), '', 'c-yellow') + m('Mg sinθ', (W * Math.sin(th)).toFixed(3), 'N', 'c-red') + m('正向力 N', (W * Math.cos(th)).toFixed(3), 'N', 'c-red') +
                 m('摩擦力 f', S.f.toFixed(3), 'N', 'c-orange') + m('最大靜摩擦力 μsN', S.hidden ? '？' : (S.mus * W * Math.cos(th)).toFixed(3), 'N', 'c-orange') + m('速度 v', S.v.toFixed(3), 'm/s', 'c-blue') + m('加速度 a', S.a.toFixed(3), 'm/s²', 'c-green');

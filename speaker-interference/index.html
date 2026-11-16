@@ -4,40 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>兩喇叭的聲波干涉 - 李捷物理實驗室</title>
+<link rel="stylesheet" href="../shared/lab.css">
+<link rel="stylesheet" href="../shared/touch.css">
 <style>
-        :root { --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432; --text-main: #f0f3f8; --text-muted: #9aa8bd; --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676;
-            --i1: #ffb020; --i2: #ff7ad9; --flux: #35d6ff; --ind: #d28bff; --vel: #4d8dff; }
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6; }
-        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; } .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
-        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; } h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; } .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
-        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
-        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
-        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
-        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-        .mode-btn { flex: 1 1 220px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 10px 12px; font-size: .92rem; cursor: pointer; text-align: left; } .mode-btn b { display: block; color: var(--cyan); } .mode-btn.active { border-color: var(--cyan); background: #12303a; }
-        .mode-desc { font-size: .92rem; color: var(--text-muted); margin-bottom: 12px; }
-        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
-        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; } .control-group.off { display: none; }
-        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; } .control-label b { font-family: monospace; font-size: 1.05rem; }
-        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
-        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
-        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
-        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; } .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
-        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; } button.btn.secondary { background: #3a465b; color: #fff; } button.btn.green { background: var(--green); color: #00210f; } button.btn.red { background: #ff6b81; color: #2a0008; } button.btn.orange { background: #ff9f43; color: #2a1500; }
-        button.btn:disabled { opacity: .4; cursor: not-allowed; } button.btn:not(:disabled):hover { filter: brightness(1.12); }
-        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; } canvas { display: block; width: 100%; height: auto; touch-action: pan-y; }
-        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; } .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
-        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #111622; font-size: 1rem; } .status b { color: var(--yellow); }
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; } .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; } .meter-title { font-size: .82rem; color: var(--text-muted); } .meter-value { font-size: 1.25rem; font-weight: bold; font-family: monospace; } .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
-        .opt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px; margin-bottom: 10px; }
-        .opt { background: var(--bg-control); border: 2px solid #2c3749; border-radius: 8px; padding: 8px 10px; cursor: pointer; font-size: .95rem; color: var(--text-main); text-align: left; } .opt:hover { border-color: #4a6a9a; } .opt.sel { border-color: var(--yellow); background: #2b2a14; } .opt.ok { border-color: var(--green); } .opt.bad { border-color: #ff6b81; }
-        .opt b { color: var(--cyan); margin-right: 6px; }
-        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; } .fit-text b { color: var(--yellow); }
-        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; } summary { cursor: pointer; font-weight: bold; color: var(--cyan); } details ol, details ul { margin: 8px 0 2px; padding-left: 22px; } details li { margin-bottom: 4px; }
-        .assume { font-size: .88rem; color: var(--text-muted); } footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
-        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
+        .mode-btn { flex: 1 1 220px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 10px 12px; font-size: .92rem; cursor: pointer; text-align: left; } .control-group.off { display: none; } canvas { display: block; width: 100%; height: auto; touch-action: pan-y; } .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); } .meter-value { font-size: 1.25rem; font-weight: bold; font-family: monospace; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
     </style>
 </head>
 <body>
@@ -131,10 +102,11 @@
     </div>
 </div>
 <footer>© 李捷物理實驗室</footer>
+<script src="../shared/lab.js"></script>
 <script>
 (() => {
     'use strict';
-    const el = id => document.getElementById(id), c = el('scene').getContext('2d'), TAU = 2 * Math.PI, V = 340;
+    const el = Lab.el, c = el('scene').getContext('2d'), TAU = 2 * Math.PI, V = 340;
     const SC = 60, OX = 40, OY = 210, W2 = 380, H2 = 210;
     const S = { mode: 'free', f: 400, d: 2, ph: 0, xs: 6, spd: 0.3, lines: true, wave: true, playing: true, t: 0, L: [6, 0.8], drag: false, quizSel: null, revealed: false };
     const lam = () => V / S.f, k = () => TAU / lam();
@@ -161,7 +133,7 @@
         }
         octx.putImageData(img, 0, 0); c.imageSmoothingEnabled = true; c.drawImage(off, 0, 0, 760, 420);
     }
-    function txt(s, x, y, col, size = 14, al = 'left') { c.save(); c.font = `bold ${size}px sans-serif`; c.fillStyle = col; c.textAlign = al; c.textBaseline = 'middle'; c.fillText(s, x, y); c.restore(); }
+    function txt(s, x, y, col, size = 14, al = 'left') { Lab.txt(c, s, x, y, col, size, al); }
     function speaker(X, Y, name, col) { const x = px(X), y = py(Y); c.fillStyle = '#d7deea'; c.strokeStyle = '#11151f'; c.lineWidth = 2; c.beginPath(); c.moveTo(x - 4, y - 6); c.lineTo(x + 8, y - 15); c.lineTo(x + 8, y + 15); c.lineTo(x - 4, y + 6); c.closePath(); c.fill(); c.stroke(); c.fillStyle = col; c.beginPath(); c.arc(x, y, 5, 0, 7); c.fill(); txt(name, x - 14, y, col, 16, 'right'); }
     const QL = (() => { const dd = 2; const pts = [['A', 3, 3], ['B', 4, 3], ['C', 5, 5], ['D', 4.5, 4], ['E', 3.5, 4]]; return pts.map(([nm, a, b]) => { const y = (b * b - a * a) / (2 * dd), x = Math.sqrt(Math.max(0, a * a - (y - dd / 2) ** 2)); return { nm, r1: a, r2: b, x, y, rel: [a, b] }; }); })();
     // 題目座標（單位：λ）：S₁ = (0, +1)λ、S₂ = (0, −1)λ，其中 A: r₁ = r₂ = 3λ…
@@ -196,7 +168,7 @@
         x.fillStyle = '#c3d0e4'; x.font = 'bold 14px sans-serif'; x.textAlign = 'left'; x.fillText('聽者處的聲壓：S₁（青）、S₂（橘）與合成（白）', Lm, 18); x.font = '12px sans-serif'; x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText('時間 t（單位：週期 T）', Lm + pw / 2, H - 4);
     }
     function dash() {
-        const m = (t, v, u, col = '#c3d0e4') => `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value" style="color:${col}">${v}<span class="unit">${u}</span></div></div>`;
+        const m = Lab.meter;
         const l = S.mode === 'quiz' ? quizPts()[0] : listeners()[0]; const a = amp(l.X, l.Y), dr = Math.abs(a.r1 - a.r2), u = dr / lam(); let state;
         const uu = (a.r2 - a.r1) / lam() + S.ph / 2, fr = Math.abs(uu - Math.round(uu)); state = fr < 0.06 ? '腹點（建設性）' : Math.abs(fr - 0.5) < 0.06 ? '節點（破壞性）' : '介於之間';
         el('dash').innerHTML = m('波長 λ', lam().toFixed(3), 'm', '#35d6ff') + m('r₁（到 S₁）', a.r1.toFixed(2), 'm', '#35d6ff') + m('r₂（到 S₂）', a.r2.toFixed(2), 'm', '#ff9f43') + m('路徑差 |r₁ − r₂|', dr.toFixed(3), 'm', '#ffcc00') + m('路徑差 ÷ λ', u.toFixed(3), '', '#ffcc00') + m('合成振幅（相對）', a.A.toFixed(3), '', '#ffffff') + m('單獨 S₁＋S₂ 振幅和', (a.a1 + a.a2).toFixed(3), '') + m('此處狀態', state, '', '#00e676');

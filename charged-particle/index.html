@@ -4,39 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>帶電粒子在磁場中的運動 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/touch.css">
     <style>
-        :root { --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432; --text-main: #f0f3f8; --text-muted: #9aa8bd; --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676;
-            --vel: #4d8dff; --fmag: #ff4d6d; --felec: #ff9f43; --grav: #9aa8bd; --bfield: #35d6ff; }
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6; }
-        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; } .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
-        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; } h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; } .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
-        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
-        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
-        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
-        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-        .mode-btn { flex: 1 1 200px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 10px 12px; font-size: .92rem; cursor: pointer; text-align: left; } .mode-btn b { display: block; color: var(--cyan); } .mode-btn.active { border-color: var(--cyan); background: #12303a; }
-        .mode-desc { font-size: .92rem; color: var(--text-muted); margin-bottom: 12px; }
-        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
-        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; } .control-group.off { display: none; }
-        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; } .control-label b { font-family: monospace; font-size: 1.05rem; }
-        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
-        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; } input[type=range]:disabled { cursor: not-allowed; opacity: .5; }
-        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
-        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; } .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
-        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; } button.btn.secondary { background: #3a465b; color: #fff; } button.btn.green { background: var(--green); color: #00210f; }
-        button.btn:disabled { opacity: .4; cursor: not-allowed; } button.btn:not(:disabled):hover { filter: brightness(1.12); }
-        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; } canvas { display: block; width: 100%; height: auto; }
-        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; } .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
-        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #111622; font-size: 1rem; } .status b { color: var(--yellow); }
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; } .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; } .meter-title { font-size: .82rem; color: var(--text-muted); } .meter-value { font-size: 1.25rem; font-weight: bold; font-family: monospace; } .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
-        .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
-        table { width: 100%; border-collapse: collapse; font-size: .88rem; font-family: monospace; } th, td { border-bottom: 1px solid #263044; padding: 5px 6px; text-align: right; } th { color: var(--text-muted); font-weight: normal; } .table-scroll { max-height: 260px; overflow-y: auto; }
-        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; } .fit-text b { color: var(--yellow); }
-        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; } summary { cursor: pointer; font-weight: bold; color: var(--cyan); } details ol, details ul { margin: 8px 0 2px; padding-left: 22px; } details li { margin-bottom: 4px; }
-        .assume { font-size: .88rem; color: var(--text-muted); } footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
-        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
+        :root { --felec: #ff9f43; --grav: #9aa8bd; } .control-group.off { display: none; } .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); } .meter-value { font-size: 1.25rem; font-weight: bold; font-family: monospace; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
     </style>
 </head>
 <body>
@@ -152,10 +125,12 @@
 </div>
 <footer>© 李捷物理實驗室</footer>
 
+<script src="../shared/lab.js"></script>
 <script>
 (() => {
     'use strict';
-    const el = id => document.getElementById(id), c = el('scene').getContext('2d'), c2 = el('side').getContext('2d');
+    const { arrow, txt } = Lab;
+    const el = Lab.el, c = el('scene').getContext('2d'), c2 = el('side').getContext('2d');
     const E0 = 1.602176634e-19, ME = 9.1093837e-31, MP = 1.67262192e-27, MA = 6.6446573e-27, MD = 3.343583e-27;
     const SPEC = { e: { n: '電子', q: -E0, m: ME, b: 4 }, p: { n: '質子', q: E0, m: MP, b: 100 }, a: { n: 'α 粒子', q: 2 * E0, m: MA, b: 200 }, d: { n: '氘核', q: E0, m: MD, b: 150 } };
     const S = { mode: 'circ', q: 1, m: 1, v: 4, al: 0, th: 60, B: 2, bd: 1, Ez: 0, E: 4, g: 0, sp: 'e', Va: 400, Bm: 4, slow: 1, t: 0, playing: true, hidden: false, trueSp: 'e', data: [],
@@ -187,8 +162,6 @@
     const MAXR = 0.033;                                                                                     // 偵測板可看到的最大半徑 7.5 cm
 
     // ===================== 繪圖 =====================
-    function arrow(ctx, x1, y1, x2, y2, color, w = 3, head = 10) { const len = Math.hypot(x2 - x1, y2 - y1); if (len < 2) return; const a = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(head, len * .6); ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(a) * hl * .6, y2 - Math.sin(a) * hl * .6); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - hl * Math.cos(a - .45), y2 - hl * Math.sin(a - .45)); ctx.lineTo(x2 - hl * Math.cos(a + .45), y2 - hl * Math.sin(a + .45)); ctx.closePath(); ctx.fill(); ctx.restore(); }
-    function txt(ctx, s, x, y, color, size = 14, align = 'left') { ctx.save(); ctx.font = `bold ${size}px sans-serif`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y); ctx.restore(); }
     function bSymbols(ctx, ox, oy, sc, dir, W, H, step = 48) { ctx.strokeStyle = 'rgba(53,214,255,.35)'; ctx.fillStyle = 'rgba(53,214,255,.35)'; ctx.lineWidth = 1.5; const sx = ((ox % step) + step) % step, sy = ((oy % step) + step) % step; for (let x = sx; x < W; x += step) for (let y = sy; y < H; y += step) { if (dir > 0) { ctx.beginPath(); ctx.arc(x, y, 6, 0, 7); ctx.stroke(); ctx.beginPath(); ctx.arc(x, y, 1.8, 0, 7); ctx.fill(); } else { ctx.beginPath(); ctx.moveTo(x - 5, y - 5); ctx.lineTo(x + 5, y + 5); ctx.moveTo(x + 5, y - 5); ctx.lineTo(x - 5, y + 5); ctx.stroke(); } } }
     function particle(ctx, px, py, q) { ctx.fillStyle = q > 0 ? '#ff6b6b' : '#6fa8ff'; ctx.beginPath(); ctx.arc(px, py, 9, 0, 7); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); txt(ctx, q > 0 ? '+' : '−', px, py + 1, '#fff', 15, 'center'); }
 
@@ -283,7 +256,7 @@
 
     // ===================== 儀表與狀態 =====================
     function renderDash() {
-        const m = (t, v, u, col = '#c3d0e4') => `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value" style="color:${col}">${v}<span class="unit">${u}</span></div></div>`;
+        const m = Lab.meter;
         let h = '', msg = '';
         if (S.mode === 'circ' || S.mode === 'helix') {
             const a = analytic(S.t), vperp = Math.hypot(a.vx, a.vy), sp0 = Math.hypot(a.vx, a.vy, a.vz), r = S.m * (S.mode === 'circ' ? S.v : S.v * Math.sin(S.th * Math.PI / 180)) / (Math.abs(S.q) * S.B), T = 2 * Math.PI * S.m / (Math.abs(S.q) * S.B);

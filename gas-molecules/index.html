@@ -4,43 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>理想氣體分子模擬 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/lab-mobile.css">
+    <link rel="stylesheet" href="../shared/touch.css">
     <style>
-        :root { --bg-main: #0a0c10; --bg-card: #141923; --bg-control: #1d2432; --text-main: #f0f3f8; --text-muted: #9aa8bd; --cyan: #00d4ff; --yellow: #ffcc00; --green: #00e676; --orange: #ff9f43; --red: #ff4d6d; --blue: #4d8dff; }
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; font-size: 16px; line-height: 1.6; }
-        .nav { width: 100%; max-width: 980px; margin-bottom: 8px; } .nav a { color: var(--cyan); text-decoration: none; font-size: 15px; }
-        header { text-align: center; margin-bottom: 14px; width: 100%; max-width: 980px; } h1 { margin: 0; font-size: 1.7rem; color: var(--cyan); letter-spacing: 1px; } .subtitle { margin: 4px 0 0; font-size: .95rem; color: var(--text-muted); }
-        .container { width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 14px; }
-        .card { background: var(--bg-card); border: 1px solid #252e3d; border-radius: 12px; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
-        .card-title { font-size: 1rem; font-weight: bold; color: var(--yellow); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #2a3344; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
-        .mode-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-        .mode-btn { flex: 1 1 200px; background: var(--bg-control); color: var(--text-main); border: 2px solid #2c3749; border-radius: 8px; padding: 10px 12px; font-size: .92rem; cursor: pointer; text-align: left; } .mode-btn b { display: block; color: var(--cyan); } .mode-btn.active { border-color: var(--cyan); background: #12303a; }
-        .mode-desc { font-size: .92rem; color: var(--text-muted); margin-bottom: 12px; }
-        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 12px; }
-        .control-group { background: rgba(255,255,255,.03); border: 1px solid #222b3a; border-radius: 8px; padding: 10px; } .control-group.off { display: none; }
-        .control-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; color: #c3d0e4; } .control-label b { font-family: monospace; font-size: 1.05rem; }
-        .sub-note { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
-        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; } input[type=range]:disabled { cursor: not-allowed; opacity: .5; }
-        select { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 6px 8px; font-size: .95rem; width: 100%; }
-        .check-row { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-size: .95rem; } .check-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
-        button.btn { background: var(--cyan); color: #00131a; border: none; border-radius: 8px; padding: 10px 16px; font-size: 1rem; font-weight: bold; cursor: pointer; } button.btn.secondary { background: #3a465b; color: #fff; } button.btn.green { background: var(--green); color: #00210f; }
-        button.btn:disabled { opacity: .4; cursor: not-allowed; } button.btn:not(:disabled):hover { filter: brightness(1.12); }
-        .canvas-wrap, .graph-box { background: #080a0f; border: 1px solid #1a202c; border-radius: 8px; padding: 6px; } canvas { display: block; width: 100%; height: auto; }
-        .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .9rem; margin-top: 8px; } .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
-        .status { margin-top: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #111622; font-size: 1rem; } .status b { color: var(--yellow); }
-        .obs-box { margin-bottom: 10px; } .obs-title { font-weight: bold; margin-bottom: 6px; }
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; } .meter { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 8px; text-align: center; } .meter-title { font-size: .82rem; color: var(--text-muted); } .meter-value { font-size: 1.3rem; font-weight: bold; font-family: monospace; } .unit { font-size: .76rem; color: #6a7a92; margin-left: 3px; }
-        .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
-        table { width: 100%; border-collapse: collapse; font-size: .88rem; font-family: monospace; } th, td { border-bottom: 1px solid #263044; padding: 5px 6px; text-align: right; } th { color: var(--text-muted); font-weight: normal; } .table-scroll { max-height: 260px; overflow-y: auto; }
-        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; } .fit-text b { color: var(--yellow); }
-        details { background: #111622; border: 1px solid #1f2736; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; } summary { cursor: pointer; font-weight: bold; color: var(--cyan); } details ol, details ul { margin: 8px 0 2px; padding-left: 22px; } details li { margin-bottom: 4px; }
-        .assume { font-size: .88rem; color: var(--text-muted); } footer { margin: 18px 0 8px; color: #667; font-size: .85rem; }
-        @media (pointer: coarse) { button, select, summary { min-height: 42px; } button.btn, .xbtn, .tab-btn { padding-top: 10px; padding-bottom: 10px; } input[type=range] { min-height: 30px; } }
+        .control-group.off { display: none; } .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
         button.btn.orange { background: var(--orange); color: #1a0e00; }
-        .preset-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; } .preset-row .lbl { width: 100%; font-size: .88rem; color: var(--text-muted); }
-        .chip { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 999px; padding: 7px 14px; font-size: .9rem; cursor: pointer; } .chip:hover { border-color: var(--cyan); } .chip.on { border-color: var(--cyan); background: #12303a; }
-        @media (max-width: 760px) { .sticky-sim { position: sticky; top: 0; z-index: 20; padding: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.6); } .sticky-sim .card-title { margin-bottom: 6px; padding-bottom: 4px; font-size: .9rem; } .controls-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); } body { padding: 10px; } .card { padding: 12px; } }
     </style>
 </head>
 <body>
@@ -129,37 +100,14 @@
 </div>
 <footer>© 李捷物理實驗室</footer>
 
+<script src="../shared/lab.js"></script>
 <script>
 (() => {
     'use strict';
+    const { arrow, txt, niceStep, graph, meter, fitLine } = Lab;
     if (!CanvasRenderingContext2D.prototype.roundRect) CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) { r = Math.min(r || 0, w / 2, h / 2); this.moveTo(x + r, y); this.arcTo(x + w, y, x + w, y + h, r); this.arcTo(x + w, y + h, x, y + h, r); this.arcTo(x, y + h, x, y, r); this.arcTo(x, y, x + w, y, r); this.closePath(); };
-    const el = id => document.getElementById(id), TAU = 2 * Math.PI;
-    function arrow(c, x1, y1, x2, y2, col, w = 3, h = 10) { const L = Math.hypot(x2 - x1, y2 - y1); if (L < 2) return; const an = Math.atan2(y2 - y1, x2 - x1), hl = Math.min(h, L * .6); c.save(); c.strokeStyle = col; c.fillStyle = col; c.lineWidth = w; c.lineCap = 'round'; c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2 - Math.cos(an) * hl * .6, y2 - Math.sin(an) * hl * .6); c.stroke(); c.beginPath(); c.moveTo(x2, y2); c.lineTo(x2 - hl * Math.cos(an - .45), y2 - hl * Math.sin(an - .45)); c.lineTo(x2 - hl * Math.cos(an + .45), y2 - hl * Math.sin(an + .45)); c.closePath(); c.fill(); c.restore(); }
-    function txt(c, s, x, y, col, size = 14, al = 'left') { c.save(); c.font = `bold ${size}px sans-serif`; c.fillStyle = col; c.textAlign = al; c.textBaseline = 'middle'; c.fillText(s, x, y); c.restore(); }
-    function niceStep(range, n) { const raw = range / n, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p; return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p; }
+    const el = Lab.el, TAU = 2 * Math.PI;
     // 通用折線圖：o = {title, xl, yl, xmin, xmax, ymin, ymax, series:[{pts:[[x,y]..], col, w, dash, label}], dots:[{x,y,col,r}], vline:x}
-    function graph(cv, o) {
-        const x = cv.getContext('2d'), W = cv.width, H = cv.height, L = o.L || 62, R = 16, T = 30, B = 40, pw = W - L - R, ph = H - T - B;
-        let { xmin, xmax, ymin, ymax } = o; if (xmax - xmin < 1e-12) xmax = xmin + 1; if (ymax - ymin < 1e-12) ymax = ymin + 1;
-        const PX = v => L + (v - xmin) / (xmax - xmin) * pw, PY = v => T + ph - (v - ymin) / (ymax - ymin) * ph;
-        x.fillStyle = '#0d121b'; x.fillRect(0, 0, W, H);
-        const sx = niceStep(xmax - xmin, 6), sy = niceStep(ymax - ymin, 4), dx = Math.max(0, -Math.floor(Math.log10(sx) + 1e-9)), dy = Math.max(0, -Math.floor(Math.log10(sy) + 1e-9));
-        x.font = '12px sans-serif';
-        for (let v = Math.ceil(ymin / sy - 1e-9) * sy; v <= ymax + 1e-9; v += sy) { x.strokeStyle = Math.abs(v) < sy * 1e-6 ? '#3a4a66' : '#1b2433'; x.beginPath(); x.moveTo(L, PY(v)); x.lineTo(L + pw, PY(v)); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'right'; x.fillText(v.toFixed(dy), L - 6, PY(v) + 4); }
-        for (let v = Math.ceil(xmin / sx - 1e-9) * sx; v <= xmax + 1e-9; v += sx) { x.strokeStyle = Math.abs(v) < sx * 1e-6 ? '#3a4a66' : '#1b2433'; x.beginPath(); x.moveTo(PX(v), T); x.lineTo(PX(v), T + ph); x.stroke(); x.fillStyle = '#8a99ad'; x.textAlign = 'center'; x.fillText(v.toFixed(dx), PX(v), T + ph + 15); }
-        x.save(); x.beginPath(); x.rect(L, T, pw, ph); x.clip();
-        if (o.vline !== undefined) { x.strokeStyle = '#ffcc0088'; x.setLineDash([5, 4]); x.beginPath(); x.moveTo(PX(o.vline), T); x.lineTo(PX(o.vline), T + ph); x.stroke(); x.setLineDash([]); }
-        (o.series || []).forEach(s => { if (!s.pts.length) return; x.strokeStyle = s.col; x.lineWidth = s.w || 2.4; x.setLineDash(s.dash || []); x.beginPath(); s.pts.forEach((p, i) => i ? x.lineTo(PX(p[0]), PY(p[1])) : x.moveTo(PX(p[0]), PY(p[1]))); x.stroke(); x.setLineDash([]); });
-        (o.dots || []).forEach(d => { x.fillStyle = d.col || '#ffcc00'; x.beginPath(); x.arc(PX(d.x), PY(d.y), d.r || 4, 0, 7); x.fill(); });
-        x.restore();
-        x.fillStyle = '#c3d0e4'; x.font = 'bold 13px sans-serif'; x.textAlign = 'left'; x.fillText(o.title || '', L, 18);
-        let lx = L + pw; x.textAlign = 'right'; x.font = '12px sans-serif'; (o.series || []).filter(s => s.label).reverse().forEach(s => { x.fillStyle = s.col; x.fillText('― ' + s.label, lx, 18); lx -= x.measureText('― ' + s.label).width + 12; });
-        x.fillStyle = '#8a99ad'; x.font = '12px sans-serif'; x.textAlign = 'center'; x.fillText(o.xl || '', L + pw / 2, H - 5);
-        x.save(); x.translate(13, T + ph / 2); x.rotate(-Math.PI / 2); x.fillText(o.yl || '', 0, 0); x.restore();
-        return { PX, PY };
-    }
-    function meter(t, v, u, col = '#c3d0e4') { return `<div class="meter"><div class="meter-title">${t}</div><div class="meter-value" style="color:${col}">${v}<span class="unit">${u}</span></div></div>`; }
-    function fitLine(pts) { const n = pts.length; if (n < 2) return null; let sx = 0, sy = 0, sxx = 0, sxy = 0; pts.forEach(p => { sx += p[0]; sy += p[1]; sxx += p[0] * p[0]; sxy += p[0] * p[1]; }); const d = n * sxx - sx * sx; if (Math.abs(d) < 1e-12) return null; const m = (n * sxy - sx * sy) / d, b = (sy - m * sx) / n; return { m, b }; }
 
     const c = el('scene').getContext('2d');
     const H = 6, D = 6, AX = H * D, SC = 56, X0 = 50, Y0 = 32, LMAX = 10, VPIS = 3, VMAX = 110, NB = 28;

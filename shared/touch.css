@@ -1,0 +1,13 @@
+/* 李捷物理實驗室 — shared/touch.css
+   所有單元共用的觸控規則：手指操作時，按鈕、選單、滑桿要夠大。
+   （由各頁原本重複的 @media (pointer: coarse) 區塊抽出，31 頁完全相同） */
+
+@media (pointer: coarse) {
+  button { min-height: 42px; }
+  select { min-height: 42px; }
+  summary { min-height: 42px; }
+  button.btn { padding-top: 10px; padding-bottom: 10px; }
+  .xbtn { padding-top: 10px; padding-bottom: 10px; }
+  .tab-btn { padding-top: 10px; padding-bottom: 10px; }
+  input[type=range] { min-height: 30px; }
+}
