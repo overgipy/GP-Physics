@@ -288,8 +288,11 @@ def t_standing(ctx):
         best, prev, rising = [], -1, False
         for mm in range(50, 1201, 2):
             set_val(pg, "slLp", mm / 1000); g = meter(pg, "音量")
-            if g < prev and rising and prev >= 85: best.append(mm - 2)
-            rising = g > prev; prev = g
+            if g < prev:
+                if rising and prev >= 85: best.append(mm - 2)
+                rising = False
+            elif g > prev: rising = True       # 相等（峰頂剛好落在兩個取樣點中間）時維持原狀態
+            prev = g
         for mm in best:
             top = max(range(mm - 4, mm + 5), key=lambda x: (set_val(pg, "slLp", x / 1000), meter(pg, "音量"))[1])
             set_val(pg, "slLp", top / 1000); pg.click("#btnRec")
@@ -300,8 +303,25 @@ def t_standing(ctx):
     check("共鳴管 第 1 共鳴點 ≈ λ/4（mm）", found[0] if found else None, 343 / 512 / 4 * 1000, 0.03)
     check("共鳴管 由 Lₙ–n 斜率求聲速（20°C）", after("v = fλ =", text(pg, "fitTxt")), 343, 0.01)
     pg.click("#btnUnk"); pg.click('.chip.fork[data-f="1000"]'); step(pg, 4)
-    scan_and_record(); est = after("v = fλ =", text(pg, "fitTxt")); pg.click("#btnRev")
+    scan_and_record(); dbg = text(pg, "fitTxt"); est = after("v = fλ =", dbg); pg.click("#btnRev")
+    if est is None: print("      [除錯]", dbg, "|", text(pg, "recBody"), "|", text(pg, "tNote"))
     check("共鳴管 未知聲速：推算值 vs 揭曉值", est, after("真正的聲速是", text(pg, "fitTxt")) or -1, 0.01)
+    # 管口修正 e = 0.6r：閉管 L + e = (2n−1)λ/4，開管 L + 2e = nλ/2
+    pg.click("#btnUnk"); pg.check("#chkEnd"); set_val(pg, "slD", 5); set_val(pg, "slTemp", 20); pg.click('.chip.fork[data-f="512"]'); step(pg, 4)
+    e = 0.6 * 0.025
+    found = scan_and_record()
+    check("管口修正 第 1 共鳴點 ≈ λ/4 − e（mm）", found[0] if found else None, (343 / 512 / 4 - e) * 1000, 0.02)
+    check("管口修正 由斜率求聲速不受影響", after("v = fλ =", text(pg, "fitTxt")), 343, 0.01)
+    check("管口修正 由截距求 e（cm）", after("管口修正 e =", text(pg, "fitTxt")), e * 100, 0.1)
+    set_val(pg, "slLp", 0.5); step(pg, 6)
+    check("管口修正 閉管基頻 v/4(L+e)", meter(pg, "基頻"), 343 / (4 * (0.5 + e)), 0.002)
+    check("管口修正 有效長度 L + e（cm）", meter(pg, "有效長度"), (0.5 + e) * 100, 0.001)
+    pg.click('[data-m="open"]'); step(pg, 6)
+    check("管口修正 開管基頻 v/2(L+2e)", meter(pg, "基頻"), 343 / (2 * (0.5 + 2 * e)), 0.002)
+    pg.click("#harmRow .chip:nth-of-type(2)"); step(pg, 6)
+    check("管口修正 開管 n = 2 按鈕共鳴（音量 %）", meter(pg, "音量"), 100, 0.005)
+    pg.uncheck("#chkEnd"); step(pg, 6)
+    check("取消管口修正後 開管基頻回到 v/2L", meter(pg, "基頻"), 343, 0.002)
     pg.close()
 
 
