@@ -399,12 +399,38 @@ def t_measure(ctx):
     check("不確定度 組合 u = √(uA²+uB²)", u, math.hypot(ua, 0.01 / (2 * math.sqrt(3))), 0.03)
 
 
+def t_kepler(ctx):
+    pg = open_page(ctx, "kepler", frozen=True)
+    for r0, k, M in ((1.0, 1.0, 1.0), (1.0, 1.25, 1.0), (1.5, 0.7, 2.0), (0.6, 1.3, 0.5)):
+        set_val(pg, "r0", r0); set_val(pg, "k", k); set_val(pg, "M", M); step(pg, 6)
+        a = r0 / (2 - k * k); T = math.sqrt(a ** 3 / M)
+        check(f"克卜勒 r₀={r0} k={k} M={M} 半長軸", meter(pg, "半長軸"), a, 0.002)
+        check(f"克卜勒 r₀={r0} k={k} M={M} 週期 T=√(a³/M)", meter(pg, "週期"), T, 0.002)
+        sim = pg.evaluate("([a, b, c]) => LabTest.simulate(a, b, c)", [r0, k, M])
+        check("　數值積分一圈的週期 = 第三定律", sim[0], T, 5e-4)
+        check("　數值積分的另一端距離 = 2a − r₀", sim[1] if k >= 1 else sim[3], 2 * a - r0, 5e-4, 1e-4)
+        check("　面積速率變化量（第二定律）", sim[2], 0, abs_=1e-6)
+    set_val(pg, "r0", 1); set_val(pg, "k", 1); set_val(pg, "M", 1); step(pg, 6)
+    check("克卜勒 地球軌道速率 ≈ 29.8 km/s", meter(pg, "速率"), 29.78, 0.005)
+    set_val(pg, "k", 1.25); pg.click("#btnPlay"); step(pg, 240)
+    check("克卜勒 播放中面積速率 = ½r₀v₀", meter(pg, "面積速率"), 0.5 * 1 * 1.25 * 2 * math.pi, 0.001)
+    check("克卜勒 播放中力學能守恆", meter(pg, "力學能"), 4 * math.pi ** 2 * (1.25 ** 2 / 2 - 1), 0.002)
+    set_val(pg, "k", 1.6); step(pg, 6)
+    check("克卜勒 k > √2 為雙曲線", 1.0 if "雙曲線" in " ".join(t + v for t, v in meters(pg)) else 0.0, 1.0)
+    pg.click("#btnUnk")
+    for r0, k in ((1, 1), (1.5, 1.1), (0.8, 0.9), (1.2, 1.3)):
+        set_val(pg, "r0", r0); set_val(pg, "k", k); pg.click("#btnRec")
+    est = num(text(pg, "mFit")); pg.click("#btnRev")
+    check("克卜勒 未知恆星：1/斜率 = 質量", est, num(text(pg, "mTrue")), 0.01)
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
          "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing,
          "atwood": t_atwood,
          "elevator": t_elevator,
-         "measurement": t_measure}
+         "measurement": t_measure,
+         "kepler": t_kepler}
 
 
 def main():

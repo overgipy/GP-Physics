@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>行星軌道與克卜勒定律 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/lab-mobile.css">
+    <link rel="stylesheet" href="../shared/touch.css">
+    <style>
+        [hidden] { display: none !important; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        input.ans { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 8px; font-size: 1rem; width: 7em; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>🪐 行星軌道與克卜勒定律</h1>
+    <p class="subtitle">等面積定律　｜　T² = (4π²／GM) a³</p>
+</header>
+
+<div class="container">
+<div class="card sticky-sim"><div class="card-title"><span id="cTitle">行星軌道：在近日點（或遠日點）沿切線方向發射</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div><div class="canvas-wrap"><canvas id="scene" width="760" height="400"></canvas></div></div><div class="card"><div class="card-title">發射條件</div><div class="preset-row"><span class="lbl">快速設定：</span><button class="chip" data-p="0.387,1">水星軌道</button><button class="chip" data-p="1,1">地球軌道</button><button class="chip" data-p="1.524,1">火星軌道</button><button class="chip" data-p="1,1.25">橢圓</button><button class="chip" data-p="1,1.4142">拋物線</button><button class="chip" data-p="1,1.6">雙曲線</button></div><div class="controls-grid"><div class="control-group"><div class="control-label"><span>發射點到恆星的距離 r₀</span><b style="color:var(--cyan)"><span id="r0L"></span> AU</b></div><input type="range" id="r0" min="0.3" max="2" step="0.01" value="1"></div><div class="control-group"><div class="control-label"><span>發射速率 ÷ 圓軌道速率</span><b style="color:var(--orange)"><span id="kL"></span> 倍</b></div><input type="range" id="k" min="0.4" max="1.8" step="0.01" value="1.25"><div class="sub-note">1 = 圓；√2 ≈ 1.414 = 脫離速率</div></div><div class="control-group"><div class="control-label"><span>恆星質量 M</span><b style="color:var(--yellow)"><span id="ML"></span> 太陽質量</b></div><input type="range" id="M" min="0.2" max="3" step="0.1" value="1"></div><div class="control-group"><div class="control-label">播放速度</div><select id="selSpd"><option value="0.25">每秒 0.25 年</option><option value="0.5" selected>每秒 0.5 年</option><option value="1">每秒 1 年</option><option value="3">每秒 3 年</option></select></div></div><div class="check-row"><label><input type="checkbox" id="chkArea" checked> 顯示等時間掃過的面積（每段時間相同）</label></div><div class="btn-row" style="margin:8px 0"><button class="btn green" id="btnPlay">▶ 發射</button><button class="btn secondary" id="btnPause">⏸ 暫停</button><button class="btn secondary" id="btnReset">↺ 回到發射點</button></div></div><div class="card"><div class="card-title">即時數據</div><div class="dashboard" id="dash"></div><div class="status" id="status"></div></div><div class="card"><div class="card-title">r–t 圖與 v–t 圖</div><div class="two-col"><div class="graph-box"><canvas id="g1" width="480" height="260"></canvas></div><div class="graph-box"><canvas id="g2" width="480" height="260"></canvas></div></div></div><div class="card"><div class="card-title">實驗：克卜勒第三定律 T² ∝ a³</div><div class="fit-text">改變發射條件得到不同的橢圓（或圓）軌道，按「記錄這條軌道」。以 a³ 為橫軸、T² 為縱軸，會是通過原點的直線，斜率 = 4π²／GM；以 AU、年、太陽質量為單位時，<b>斜率 = 1／M</b>。</div><div class="btn-row" style="margin:8px 0"><button class="btn orange" id="btnRec">📝 記錄這條軌道</button><button class="btn secondary" id="btnClr">清除數據</button><button class="btn secondary" id="btnUnk">🎲 未知恆星</button><button class="btn secondary" id="btnRev">揭曉</button></div><div class="two-col"><div class="graph-box"><canvas id="gFit" width="480" height="320"></canvas></div><div class="table-scroll"><table><thead><tr><th>#</th><th>a (AU)</th><th>T (年)</th><th>a³</th><th>T²</th><th>T²／a³</th></tr></thead><tbody id="recBody"></tbody></table></div></div><div class="fit-text" id="fitTxt"></div></div>
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary><ul><li>萬有引力 <b>F = GMm／r²</b> 提供向心力；圓軌道速率 <b>v<sub>c</sub> = √(GM／r)</b>，脫離速率 <b>v<sub>e</sub> = √(2GM／r) = √2 v<sub>c</sub></b>。</li><li>力學能 <b>E = ½mv² − GMm／r</b>：E &lt; 0 為橢圓（或圓），E = 0 為拋物線，E &gt; 0 為雙曲線。橢圓的半長軸 <b>a = −GMm／2E</b>。</li><li>第一定律：軌道是以恆星為焦點的圓錐曲線；離心率 e，近日距 a(1 − e)、遠日距 a(1 + e)。</li><li>第二定律：行星與恆星連線在相同時間掃過相同面積，<b>面積速率 = ½ r v sinφ = L／2m</b>（角動量守恆）。所以近日點快、遠日點慢，<b>r<sub>近</sub>v<sub>近</sub> = r<sub>遠</sub>v<sub>遠</sub></b>。</li><li>第三定律：<b>T² = (4π²／GM) a³</b>。本頁單位：距離 AU、時間 年、質量 太陽質量，此時 GM = 4π² M，<b>T² = a³／M</b>。</li></ul>
+            <p class="assume">理想化假設：恆星質量遠大於行星，視為固定不動；只有一顆行星，不計其他天體的引力；行星與恆星都是質點，不考慮相對論修正。發射方向一律垂直於連線（所以發射點一定是近日點或遠日點）。</p></details>
+        <details><summary>建議講解順序</summary><ol><li>按「地球軌道」：速率剛好是圓軌道速率，軌道是圓，r 與 v 都不變。</li><li>把速率調到 1.25 倍：軌道變成橢圓，發射點是近日點；看 v–t 圖，遠日點最慢。</li><li>打開面積顯示：每一塊扇形時間相同、面積相同，近日點那塊又短又胖、遠日點那塊又長又瘦。</li><li>速率小於 1 倍：發射點變成遠日點，軌道往內縮。</li><li>調到 √2 倍與更大：拋物線、雙曲線，一去不回；對照力學能的正負。</li><li>做實驗：記錄 4 條以上不同的軌道，T²–a³ 成直線；再用未知恆星由斜率求質量。</li></ol></details>
+        <details><summary>可以問學生的問題</summary><ul><li>行星在近日點與遠日點的速率比，和距離比有什麼關係？（反比：r 近 v 近 = r 遠 v 遠）</li><li>半長軸相同的圓軌道與扁橢圓軌道，週期誰大？（一樣大，T 只與 a 有關）</li><li>火星的 a 約 1.52 AU，週期約幾年？（1.52^1.5 ≈ 1.88 年）</li><li>恆星質量變成 4 倍，同一條軌道的週期變成幾倍？（一半）</li><li>在圓軌道上要脫離恆星，速率至少要增加多少？（變成 √2 倍，約增加 41%）</li></ul></details>
+        <details><summary>常見迷思</summary><ul><li><b>「行星等速率繞太陽」</b>：只有圓軌道才是；橢圓軌道近日點快、遠日點慢。</li><li><b>「太陽在橢圓的中心」</b>：太陽在其中一個焦點上。</li><li><b>「軌道越扁，週期越長」</b>：週期只由半長軸決定，與離心率無關。</li><li><b>「夏天是因為地球離太陽比較近」</b>：地球軌道很接近圓（e ≈ 0.017），四季來自自轉軸傾斜；北半球夏天時地球反而在遠日點附近。</li></ul></details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script src="../shared/lab.js"></script>
+<script>
+(() => {
+    'use strict';
+    const { el, rad, deg, arrow, txt, graph, meter, fitLine, fitThroughOrigin, noise, niceStep } = Lab;
+    const $$ = s => [...document.querySelectorAll(s)];
+    // 滑桿：顯示目前數值（id + 'L'），拖動時呼叫 cb；回傳讀值函式
+    function sl(id, dp, cb) { const e = el(id), lb = el(id + 'L'), up = () => { if (lb) lb.textContent = (+e.value).toFixed(dp); };
+        e.addEventListener('input', () => { up(); cb && cb(); }); up(); return () => +e.value; }
+    // 模式切換：有 data-for 的區塊只在對應模式顯示
+    function showFor(m) { $$('[data-for]').forEach(e => e.hidden = !e.dataset.for.split(' ').includes(m));
+        $$('#modeBar .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.m === m)); }
+    function onMode(cb) { $$('#modeBar .mode-btn').forEach(b => b.addEventListener('click', () => { showFor(b.dataset.m); cb(b.dataset.m); })); }
+    const rows = (id, arr) => el(id).innerHTML = arr.map(r => '<tr>' + r.map(v => `<td>${v}</td>`).join('') + '</tr>').join('') || '<tr><td colspan="9" style="text-align:center;color:#6a7a92">尚無數據</td></tr>';
+    // 動畫迴圈：fn(dt)；dt 為秒，最大 0.05
+    function loop(fn) { let last = null; const f = ts => { if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05); last = ts; fn(dt); requestAnimationFrame(f); }; requestAnimationFrame(f); }
+
+    const c = el('scene').getContext('2d'), W = 760, H = 400, P2 = 4 * Math.PI * Math.PI;
+    // 由發射條件求軌道：k = v0／圓軌道速率
+    function orbit(r0, k, M) { const GM = P2 * M, vc = Math.sqrt(GM / r0), E = GM / r0 * (k * k / 2 - 1), e = Math.abs(k * k - 1), bound = k * k < 2 - 1e-9;
+        const a = bound ? r0 / (2 - k * k) : Infinity; return { GM, vc, v0: k * vc, E, e, bound, a, T: bound ? Math.sqrt(a * a * a / M) : Infinity, far: bound ? 2 * a - r0 : Infinity, L: r0 * k * vc }; }
+    const stepO = (s, GM, h) => { let r3 = Math.pow(s.x * s.x + s.y * s.y, 1.5); s.vx -= GM * s.x / r3 * h / 2; s.vy -= GM * s.y / r3 * h / 2; s.x += s.vx * h; s.y += s.vy * h; r3 = Math.pow(s.x * s.x + s.y * s.y, 1.5); s.vx -= GM * s.x / r3 * h / 2; s.vy -= GM * s.y / r3 * h / 2; };
+    // 測試用：直接數值積分一圈，回傳 [週期, 最遠距離, 面積速率的最大相對變化]
+    function simulate(r0, k, M) { const o = orbit(r0, k, M), s = { x: r0, y: 0, vx: 0, vy: o.v0 }, h = 2e-5; let t = 0, far = r0, near = r0, dA = 0, prevY = 0;
+        for (let i = 0; i < 4e6; i++) { stepO(s, o.GM, h); t += h; const r = Math.hypot(s.x, s.y); far = Math.max(far, r); near = Math.min(near, r); dA = Math.max(dA, Math.abs((s.x * s.vy - s.y * s.vx) / o.L - 1)); if (prevY < 0 && s.y >= 0) return [t - s.y / s.vy, far, dA, near]; prevY = s.y; } return [NaN, far, dA, near]; }
+    window.LabTest = { orbit, simulate };
+    const S = { t: 0, playing: false, s: null, trail: [], secs: [], hist: [], recs: [], unk: false, hid: false, MU: 1, dead: false };
+    const reset = () => { S.t = 0; S.playing = false; S.dead = false; S.s = { x: r0(), y: 0, vx: 0, vy: O().v0 }; S.trail = [[r0(), 0]]; S.secs = [[[r0(), 0]]]; S.hist = [[0, r0(), O().v0]]; };
+    const r0 = sl('r0', 2, () => reset()), kk = sl('k', 2, () => reset()), Ms = sl('M', 1, () => reset());
+    const M = () => S.unk ? S.MU : Ms(), O = () => orbit(r0(), kk(), M());
+    const secT = () => { const o = O(); return o.bound ? o.T / 12 : 0.12 * Math.pow(r0(), 1.5) / Math.sqrt(M()); };
+    function advance(dt) { const o = O(); let n = Math.max(1, Math.ceil(dt / 4e-4)), h = dt / n;
+        for (let i = 0; i < n; i++) { stepO(S.s, o.GM, h); S.t += h; const r = Math.hypot(S.s.x, S.s.y); if (r < 0.03) { S.dead = true; S.playing = false; return; }
+            if (Math.floor(S.t / secT()) + 1 > S.secs.length) { S.secs[S.secs.length - 1].push([S.s.x, S.s.y]); S.secs.push([]); if (S.secs.length > 13) S.secs.shift(); } }
+        S.trail.push([S.s.x, S.s.y]); if (S.trail.length > 3000) S.trail.shift(); S.secs[S.secs.length - 1].push([S.s.x, S.s.y]);
+        S.hist.push([S.t, Math.hypot(S.s.x, S.s.y), Math.hypot(S.s.vx, S.s.vy)]); if (S.hist.length > 3000) S.hist.splice(0, 500); }
+    function draw() {
+        c.fillStyle = '#080a0f'; c.fillRect(0, 0, W, H); const o = O(), far = o.bound ? Math.max(o.far, r0()) : r0() * 3.2, near = o.bound ? Math.min(o.far, r0()) : r0();
+        const sc = Math.min(330 / far, 720 / (far + near), 175 / (o.bound ? o.a * Math.sqrt(1 - o.e * o.e) : far)), cx = o.bound ? 380 + (o.far - r0()) / 2 * sc * (kk() >= 1 ? 1 : 1) : 480, cy = 200, X = x => cx + x * sc, Y = y => cy - y * sc;
+        if (o.bound) { c.strokeStyle = '#263044'; c.lineWidth = 1.5; c.setLineDash([5, 6]); c.beginPath(); c.ellipse(X((r0() - o.far) / 2), cy, o.a * sc, o.a * Math.sqrt(1 - o.e * o.e) * sc, 0, 0, 7); c.stroke(); c.setLineDash([]); }
+        if (el('chkArea').checked) S.secs.forEach((p, i) => { if (p.length < 2) return; c.fillStyle = i % 2 ? 'rgba(0,212,255,.28)' : 'rgba(255,204,0,.26)'; c.beginPath(); c.moveTo(X(0), Y(0)); p.forEach(q => c.lineTo(X(q[0]), Y(q[1]))); c.closePath(); c.fill(); });
+        c.strokeStyle = '#00d4ff'; c.lineWidth = 2; c.beginPath(); S.trail.forEach((p, i) => i ? c.lineTo(X(p[0]), Y(p[1])) : c.moveTo(X(p[0]), Y(p[1]))); c.stroke();
+        c.fillStyle = '#ffcc00'; c.beginPath(); c.arc(X(0), Y(0), 11, 0, 7); c.fill(); txt(c, S.hid ? '未知恆星' : '恆星', X(0), Y(0) + 32, '#ffcc00', 17, 'center');
+        const px = X(S.s.x), py = Y(S.s.y), v = Math.hypot(S.s.vx, S.s.vy), r = Math.hypot(S.s.x, S.s.y), vs = 34 / o.vc;
+        arrow(c, px, py, px + S.s.vx * vs, py - S.s.vy * vs, '#00e676', 3); arrow(c, px, py, px - S.s.x / r * Math.min(60, 26 * (r0() / r) ** 2), py + S.s.y / r * Math.min(60, 26 * (r0() / r) ** 2), '#ff6b81', 3);
+        c.fillStyle = '#00d4ff'; c.beginPath(); c.arc(px, py, 7, 0, 7); c.fill();
+        txt(c, '綠：速度　紅：引力', 14, 26, '#9aa8bd', 17); txt(c, `t = ${S.t.toFixed(2)} 年`, 14, 386, '#c3d0e4', 18);
+        if (S.dead) txt(c, '撞上恆星了', 380, 60, '#ff6b81', 24, 'center');
+    }
+    const kind = o => Math.abs(kk() - 1) < 0.005 ? '圓' : o.bound ? '橢圓' : Math.abs(kk() * kk() - 2) < 0.01 ? '拋物線' : '雙曲線';
+    function panels() {
+        const o = O(), r = Math.hypot(S.s.x, S.s.y), v = Math.hypot(S.s.vx, S.s.vy), q = x => S.hid ? '？' : x, AUy = 4.74;
+        el('dash').innerHTML = [meter('軌道型態', kind(o), '', '#ffcc00'), meter('半長軸 a', o.bound ? o.a.toFixed(3) : '—', 'AU', '#00d4ff'), meter('離心率 e', o.e.toFixed(3), ''), meter('週期 T', o.bound ? q(o.T.toFixed(3)) : '∞', '年', '#00e676'),
+            meter('距離 r', r.toFixed(3), 'AU'), meter('速率 v', q((v * AUy).toFixed(2)), 'km/s', '#00e676'), meter('面積速率 ½rv sinφ', q(((S.s.x * S.s.vy - S.s.y * S.s.vx) / 2).toFixed(4)), 'AU²/年', '#ff9f43'), meter('力學能 E／m', q((v * v / 2 - o.GM / r).toFixed(2)), 'AU²/年²', '#ff6b81')].join('');
+        el('status').innerHTML = o.bound ? (Math.abs(kk() - 1) < 0.005 ? '速率剛好等於圓軌道速率：<b>等速率圓周運動</b>。' : kk() > 1 ? '發射點是<b>近日點</b>（這裡最快）；力學能為負，被恆星束縛。' : '發射點是<b>遠日點</b>（這裡最慢），軌道往內縮。') : '力學能 ≥ 0：<b>不會回來</b>。離恆星越遠越慢，但不會停下來。';
+        const h = S.hist, t0 = h[0][0], t1 = Math.max(h[h.length - 1][0], t0 + (o.bound ? o.T : 1));
+        graph(el('g1'), { xmin: t0, xmax: t1, ymin: 0, ymax: Math.max(...h.map(p => p[1])) * 1.15, title: 'r–t 圖', xl: 't (年)', yl: 'r (AU)', series: [{ pts: h.map(p => [p[0], p[1]]), col: '#00d4ff', w: 2.5 }] });
+        graph(el('g2'), { xmin: t0, xmax: t1, ymin: 0, ymax: Math.max(...h.map(p => p[2])) * AUy * 1.15, title: 'v–t 圖', xl: 't (年)', yl: 'v (km/s)', series: [{ pts: h.map(p => [p[0], p[2] * AUy]), col: '#00e676', w: 2.5 }] });
+    }
+    function renderExp() {
+        rows('recBody', S.recs.map((r, i) => [i + 1, r.a.toFixed(3), r.T.toFixed(3), (r.a ** 3).toFixed(3), (r.T ** 2).toFixed(3), (r.T ** 2 / r.a ** 3).toFixed(3)]));
+        const pts = S.recs.map(r => [r.a ** 3, r.T ** 2]), xm = Math.max(1, ...pts.map(p => p[0])) * 1.15, ym = Math.max(1, ...pts.map(p => p[1])) * 1.15, k = pts.length >= 2 ? fitThroughOrigin(pts) : null;
+        graph(el('gFit'), { xmin: 0, xmax: xm, ymin: 0, ymax: ym, title: 'T²–a³ 圖', xl: 'a³ (AU³)', yl: 'T² (年²)', series: k ? [{ pts: [[0, 0], [xm, k * xm]], col: '#ffcc00', w: 2 }] : [], dots: pts.map(p => ({ x: p[0], y: p[1], col: '#00d4ff' })) });
+        el('fitTxt').innerHTML = k ? `斜率 = <b id="kFit">${k.toFixed(3)}</b> 年²／AU³ → 恆星質量 M = 1／斜率 = <b id="mFit">${(1 / k).toFixed(2)}</b> 太陽質量。` + (S.unk ? (S.hid ? '　按「揭曉」對答案。' : `　正確答案 M = <b id="mTrue">${S.MU.toFixed(1)}</b>。`) : '') : '記錄 2 條以上的軌道，就會畫出最佳直線。拋物線與雙曲線沒有週期，不能記錄。';
+        el('btnUnk').textContent = S.unk ? '回到已知恆星' : '🎲 未知恆星'; el('btnRev').disabled = !(S.unk && S.hid); el('M').disabled = S.unk; el('ML').textContent = S.hid ? '？' : M().toFixed(1);
+    }
+    el('btnRec').addEventListener('click', () => { const o = O(); if (!o.bound) { el('fitTxt').textContent = '這條軌道不會回來，沒有週期。'; return; } S.recs.push({ a: o.a, T: o.T }); renderExp(); });
+    el('btnClr').addEventListener('click', () => { S.recs = []; renderExp(); });
+    el('btnUnk').addEventListener('click', () => { S.unk = !S.unk; S.hid = S.unk; S.recs = []; if (S.unk) S.MU = [0.4, 0.6, 0.8, 1.5, 2, 2.5][Math.floor(Math.random() * 6)]; reset(); renderExp(); });
+    el('btnRev').addEventListener('click', () => { S.hid = false; renderExp(); });
+    $$('.chip[data-p]').forEach(b => b.addEventListener('click', () => { const [a, k] = b.dataset.p.split(','); el('r0').value = a; el('k').value = k; el('r0').dispatchEvent(new Event('input')); el('k').dispatchEvent(new Event('input')); S.playing = true; }));
+    el('btnPlay').addEventListener('click', () => { if (S.dead) reset(); S.playing = true; }); el('btnPause').addEventListener('click', () => S.playing = false); el('btnReset').addEventListener('click', reset);
+    reset(); renderExp(); let fn = 0; loop(dt => { if (S.playing) advance(dt * +el('selSpd').value); draw(); if (!(fn++ % 3)) panels(); });
+
+})();
+</script>
+</body>
+</html>
