@@ -424,13 +424,42 @@ def t_kepler(ctx):
     check("克卜勒 未知恆星：1/斜率 = 質量", est, num(text(pg, "mTrue")), 0.01)
 
 
+def t_static(ctx):
+    pg = open_page(ctx, "static-equilibrium", frozen=True)
+    g = 9.8
+    for i, v in (("mA", 40), ("xA", -1.5), ("mB", 60), ("xB", 1), ("p", 0), ("mb", 0)): set_val(pg, i, v)
+    step(pg, 6)
+    check("蹺蹺板 逆時針力矩 m_A g d_A", meter(pg, "逆時針力矩"), 40 * g * 1.5, 0.001); check("蹺蹺板 順時針力矩 m_B g d_B", meter(pg, "順時針力矩"), 60 * g * 1.0, 0.001)
+    check("蹺蹺板 平衡時合力矩 = 0", meter(pg, "合力矩"), 0, abs_=0.06); check("蹺蹺板 支點支撐力 = 總重", meter(pg, "支點支撐力"), 100 * g, 0.001)
+    set_val(pg, "p", 0.5); set_val(pg, "mb", 20); step(pg, 6)       # 支點移到 0.5，木板 20 kg（重心在 0）
+    net = g * (40 * 2.0 + 20 * 0.5 - 60 * 0.5)
+    check("蹺蹺板 移動支點＋木板自重 合力矩", meter(pg, "合力矩"), net, 0.001); check("蹺蹺板 系統重心 Σmx/Σm", meter(pg, "系統重心"), (40 * -1.5 + 60 * 1) / 120, 0.01, 0.001)
+    pg.click("#btnQ"); step(pg, 4)
+    mU = pg.evaluate("LabTest.hidden()"); set_val(pg, "xA", -1.0); set_val(pg, "mB", 50); step(pg, 4)
+    best = min((abs(pg.evaluate("([m, x]) => LabTest.seesaw(LabTest.hidden(), -1, 50, x, 0, 0).net", [0, x / 100])), x / 100) for x in range(5, 201, 5))[1]
+    est = 50 * best / 1.0
+    check("蹺蹺板 挑戰：m_A = m_B d_B / d_A（位置解析度 5 cm）", est, mU, 0.03, 1.3)
+    pg.click('[data-m="lad"]')
+    for i, v in (("th", 60), ("d", 1), ("mp", 60), ("ml", 10), ("mu", 0.4)): set_val(pg, i, v)
+    step(pg, 6); t = math.tan(math.radians(60)); nw = g * (5 + 60 * 1 / 4) / t
+    check("梯子 N牆 = g(m梯/2 + m人 d/L)/tanθ", meter(pg, "牆的正向力"), nw, 0.001); check("梯子 N地 = 總重", meter(pg, "地面正向力"), 70 * g, 0.001)
+    check("梯子 需要的 μ", meter(pg, "需要的摩擦係數"), nw / (70 * g), 0.003); dmax = 4 * (0.4 * 70 * t - 5) / 60
+    check("梯子 最高可爬距離", meter(pg, "最高可爬距離"), dmax, 0.003)
+    r = pg.evaluate("d => [LabTest.ladder(60, d - 0.01, 60, 10, 0.4).slip, LabTest.ladder(60, d + 0.01, 60, 10, 0.4).slip]", dmax)
+    check("梯子 爬到臨界距離前後：不滑→滑", (0 if r[0] else 1) + (1 if r[1] else 0), 2, abs_=0)
+    # 獨立驗算：對梯頂取力矩也要為零
+    L, a = 4, math.radians(60); tau_top = 70 * g * L * math.cos(a) - nw * L * math.sin(a) - 60 * g * (L - 1) * math.cos(a) - 10 * g * 2 * math.cos(a)
+    check("梯子 對梯頂的合力矩也為零", tau_top, 0, abs_=1e-6)
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
          "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing,
          "atwood": t_atwood,
          "elevator": t_elevator,
          "measurement": t_measure,
-         "kepler": t_kepler}
+         "kepler": t_kepler,
+         "static-equilibrium": t_static}
 
 
 def main():

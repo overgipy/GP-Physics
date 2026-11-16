@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>力矩與靜力平衡 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/lab-mobile.css">
+    <link rel="stylesheet" href="../shared/touch.css">
+    <style>
+        [hidden] { display: none !important; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        input.ans { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 8px; font-size: 1rem; width: 7em; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>⚖️ 力矩與靜力平衡</h1>
+    <p class="subtitle">ΣF = 0　且　Στ = 0　｜　τ = 力 × 力臂</p>
+</header>
+
+<div class="container">
+<div class="card sticky-sim"><div class="card-title"><span id="cTitle">蹺蹺板：順時針力矩 = 逆時針力矩 才會平衡</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div><div class="canvas-wrap"><canvas id="scene" width="760" height="400"></canvas></div></div><div class="card"><div class="card-title">選擇情境與條件</div><div class="mode-bar" id="modeBar"><button class="mode-btn active" data-m="see"><b>① 蹺蹺板</b>兩個重物、可移動的支點與木板自重</button><button class="mode-btn" data-m="lad"><b>② 靠牆的梯子</b>人往上爬，梯子什麼時候滑倒？</button></div><div class="controls-grid"><div class="control-group" data-for="see"><div class="control-label"><span>左邊重物 m<sub>A</sub></span><b style="color:var(--cyan)"><span id="mAL"></span> kg</b></div><input type="range" id="mA" min="5" max="80" step="1" value="40"></div><div class="control-group" data-for="see"><div class="control-label"><span>A 的位置（支點在 0 時的座標）</span><b style="color:var(--cyan)"><span id="xAL"></span> m</b></div><input type="range" id="xA" min="-2" max="0" step="0.05" value="-1.5"></div><div class="control-group" data-for="see"><div class="control-label"><span>右邊重物 m<sub>B</sub></span><b style="color:var(--orange)"><span id="mBL"></span> kg</b></div><input type="range" id="mB" min="5" max="80" step="1" value="60"></div><div class="control-group" data-for="see"><div class="control-label"><span>B 的位置</span><b style="color:var(--orange)"><span id="xBL"></span> m</b></div><input type="range" id="xB" min="0" max="2" step="0.05" value="1"></div><div class="control-group" data-for="see"><div class="control-label"><span>支點位置</span><b style="color:var(--yellow)"><span id="pL"></span> m</b></div><input type="range" id="p" min="-1" max="1" step="0.05" value="0"><div class="sub-note">木板長 4 m，中心在 0</div></div><div class="control-group" data-for="see"><div class="control-label"><span>木板質量</span><b style="color:var(--green)"><span id="mbL"></span> kg</b></div><input type="range" id="mb" min="0" max="30" step="1" value="0"><div class="sub-note">0 = 不計木板重量</div></div><div class="control-group" data-for="lad"><div class="control-label"><span>梯子與地面的夾角 θ</span><b style="color:var(--yellow)"><span id="thL"></span> °</b></div><input type="range" id="th" min="30" max="85" step="1" value="60"></div><div class="control-group" data-for="lad"><div class="control-label"><span>人沿梯子爬的距離 d</span><b style="color:var(--cyan)"><span id="dL"></span> m</b></div><input type="range" id="d" min="0" max="4" step="0.05" value="1"><div class="sub-note">梯長 L = 4 m</div></div><div class="control-group" data-for="lad"><div class="control-label"><span>人的質量</span><b style="color:var(--orange)"><span id="mpL"></span> kg</b></div><input type="range" id="mp" min="30" max="100" step="1" value="60"></div><div class="control-group" data-for="lad"><div class="control-label"><span>梯子質量</span><b style="color:var(--green)"><span id="mlL"></span> kg</b></div><input type="range" id="ml" min="0" max="30" step="1" value="10"></div><div class="control-group" data-for="lad"><div class="control-label"><span>地面靜摩擦係數 μ<sub>s</sub></span><b style="color:var(--red)"><span id="muL"></span> </b></div><input type="range" id="mu" min="0.1" max="1" step="0.01" value="0.4"><div class="sub-note">牆面光滑</div></div></div></div><div class="card"><div class="card-title">即時數據</div><div class="dashboard" id="dash"></div><div class="status" id="status"></div></div><div class="card" data-for="see"><div class="card-title">挑戰：用蹺蹺板秤出未知質量</div><div class="fit-text">按「出題」後，左邊重物的質量會被隱藏（木板重量設為 0、支點回到中央）。移動右邊重物讓蹺蹺板平衡，再用力矩平衡算出 m<sub>A</sub>。</div><div class="btn-row" style="margin:8px 0"><button class="btn orange" id="btnQ">🎲 出題</button><button class="btn secondary" id="btnA">對答案</button></div><div class="check-row"><label>m<sub>A</sub> = <input class="ans" id="ans" type="number" step="0.5" inputmode="decimal"> kg</label></div><div class="fit-text" id="chRes"></div></div>
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary><ul><li>力矩 <b>τ = r F sinθ = 力 × 力臂</b>（N·m）；力臂是轉軸到力的作用線的垂直距離。</li><li>靜力平衡的兩個條件：<b>合力為零</b>（ΣF = 0）且<b>對任一點的合力矩為零</b>（Στ = 0）。</li><li>蹺蹺板：以支點為轉軸，<b>m<sub>A</sub>g·d<sub>A</sub> = m<sub>B</sub>g·d<sub>B</sub></b>（加上木板自重的力矩）；支點的支撐力 = 所有重量的總和。</li><li>重心：<b>x<sub>cm</sub> = Σmᵢxᵢ／Σmᵢ</b>；整個系統的重心在支點正上方時平衡。</li><li>梯子（牆光滑、地面粗糙）：鉛直方向 N<sub>地</sub> = (m<sub>人</sub> + m<sub>梯</sub>)g；水平方向 f = N<sub>牆</sub>；以梯腳為轉軸 <b>N<sub>牆</sub> L sinθ = (m<sub>梯</sub>g·L／2 + m<sub>人</sub>g·d) cosθ</b>。</li><li>不滑倒的條件：<b>f ≤ μ<sub>s</sub>N<sub>地</sub></b>，即需要的 μ = (m<sub>梯</sub>／2 + m<sub>人</sub>d／L)／[(m<sub>人</sub> + m<sub>梯</sub>) tanθ] ≤ μ<sub>s</sub>。</li></ul>
+            <p class="assume">理想化假設：木板與梯子是均勻的剛體（重心在中點）；重物與人視為質點；支點無摩擦；牆面完全光滑（只給垂直牆面的正向力）；g = 9.8 m/s²。蹺蹺板傾斜的動畫只是示意，不是真實的轉動過程。</p></details>
+        <details><summary>建議講解順序</summary><ol><li>蹺蹺板：先讓兩邊一樣重、距離一樣；再把一邊變重，問要怎麼移動才能再平衡。</li><li>看數據：平衡時兩邊「質量 × 距離」相等，重的要靠近支點。</li><li>加上木板質量、把支點移離中央：木板自己的重量也有力矩，作用在重心。</li><li>做未知質量挑戰（就是桿秤的原理）。</li><li>切到梯子：先畫出四個力，再選梯腳當轉軸，為什麼選這裡最方便？</li><li>讓人往上爬：需要的摩擦力越來越大，超過最大靜摩擦就滑倒；再調整角度與 μ 比較。</li></ol></details>
+        <details><summary>可以問學生的問題</summary><ul><li>40 kg 的人坐在離支點 1.5 m 處，60 kg 的人要坐在哪裡才平衡？（1.0 m）</li><li>平衡時支點的支撐力是多少？與重物的位置有關嗎？（總重量；無關）</li><li>為什麼人爬得越高，梯子越容易滑？（人的重力對梯腳的力矩變大，牆的正向力與所需摩擦力都變大）</li><li>梯子擺得越陡越安全還是越危險？（越陡，所需摩擦越小，越不容易滑）</li><li>如果地面光滑、牆面粗糙，梯子能平衡嗎？（不能，水平方向沒有力可以抵消牆的正向力）</li></ul></details>
+        <details><summary>常見迷思</summary><ul><li><b>「兩邊一樣重才會平衡」</b>：要比的是力矩（力 × 力臂），不是重量。</li><li><b>「合力為零就會平衡」</b>：合力為零但合力矩不為零時，物體會轉動（力偶）。</li><li><b>「力矩一定要對支點算」</b>：平衡時對任何一點的合力矩都是零，選未知力通過的點可以少算幾個力。</li><li><b>「摩擦力一定等於 μN」</b>：靜摩擦力是「需要多少給多少」，μ<sub>s</sub>N 只是上限。</li></ul></details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script src="../shared/lab.js"></script>
+<script>
+(() => {
+    'use strict';
+    const { el, rad, deg, arrow, txt, graph, meter, fitLine, fitThroughOrigin, noise, niceStep } = Lab;
+    const $$ = s => [...document.querySelectorAll(s)];
+    // 滑桿：顯示目前數值（id + 'L'），拖動時呼叫 cb；回傳讀值函式
+    function sl(id, dp, cb) { const e = el(id), lb = el(id + 'L'), up = () => { if (lb) lb.textContent = (+e.value).toFixed(dp); };
+        e.addEventListener('input', () => { up(); cb && cb(); }); up(); return () => +e.value; }
+    // 模式切換：有 data-for 的區塊只在對應模式顯示
+    function showFor(m) { $$('[data-for]').forEach(e => e.hidden = !e.dataset.for.split(' ').includes(m));
+        $$('#modeBar .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.m === m)); }
+    function onMode(cb) { $$('#modeBar .mode-btn').forEach(b => b.addEventListener('click', () => { showFor(b.dataset.m); cb(b.dataset.m); })); }
+    const rows = (id, arr) => el(id).innerHTML = arr.map(r => '<tr>' + r.map(v => `<td>${v}</td>`).join('') + '</tr>').join('') || '<tr><td colspan="9" style="text-align:center;color:#6a7a92">尚無數據</td></tr>';
+    // 動畫迴圈：fn(dt)；dt 為秒，最大 0.05
+    function loop(fn) { let last = null; const f = ts => { if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05); last = ts; fn(dt); requestAnimationFrame(f); }; requestAnimationFrame(f); }
+
+    const c = el('scene').getContext('2d'), W = 760, H = 400, G = 9.8;
+    // 蹺蹺板：對支點的合力矩（逆時針為正）；ccw、cw 分開回傳
+    function seesaw(mA, xA, mB, xB, p, mb) { const it = [[mA, xA], [mB, xB], [mb, 0]]; let ccw = 0, cw = 0, M = 0, mx = 0; it.forEach(([m, x]) => { const t = -m * G * (x - p); t > 0 ? ccw += t : cw -= t; M += m; mx += m * x; }); return { ccw, cw, net: ccw - cw, N: M * G, xcm: mx / M }; }
+    function ladder(th, d, mp, ml, mu, L = 4) { const t = Math.tan(rad(th)), Nf = (mp + ml) * G, Nw = G * (ml / 2 + mp * d / L) / t, need = Nw / Nf; return { Nf, Nw, f: Nw, fmax: mu * Nf, need, slip: need > mu + 1e-12, dmax: mp > 0 ? L * (mu * (mp + ml) * t - ml / 2) / mp : Infinity }; }
+    window.LabTest = { seesaw, ladder, hidden: () => S.mU };
+    const S = { mode: 'see', tilt: 0, hid: false, mU: 40 };
+    const mAs = sl('mA', 0), xA = sl('xA', 2), mB = sl('mB', 0), xB = sl('xB', 2), p = sl('p', 2), mb = sl('mb', 0), th = sl('th', 0), d = sl('d', 2), mp = sl('mp', 0), ml = sl('ml', 0), mu = sl('mu', 2);
+    const mA = () => S.hid ? S.mU : mAs(), see = () => seesaw(mA(), xA(), mB(), xB(), p(), mb()), lad = () => ladder(th(), d(), mp(), ml(), mu());
+    const balanced = r => Math.abs(r.net) < 0.02 * Math.max(r.ccw, r.cw, 1);
+    function drawSee() {
+        const r = see(), tgt = balanced(r) ? 0 : (r.net > 0 ? 1 : -1) * 0.2; S.tilt += (tgt - S.tilt) * 0.08; const sc = 150, px = 380 + p() * sc, py = 250;
+        c.fillStyle = '#ffcc00'; c.beginPath(); c.moveTo(px, py); c.lineTo(px - 28, py + 70); c.lineTo(px + 28, py + 70); c.closePath(); c.fill();
+        c.strokeStyle = '#3a4558'; c.lineWidth = 3; c.beginPath(); c.moveTo(20, py + 70); c.lineTo(W - 20, py + 70); c.stroke();
+        c.save(); c.translate(px, py); c.rotate(-S.tilt); const X = x => (x - p()) * sc;
+        c.fillStyle = '#8a6d3b'; c.fillRect(X(-2), -12, 4 * sc, 12);
+        for (let i = -4; i <= 4; i++) { c.fillStyle = '#080a0f'; c.fillRect(X(i / 2) - 1, -12, 2, i % 2 ? 5 : 9); }
+        [[mA(), xA(), '#00d4ff', S.hid ? '？' : mA() + ' kg', 'A'], [mB(), xB(), '#ff9f43', mB() + ' kg', 'B']].forEach(([m, x, col, lb, nm]) => { const s = 30 + Math.sqrt(m) * 5; c.fillStyle = col; c.fillRect(X(x) - s / 2, -12 - s, s, s); txt(c, nm, X(x), -12 - s / 2 + 6, '#00131a', 18, 'center'); txt(c, lb, X(x), -22 - s, col, 18, 'center');
+            arrow(c, X(x), 0, X(x), 16 + m * 0.9, '#ffcc00', 3); });
+        if (mb() > 0) { arrow(c, X(0), 0, X(0), 16 + mb() * 0.9, '#00e676', 3); txt(c, '木板重', X(0) + 8, 40, '#00e676', 17); }
+        c.restore();
+        const xc = 380 + r.xcm * sc; c.strokeStyle = '#ff6b81'; c.setLineDash([5, 5]); c.lineWidth = 2; c.beginPath(); c.moveTo(xc, 40); c.lineTo(xc, py + 70); c.stroke(); c.setLineDash([]); if (!S.hid) txt(c, '系統重心', xc, 32, '#ff6b81', 17, 'center');
+        txt(c, balanced(r) ? '平衡 ✓' : r.net > 0 ? '逆時針轉（左邊下沉）' : '順時針轉（右邊下沉）', 380, 380, balanced(r) ? '#00e676' : '#ff6b81', 22, 'center');
+    }
+    function drawLad() {
+        const r = lad(), a = rad(th()), sc = 80, bx = 470 - 4 * sc * Math.cos(a) , by = 350, wx = 470, tx = wx, ty = by - 4 * sc * Math.sin(a), k = 0.11;
+        c.fillStyle = '#1a2130'; c.fillRect(wx, 10, 26, by - 10); c.fillRect(40, by, wx - 14, 14);
+        c.strokeStyle = r.slip ? '#ff6b81' : '#c9a35c'; c.lineWidth = 8; c.beginPath(); c.moveTo(bx, by); c.lineTo(tx, ty); c.stroke();
+        const P = s => [bx + s * sc * Math.cos(a), by - s * sc * Math.sin(a)], [hx, hy] = P(d()), [gx, gy] = P(2);
+        c.fillStyle = '#00d4ff'; c.beginPath(); c.arc(hx - 10, hy - 16, 13, 0, 7); c.fill();
+        arrow(c, hx, hy, hx, hy + mp() * G * k, '#ffcc00', 3); txt(c, '人的重力', hx - 8, hy + mp() * G * k + 4, '#ffcc00', 17, 'right');
+        if (ml() > 0) { arrow(c, gx, gy, gx, gy + ml() * G * k, '#00e676', 3); txt(c, '梯重', gx + 8, gy + ml() * G * k, '#00e676', 17); }
+        arrow(c, tx, ty, tx - r.Nw * k, ty, '#ff7ad9', 3); txt(c, 'N牆', tx - r.Nw * k - 6, ty - 8, '#ff7ad9', 17, 'right');
+        arrow(c, bx, by, bx, by - r.Nf * k * 0.5, '#c3d0e4', 3); txt(c, 'N地', bx - 8, by - r.Nf * k * 0.5, '#c3d0e4', 17, 'right');
+        arrow(c, bx, by + 7, bx + Math.min(r.f, r.fmax) * k, by + 7, '#ff6b81', 3); txt(c, '靜摩擦力 f', bx, by + 40, '#ff6b81', 17);
+        c.strokeStyle = '#ffcc00'; c.lineWidth = 1.5; c.beginPath(); c.arc(bx, by, 36, -a, 0); c.stroke(); txt(c, 'θ', bx + 44, by - 12, '#ffcc00', 18);
+        txt(c, r.slip ? '滑倒！需要的摩擦力超過最大靜摩擦' : '穩定 ✓', 20, 34, r.slip ? '#ff6b81' : '#00e676', 22);
+        txt(c, '光滑牆面', wx + 34, 60, '#9aa8bd', 17); txt(c, '粗糙地面', 60, by + 40, '#9aa8bd', 17);
+    }
+    function panels() {
+        if (S.mode === 'see') { const r = see(), q = v => S.hid ? '？' : v;
+            el('dash').innerHTML = [meter('逆時針力矩', q(r.ccw.toFixed(1)), 'N·m', '#00d4ff'), meter('順時針力矩', r.cw.toFixed(1), 'N·m', '#ff9f43'), meter('合力矩（逆時針為正）', q(r.net.toFixed(1)), 'N·m', '#ff6b81'),
+                meter('A 到支點的距離', Math.abs(xA() - p()).toFixed(2), 'm', '#00d4ff'), meter('B 到支點的距離', Math.abs(xB() - p()).toFixed(2), 'm', '#ff9f43'), meter('支點支撐力', q(r.N.toFixed(1)), 'N', '#ffcc00'), meter('系統重心位置', q(r.xcm.toFixed(3)), 'm', '#ff6b81')].join('');
+            el('status').innerHTML = balanced(r) ? '<b>平衡</b>：兩個方向的力矩相等，系統重心在支點正上方。' : '不平衡：把較重的一邊往支點移，或把較輕的一邊往外移。'; }
+        else { const r = lad();
+            el('dash').innerHTML = [meter('牆的正向力 N牆', r.Nw.toFixed(1), 'N', '#ff7ad9'), meter('地面正向力 N地', r.Nf.toFixed(1), 'N'), meter('需要的摩擦力 f', r.f.toFixed(1), 'N', '#ff6b81'), meter('最大靜摩擦力 μN', r.fmax.toFixed(1), 'N', '#00e676'),
+                meter('需要的摩擦係數', r.need.toFixed(3), '', '#ffcc00'), meter('最高可爬距離', r.dmax >= 4 ? '到頂（4.00）' : Math.max(0, r.dmax).toFixed(2), 'm', '#00d4ff')].join('');
+            el('status').innerHTML = r.slip ? '<b>會滑倒</b>：把梯子擺陡一點、換摩擦較大的地面，或不要爬那麼高。' : '需要的摩擦力還沒超過最大靜摩擦力，梯子不會滑。'; }
+    }
+    const unhide = () => { S.hid = false; el('mA').disabled = false; el('mA').dispatchEvent(new Event('input')); };
+    el('btnQ').addEventListener('click', () => { S.hid = true; S.mU = 15 + Math.floor(Math.random() * 60); el('mA').disabled = true; el('mAL').textContent = '？'; ['p', 'mb'].forEach(id => { el(id).value = 0; el(id).dispatchEvent(new Event('input')); }); el('chRes').textContent = '移動右邊重物（或改變它的質量）直到平衡。'; });
+    el('btnA').addEventListener('click', () => { if (!S.hid) { el('chRes').textContent = '先按「出題」。'; return; } const ok = Math.abs(parseFloat(el('ans').value) - S.mU) <= Math.max(1, S.mU * 0.04);
+        el('chRes').innerHTML = (ok ? '✅ 答對了！' : '❌ 差了一點。') + `正確答案 m<sub>A</sub> = <b id="chTrue">${S.mU}</b> kg（m<sub>A</sub>·d<sub>A</sub> = m<sub>B</sub>·d<sub>B</sub>）。`; el('mA').value = S.mU; unhide(); });
+    onMode(m => { S.mode = m; unhide(); el('cTitle').textContent = m === 'see' ? '蹺蹺板：順時針力矩 = 逆時針力矩 才會平衡' : '靠牆的梯子：以梯腳為轉軸看力矩'; });
+    showFor('see'); let fn = 0; loop(() => { c.fillStyle = '#080a0f'; c.fillRect(0, 0, W, H); S.mode === 'see' ? drawSee() : drawLad(); if (!(fn++ % 4)) panels(); });
+
+})();
+</script>
+</body>
+</html>
