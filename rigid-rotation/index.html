@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>剛體轉動與力矩 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/lab-mobile.css">
+    <link rel="stylesheet" href="../shared/touch.css">
+    <style>
+        .control-group.off { display: none; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
+        [hidden] { display: none !important; }
+        .chip .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; background: var(--c); }
+        .chip:not(.on) { opacity: .55; }
+        .shape-table { font-family: inherit; font-size: .92rem; }
+        .shape-table th, .shape-table td { text-align: center; padding: 7px 6px; }
+        .shape-table td:first-child { text-align: left; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>🎡 剛體轉動與力矩</h1>
+    <p class="subtitle">I = βmR²　｜　a = g sinθ／(1 + β)　｜　τ = Iα　L = Iω</p>
+</header>
+
+<div class="container">
+    <div class="card sticky-sim">
+        <div class="card-title"><span id="cTitle">滾下斜面：誰先到底？</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div>
+        <div class="canvas-wrap"><canvas id="scene" width="760" height="400"></canvas></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">選擇模式與條件</div>
+        <div class="mode-bar" id="modeBar">
+            <button class="mode-btn active" data-m="roll"><b>① 滾下斜面</b>實心球、空心球、圓柱、圓環、滑塊比賽</button>
+            <button class="mode-btn" data-m="spin"><b>② 力矩與角動量</b>轉盤上的人收手臂；外力矩改變角動量</button>
+        </div>
+        <div class="preset-row" id="shapeRow" data-for="roll">
+            <span class="lbl">參賽物體（點一下加入或移除）：</span>
+        </div>
+        <div class="controls-grid">
+            <div class="control-group" data-for="roll"><div class="control-label">觀察對象（下方數據）</div><select id="selObj"></select><div class="sub-note" id="objNote"></div></div>
+            <div class="control-group" data-for="roll"><div class="control-label"><span>斜角 θ</span><b style="color:var(--cyan)"><span id="lblTh">20</span>°</b></div><input type="range" id="slTh" min="5" max="45" step="1" value="20"></div>
+            <div class="control-group" data-for="roll"><div class="control-label"><span>斜面長度 s</span><b style="color:var(--green)"><span id="lblS">2.0</span> m</b></div><input type="range" id="slS" min="1" max="3" step="0.1" value="2"></div>
+            <div class="control-group" data-for="roll"><div class="control-label"><span>半徑 R</span><b style="color:var(--orange)"><span id="lblR">5.0</span> cm</b></div><input type="range" id="slR" min="2" max="10" step="0.5" value="5"><div class="sub-note">改變 R，到達時間會變嗎？</div></div>
+            <div class="control-group" data-for="roll"><div class="control-label"><span>質量 m</span><b style="color:var(--yellow)"><span id="lblM">0.50</span> kg</b></div><input type="range" id="slM" min="0.1" max="2" step="0.05" value="0.5"><div class="sub-note">改變 m，到達時間會變嗎？</div></div>
+            <div class="control-group" data-for="spin" hidden><div class="control-label"><span>手臂距離 r</span><b style="color:var(--cyan)"><span id="lblRr">0.80</span> m</b></div><input type="range" id="slRr" min="0.15" max="0.9" step="0.01" value="0.8"><div class="sub-note">往左拖 = 收手臂（角動量不變）</div></div>
+            <div class="control-group" data-for="spin" hidden><div class="control-label"><span>外力矩 τ</span><b style="color:var(--red)"><span id="lblTau">0.0</span> N·m</b></div><input type="range" id="slTau" min="-3" max="3" step="0.1" value="0"><div class="sub-note">0 = 沒有外力矩（角動量守恆）</div></div>
+            <div class="control-group" data-for="spin" hidden><div class="control-label"><span>起始角速度 ω<sub>0</sub></span><b style="color:var(--yellow)"><span id="lblW0">2.0</span> rad/s</b></div><input type="range" id="slW0" min="0.5" max="4" step="0.1" value="2"><div class="sub-note">改變後會重新開始</div></div>
+            <div class="control-group" data-for="spin" hidden><div class="control-label"><span>每個啞鈴質量 m</span><b style="color:var(--orange)"><span id="lblMd">3.0</span> kg</b></div><input type="range" id="slMd" min="1" max="5" step="0.5" value="3"></div>
+            <div class="control-group" data-for="spin" hidden><div class="control-label"><span>身體＋轉盤 I<sub>0</sub></span><b style="color:var(--green)"><span id="lblI0">1.2</span> kg·m²</b></div><input type="range" id="slI0" min="0.5" max="3" step="0.1" value="1.2"></div>
+            <div class="control-group"><div class="control-label">播放速度</div><select id="selSpd"><option value="0.25">0.25 倍</option><option value="0.5" selected>0.5 倍</option><option value="1">1 倍</option></select></div>
+        </div>
+        <div class="btn-row"><button class="btn green" id="btnPlay">▶ 釋放</button><button class="btn secondary" id="btnPause">⏸ 暫停</button><button class="btn secondary" id="btnReset">↺ 回到起點</button></div>
+    </div>
+
+    <div class="card"><div class="card-title" id="dashTitle">即時數據</div><div class="dashboard" id="dash"></div><div class="status" id="status"></div></div>
+
+    <div class="card">
+        <div class="card-title" id="gTitle">質心速度與位置對時間的圖</div>
+        <div class="two-col">
+            <div class="graph-box"><canvas id="g1" width="480" height="260"></canvas></div>
+            <div class="graph-box"><canvas id="g2" width="480" height="260"></canvas></div>
+            <div class="graph-box" id="g3box" hidden><canvas id="g3" width="480" height="260"></canvas></div>
+        </div>
+        <div class="legend" id="legend"></div>
+    </div>
+
+    <div class="card" data-for="roll">
+        <div class="card-title">各種形狀的轉動慣量</div>
+        <div class="table-scroll" style="max-height:none">
+        <table class="shape-table">
+            <thead><tr><th>形狀（繞對稱軸）</th><th>I = βmR²</th><th>a = g sinθ／(1+β)</th><th>轉動動能占比 β／(1+β)</th></tr></thead>
+            <tbody id="shapeBody"></tbody>
+        </table>
+        </div>
+        <div class="fit-text">β 越大，代表質量分布離轉軸越遠、越「難轉」，位能有越多比例變成轉動動能，質心就跑得越慢。</div>
+    </div>
+
+    <div class="card" data-for="roll">
+        <div class="card-title"><span id="expTitle">實驗：由到底時間反求 β（I = βmR²）</span></div>
+        <div class="fit-text" id="expHint"></div>
+        <div class="btn-row" style="margin:8px 0"><button class="btn orange" id="btnRec">⏱ 測量並記錄</button><button class="btn secondary" id="btnClr">清除數據</button><button class="btn secondary" id="btnUnk">🎲 未知物體</button><button class="btn secondary" id="btnRev" disabled>揭曉</button></div>
+        <div class="check-row"><label><input type="checkbox" id="chkNoise" checked> 加入計時誤差（±0.5%）</label></div>
+        <div class="two-col">
+            <div class="graph-box"><canvas id="gFit" width="480" height="320"></canvas></div>
+            <div class="table-scroll"><table><thead><tr><th>#</th><th>θ (°)</th><th>sinθ</th><th>s (m)</th><th>t (s)</th><th>a = 2s／t² (m/s²)</th></tr></thead><tbody id="recBody"></tbody></table></div>
+        </div>
+        <div class="fit-text" id="fitTxt"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary>
+            <ul>
+                <li>轉動慣量 <b>I = βmR²</b>（kg·m²）：實心球 β = 2／5、薄球殼 2／3、實心圓柱 1／2、薄圓環 1；m：質量（kg）、R：半徑（m）。</li>
+                <li>力矩與角加速度：<b>τ = Iα</b>；τ：力矩（N·m）、α：角加速度（rad/s²）。</li>
+                <li>純滾動（不打滑）：質心速度 <b>v = Rω</b>、質心加速度 a = Rα。</li>
+                <li>滾下斜面：沿斜面 mg sinθ − f = ma，對質心的力矩 fR = Iα，解得 <b>a = g sinθ／(1 + β)</b>、靜摩擦力 <b>f = βma</b>；到底時間 t = √(2s／a)，到底速度 v = √(2gs·sinθ／(1 + β))。</li>
+                <li>動能分配：平動 <b>½mv²</b>、轉動 <b>½Iω² = β·½mv²</b>（J）；力學能守恆 mgh = ½mv² + ½Iω²，h = s·sinθ。</li>
+                <li>不打滑的條件：需要的靜摩擦係數 <b>μ<sub>s</sub> ≥ β tanθ／(1 + β)</b>。</li>
+                <li>角動量 <b>L = Iω</b>（kg·m²/s）；外力矩使角動量改變 <b>τ = ΔL／Δt</b>；外力矩為零時角動量守恆 <b>I₁ω₁ = I₂ω₂</b>。轉動動能 K = ½Iω² = L²／2I。</li>
+                <li>模式 ②：I = I₀ + 2mr²（兩個啞鈴視為質點，各距轉軸 r）。</li>
+            </ul>
+            <p class="assume">理想化假設：物體是均勻剛體，斜面夠粗糙所以只滾不滑（靜摩擦不作功），不計滾動阻力與空氣阻力；滑塊則是在光滑（無摩擦）的斜面上滑下。g = 9.8 m/s²。模式 ② 的轉盤軸承無摩擦，手臂質量併入 I₀，啞鈴視為質點；收手臂的過程很快，畫面直接顯示新的角速度。</p>
+        </details>
+        <details><summary>建議講解順序</summary>
+            <ol>
+                <li>先請學生預測名次，再按「釋放」：滑塊最快，接著是實心球、圓柱、空心球，圓環最慢。</li>
+                <li>把質量或半徑調大再比一次：名次與時間都不變，只跟「形狀」（β）有關。</li>
+                <li>用能量看：同樣的位能，β 越大，分給轉動的比例 β／(1+β) 越多，平動就越慢。看畫面右邊的動能長條。</li>
+                <li>用力看：靜摩擦力向上坡，一方面減慢質心，一方面提供力矩讓物體轉起來；f = βma。</li>
+                <li>實驗模式：固定物體，改變斜角測到底時間，作 a–sinθ 圖，由斜率 g／(1+β) 求 β；再挑戰「未知物體」。</li>
+                <li>切到模式 ②：先不加外力矩，收手臂看 I 變小、ω 變大、L 不變；再問動能為什麼增加。</li>
+                <li>加上外力矩：L 隨時間等速率改變（τ = ΔL／Δt），角加速度 α = τ／I。</li>
+            </ol>
+        </details>
+        <details><summary>可以問學生的問題</summary>
+            <ul>
+                <li>大的實心球和小的實心球，誰先到底？（同時；a 與 m、R 無關）</li>
+                <li>裝滿水（結冰）的罐頭和空罐頭，誰滾得快？（質量集中在內部的 β 較小，較快）</li>
+                <li>圓環到底時，轉動動能占總動能的多少？（一半）實心球呢？（2／7）</li>
+                <li>斜角太大時，哪一種形狀最容易開始打滑？（β 最大的圓環，需要的 μ 最大）</li>
+                <li>滑冰選手收手臂，角動量守恆，但轉動動能增加了，能量從哪裡來？（手臂往內拉時肌肉作的功）</li>
+                <li>把手臂距離減半（I₀ 很小時），角速度約變成幾倍？（約 4 倍）</li>
+            </ul>
+        </details>
+        <details><summary>常見迷思</summary>
+            <ul>
+                <li><b>「比較重的滾得比較快」</b>：純滾動下斜面的加速度與質量、半徑都無關，只看質量怎麼分布（β）。</li>
+                <li><b>「有摩擦力，力學能就不守恆」</b>：純滾動時接觸點瞬間靜止，靜摩擦力不作功，力學能守恆。</li>
+                <li><b>「摩擦力只會讓物體變慢」</b>：沒有摩擦力，物體只會滑、不會轉；轉動正是靠摩擦力的力矩。</li>
+                <li><b>「角動量守恆，所以轉動動能也守恆」</b>：K = L²／2I，L 不變而 I 變小時，K 會變大。</li>
+                <li><b>「力矩越大，轉得越快」</b>：力矩決定的是角加速度（角速度變化的快慢），不是角速度本身。</li>
+            </ul>
+        </details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script src="../shared/lab.js"></script>
+<script>
+(() => {
+    'use strict';
+    const { el, rad, arrow, txt, graph, meter, fitLine, noise } = Lab;
+    const G = 9.8, TAU = 2 * Math.PI;
+    const c = el('scene').getContext('2d'), W = 760, H = 400;
+
+    /* ---------- 物理 ---------- */
+    const SHAPES = [
+        { id: 'block', name: '滑塊（光滑面）', short: '滑塊', beta: 0, col: '#9aa8bd', frac: '0' },
+        { id: 'sphere', name: '實心球', short: '實心球', beta: 2 / 5, col: '#00d4ff', frac: '2／5' },
+        { id: 'cyl', name: '實心圓柱', short: '圓柱', beta: 1 / 2, col: '#00e676', frac: '1／2' },
+        { id: 'shell', name: '空心球（薄球殼）', short: '空心球', beta: 2 / 3, col: '#ffcc00', frac: '2／3' },
+        { id: 'ring', name: '圓環（薄圓筒）', short: '圓環', beta: 1, col: '#ff7ad9', frac: '1' },
+    ];
+    const rollAccel = (beta, thDeg) => G * Math.sin(rad(thDeg)) / (1 + beta);      // 質心加速度
+    const rollTime = (beta, thDeg, s) => Math.sqrt(2 * s / rollAccel(beta, thDeg)); // 由靜止滾到底的時間
+    const spinI = (I0, m, r) => I0 + 2 * m * r * r;                                // 模式 ②：轉動慣量
+    window.LabTest = { SHAPES, rollAccel, rollTime, spinI };
+
+    /* ---------- 狀態 ---------- */
+    const S = { mode: 'roll', th: 20, s: 2, R: 0.05, M: 0.5, obj: 'sphere', on: { block: true, sphere: true, cyl: true, shell: true, ring: true },
+        t: 0, playing: false, spd: 0.5, recs: [], unk: false, hid: false, unkBeta: 0.5,
+        r: 0.8, tau: 0, w0: 2, md: 3, I0: 1.2, Lz: 0, phi: 0, ts: 0, hist: [] };
+    const shape = id => SHAPES.find(x => x.id === id);
+    const subjBeta = () => S.unk ? S.unkBeta : shape(S.obj).beta;
+    const racers = () => S.unk ? [{ id: 'unk', short: '未知物體', name: '未知物體', beta: S.unkBeta, col: '#ff9f43' }] : SHAPES.filter(x => S.on[x.id]);
+    const mask = v => (S.unk && S.hid) ? '？' : v;
+    const Inow = () => spinI(S.I0, S.md, S.r);
+
+    /* ---------- 場景 ①：斜面 ---------- */
+    function drawRoll() {
+        c.fillStyle = '#080a0f'; c.fillRect(0, 0, W, H);
+        const th = rad(S.th), sc = Math.min(440 / (S.s * Math.cos(th)), 215 / (S.s * Math.sin(th))), gx = 40, gy = 360;
+        const bx = gx + S.s * Math.cos(th) * sc + 30, topX = 70, topY = gy - S.s * Math.sin(th) * sc, botX = topX + S.s * Math.cos(th) * sc;
+        // 斜面畫成有寬度的坡道（斜投影），每個物體走自己的跑道，才不會互相遮住
+        const DX = 58, DY = -40, list = racers(), n = list.length;
+        c.strokeStyle = '#3a4558'; c.lineWidth = 2; c.beginPath(); c.moveTo(gx - 20, gy); c.lineTo(W - 10, gy); c.stroke();
+        c.fillStyle = '#1a2130'; c.beginPath(); c.moveTo(topX, topY); c.lineTo(topX + DX, topY + DY); c.lineTo(botX + DX, gy + DY); c.lineTo(botX, gy); c.closePath(); c.fill();
+        c.fillStyle = '#10151f'; c.beginPath(); c.moveTo(topX, topY); c.lineTo(botX, gy); c.lineTo(topX, gy); c.closePath(); c.fill();
+        c.strokeStyle = '#8a99ad'; c.lineWidth = 3; c.beginPath(); c.moveTo(topX, topY); c.lineTo(botX, gy); c.stroke();
+        c.strokeStyle = '#4a586e'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(topX, topY); c.lineTo(topX + DX, topY + DY); c.lineTo(botX + DX, gy + DY); c.lineTo(botX, gy); c.stroke();
+        c.strokeStyle = '#ffcc00'; c.lineWidth = 1.5; c.beginPath(); c.arc(botX, gy, 44, Math.PI, Math.PI + th); c.stroke();
+        txt(c, `θ = ${S.th}°`, botX - 92, gy - 11, '#ffcc00', 16, 'center');
+        txt(c, `斜面長 s = ${S.s.toFixed(1)} m`, topX + 70, gy + 20, '#00e676', 16, 'center');
+        // 物體（由後面的跑道畫到前面）
+        const ux = Math.cos(th), uy = Math.sin(th), rp = Math.min(9 + S.R * 100 * 1.5, 30), done = [];
+        list.forEach((o, k) => {
+            const lane = (n - 1 - k + 0.5) / n;                                              // 較慢的排在前面的跑道，才不會被擋住
+            const a = rollAccel(o.beta, S.th), tf = Math.sqrt(2 * S.s / a), tt = Math.min(S.t, tf), d = 0.5 * a * tt * tt;
+            if (S.t >= tf) done.push([o, tf]);
+            o._draw = { lane, d };
+        });
+        list.slice().sort((p, q) => q._draw.lane - p._draw.lane).forEach(o => {
+            const { lane, d } = o._draw;
+            const px = topX + lane * DX + d * sc * ux + rp * uy, py = topY + lane * DY + d * sc * uy - rp * ux;   // 圓心：離坡面一個半徑
+            c.save(); c.translate(px, py);
+            if (o.id === 'block') { c.rotate(th); c.fillStyle = '#1d2432'; c.strokeStyle = o.col; c.lineWidth = 3; c.beginPath(); c.rect(-rp, -rp, 2 * rp, 2 * rp); c.fill(); c.stroke(); }
+            else {
+                c.rotate(d / S.R);                                                           // 純滾動：轉過的角度 = 路程／半徑
+                const hollow = o.id === 'ring' || o.id === 'shell';
+                c.fillStyle = hollow ? '#0d121b' : '#12303a'; if (o.id === 'cyl') c.fillStyle = '#0f3322'; if (o.id === 'unk') c.fillStyle = '#3a2a14';
+                c.strokeStyle = o.col; c.lineWidth = hollow ? 5 : 3;
+                c.beginPath(); c.arc(0, 0, rp - (c.lineWidth - 3) / 2, 0, TAU); c.fill(); c.stroke();
+                c.lineWidth = 2.5; c.beginPath(); c.moveTo(0, 0); c.lineTo(rp - 3, 0); c.stroke();
+                if (o.id === 'cyl') { c.beginPath(); c.moveTo(0, 0); c.lineTo(-rp + 3, 0); c.stroke(); }
+            }
+            c.restore();
+        });
+        // 名次表
+        done.sort((a, b) => a[1] - b[1]);
+        txt(c, '到達順序', 610, 30, '#c3d0e4', 16, 'left');
+        if (!done.length) txt(c, S.playing ? '比賽中…' : '按「釋放」開始', 610, 56, '#6a7a92', 15, 'left');
+        done.forEach((dd, k) => txt(c, `${k + 1}. ${dd[0].short}  ${mask(dd[1].toFixed(2))} s`, 610, 56 + k * 24, dd[0].col, 15, 'left'));
+        // 觀察對象的動能分配長條
+        const beta = subjBeta(), a = rollAccel(beta, S.th), tf = Math.sqrt(2 * S.s / a), tt = Math.min(S.t, tf), v = a * tt, Kt = 0.5 * S.M * v * v, Kr = beta * Kt, E = S.M * G * S.s * Math.sin(th);
+        const barX = 250, barY = 22, barW = 300;
+        if (!(S.unk && S.hid)) {
+            c.fillStyle = '#141923'; c.fillRect(barX, barY, barW, 16);
+            c.fillStyle = '#4d8dff'; c.fillRect(barX, barY, barW * Kt / E, 16); c.fillStyle = '#ff9f43'; c.fillRect(barX + barW * Kt / E, barY, barW * Kr / E, 16);
+            c.strokeStyle = '#3a4558'; c.lineWidth = 1; c.strokeRect(barX, barY, barW, 16);
+            txt(c, '平動動能', barX, barY + 32, '#4d8dff', 14, 'left'); txt(c, '轉動動能', barX + 80, barY + 32, '#ff9f43', 14, 'left'); txt(c, '（滿格 = 全部位能）', barX + 160, barY + 32, '#6a7a92', 14, 'left');
+        }
+    }
+
+    /* ---------- 場景 ②：轉盤俯視圖 ---------- */
+    function drawSpin() {
+        c.fillStyle = '#080a0f'; c.fillRect(0, 0, W, H);
+        const cx = 215, cy = 205, PX = 190, I = Inow(), w = S.Lz / I;
+        c.fillStyle = '#10151f'; c.strokeStyle = '#2c3749'; c.lineWidth = 2; c.beginPath(); c.arc(cx, cy, 0.95 * PX, 0, TAU); c.fill(); c.stroke();
+        c.setLineDash([4, 6]); c.strokeStyle = '#263044'; c.beginPath(); c.arc(cx, cy, S.r * PX, 0, TAU); c.stroke(); c.setLineDash([]);
+        c.save(); c.translate(cx, cy); c.rotate(-S.phi);                         // 逆時針為正
+        c.strokeStyle = '#c3d0e4'; c.lineWidth = 9; c.lineCap = 'round'; c.beginPath(); c.moveTo(-S.r * PX, 0); c.lineTo(S.r * PX, 0); c.stroke();
+        c.fillStyle = '#00d4ff'; c.beginPath(); c.ellipse(0, 0, 20, 30, 0, 0, TAU); c.fill();
+        c.fillStyle = '#f0f3f8'; c.beginPath(); c.arc(0, 0, 13, 0, TAU); c.fill();
+        const mr = 9 + S.md * 2.2; c.fillStyle = '#ff9f43';
+        [-1, 1].forEach(sg => { c.beginPath(); c.arc(sg * S.r * PX, 0, mr, 0, TAU); c.fill(); });
+        c.restore();
+        txt(c, '俯視圖', 22, 26, '#9aa8bd', 15, 'left');
+        // 旋轉方向與外力矩
+        if (Math.abs(w) > 0.02) { const dir = w > 0 ? -1 : 1, a0 = -0.5, a1 = a0 + dir * 0.9; c.strokeStyle = '#ffcc00'; c.lineWidth = 3; c.beginPath(); c.arc(cx, cy, 0.95 * PX + 12, a0, a1, dir < 0); c.stroke();
+            const ex = cx + (0.95 * PX + 12) * Math.cos(a1), ey = cy + (0.95 * PX + 12) * Math.sin(a1); arrow(c, ex + dir * 6 * Math.sin(a1), ey - dir * 6 * Math.cos(a1), ex - dir * 7 * Math.sin(a1), ey + dir * 7 * Math.cos(a1), '#ffcc00', 3, 11); }
+        if (S.tau !== 0) txt(c, `外力矩 τ ${S.tau > 0 ? '逆時針' : '順時針'}`, 22, H - 20, '#ff4d6d', 15, 'left');
+        // 右側長條：I、ω、L（以起始值為 1）
+        const I1 = spinI(S.I0, S.md, 0.8), L1 = I1 * S.w0, bx = 470, by = 320, bh = 200;
+        const bars = [['I', I / I1, '#00e676', `${I.toFixed(2)}`], ['ω', Math.abs(w) / S.w0, '#ffcc00', `${w.toFixed(2)}`], ['L = Iω', Math.abs(S.Lz) / L1, '#ff7ad9', `${S.Lz.toFixed(2)}`]];
+        const top = Math.max(2, ...bars.map(b => b[1])) * 1.05;
+        c.strokeStyle = '#3a4558'; c.setLineDash([5, 5]); c.lineWidth = 1.5; c.beginPath(); c.moveTo(bx - 14, by - bh / top); c.lineTo(bx + 260, by - bh / top); c.stroke(); c.setLineDash([]);
+        txt(c, '虛線：r = 0.8 m 時的起始值', bx + 118, by - bh - 16, '#9aa8bd', 14, 'center');
+        bars.forEach((b, k) => { const x = bx + k * 88, hgt = bh * b[1] / top; c.fillStyle = '#141923'; c.fillRect(x, by - bh, 60, bh); c.fillStyle = b[2]; c.fillRect(x, by - hgt, 60, hgt);
+            txt(c, b[0], x + 30, by + 18, b[2], 17, 'center'); txt(c, b[3], x + 30, by + 40, '#c3d0e4', 15, 'center'); });
+    }
+
+    /* ---------- 面板 ---------- */
+    function panels() {
+        if (S.mode === 'spin') {
+            const I = Inow(), w = S.Lz / I, K = S.Lz * S.Lz / (2 * I), I1 = spinI(S.I0, S.md, 0.8), K1 = 0.5 * I1 * S.w0 * S.w0;
+            el('dash').innerHTML = meter('轉動慣量 I = I₀ + 2mr²', I.toFixed(3), 'kg·m²', '#00e676') + meter('角速度 ω', w.toFixed(2), 'rad/s', '#ffcc00') + meter('角動量 L = Iω', S.Lz.toFixed(2), 'kg·m²/s', '#ff7ad9')
+                + meter('轉動動能 ½Iω²', K.toFixed(2), 'J', '#ff9f43') + meter('每秒轉數', (Math.abs(w) / TAU).toFixed(2), '圈/s', '#c3d0e4') + meter('角加速度 α = τ／I', (S.tau / I).toFixed(2), 'rad/s²', '#ff4d6d');
+            el('status').innerHTML = S.tau === 0
+                ? `沒有外力矩：角動量守恆，L = <b>${S.Lz.toFixed(2)} kg·m²/s</b>。現在 I 是 r = 0.8 m 時的 <b>${(I / I1).toFixed(2)}</b> 倍；轉動動能是起始值的 <b>${(K / K1).toFixed(2)}</b> 倍（多出來的來自收手臂時作的功）。`
+                : `外力矩 τ = <b>${S.tau.toFixed(1)} N·m</b>：角動量每秒改變 ${S.tau.toFixed(1)} kg·m²/s（τ = ΔL／Δt），角加速度 α = τ／I = <b>${(S.tau / I).toFixed(2)} rad/s²</b>。`;
+            el('runState').textContent = `t = ${S.ts.toFixed(1)} s`;
+            return;
+        }
+        const beta = subjBeta(), a = rollAccel(beta, S.th), tf = Math.sqrt(2 * S.s / a), tt = Math.min(S.t, tf), v = a * tt, I = beta * S.M * S.R * S.R;
+        const Kt = 0.5 * S.M * v * v, Kr = beta * Kt, f = beta * S.M * a, mu = beta * Math.tan(rad(S.th)) / (1 + beta);
+        el('dashTitle').textContent = `即時數據（${S.unk ? '未知物體' : shape(S.obj).name}）`;
+        el('dash').innerHTML = meter('轉動慣量 I = βmR²', mask((I * 1e3).toFixed(3)), '×10⁻³ kg·m²', '#00e676') + meter('質心加速度 a', mask(a.toFixed(3)), 'm/s²', '#00d4ff') + meter('角加速度 α = a／R', mask(beta === 0 ? '0' : (a / S.R).toFixed(1)), 'rad/s²', '#ffcc00')
+            + meter('質心速度 v', mask(v.toFixed(2)), 'm/s', '#4d8dff') + meter('角速度 ω = v／R', mask(beta === 0 ? '0' : (v / S.R).toFixed(1)), 'rad/s', '#ffcc00') + meter('平動動能 ½mv²', mask(Kt.toFixed(3)), 'J', '#4d8dff')
+            + meter('轉動動能 ½Iω²', mask(Kr.toFixed(3)), 'J', '#ff9f43') + meter('靜摩擦力 f = βma', mask(f.toFixed(3)), 'N', '#ff4d6d') + meter('到底時間 t', mask(tf.toFixed(3)), 's', '#c3d0e4');
+        el('status').innerHTML = S.unk && S.hid ? '未知物體：數據隱藏中。用下方的實驗測量到底時間，推算它的 β，再判斷它是哪一種形狀。'
+            : `β = <b>${beta.toFixed(3)}</b>：到底速度 v = √(2gs·sinθ／(1+β)) = <b>${(a * tf).toFixed(2)} m/s</b>；轉動動能占總動能 <b>${(beta / (1 + beta) * 100).toFixed(1)}%</b>；不打滑需要 μ<sub>s</sub> ≥ <b>${mu.toFixed(3)}</b>。質量與半徑不影響加速度。`;
+        el('runState').textContent = `t = ${S.t.toFixed(2)} s`;
+    }
+    function graphs() {
+        if (S.mode === 'spin') {
+            const t1 = Math.max(12, S.ts), t0 = t1 - 12, h = S.hist.filter(p => p[0] >= t0), I = Inow();
+            const mk = (id, k, title, yl, col, ymax) => graph(el(id), { title, xl: '時間 t (s)', yl, xmin: t0, xmax: t1, ymin: Math.min(0, ...h.map(p => p[k])) * 1.1, ymax: Math.max(ymax, ...h.map(p => p[k])) * 1.15, series: [{ pts: h.map(p => [p[0], p[k]]), col }] });
+            mk('g1', 1, 'ω–t 圖（角速度）', 'ω (rad/s)', '#ffcc00', 3); mk('g2', 2, 'L–t 圖（角動量）', 'L (kg·m²/s)', '#ff7ad9', 5); mk('g3', 3, 'K–t 圖（轉動動能）', 'K (J)', '#ff9f43', 10);
+            return;
+        }
+        const list = racers(), tmax = Math.max(...list.map(o => rollTime(o.beta, S.th, S.s))) * 1.05, vmax = Math.sqrt(2 * G * S.s * Math.sin(rad(S.th))) * 1.1, hide = S.unk && S.hid;
+        const sv = [], sd = [];
+        list.forEach(o => { const a = rollAccel(o.beta, S.th), tf = rollTime(o.beta, S.th, S.s), tt = Math.min(S.t, tf), pv = [], pd = [];
+            for (let k = 0; k <= 40; k++) { const t = tt * k / 40; pv.push([t, a * t]); pd.push([t, 0.5 * a * t * t]); } sv.push({ pts: pv, col: o.col }); sd.push({ pts: pd, col: o.col }); });
+        const o1 = { title: 'v–t 圖（質心速度）', xl: hide ? '時間 t（刻度隱藏）' : '時間 t (s)', yl: 'v (m/s)', xmin: 0, xmax: tmax, ymin: 0, ymax: vmax, series: sv };
+        const o2 = { title: 'd–t 圖（沿斜面的位置）', xl: o1.xl, yl: 'd (m)', xmin: 0, xmax: tmax, ymin: 0, ymax: S.s * 1.08, series: sd };
+        [['g1', o1], ['g2', o2]].forEach(([id, o]) => { graph(el(id), o); if (hide) { const x = el(id).getContext('2d'); x.fillStyle = '#0d121b'; x.fillRect(0, 20, 60, 205); x.fillRect(40, 221, 440, 18); } });
+        el('legend').innerHTML = list.map(o => `<span style="--c:${o.col}">${o.short}</span>`).join('');
+    }
+
+    /* ---------- 實驗 ---------- */
+    function renderExp() {
+        el('expTitle').textContent = S.unk ? '實驗：未知物體 —— 它是哪一種形狀？' : '實驗：由到底時間反求 β（I = βmR²）';
+        el('expHint').innerHTML = (S.unk ? '有一個外觀看不出內部構造的物體。' : `目前測量的是「<b>${shape(S.obj).name}</b>」。`)
+            + '改變斜角 θ 後按「測量並記錄」（至少 3 種角度），由 s = ½at² 算出 a = 2s／t²，作 a 對 sinθ 的圖。因為 a = g sinθ／(1+β)，直線斜率 = g／(1+β)，所以 <b>β = g／斜率 − 1</b>。';
+        el('btnUnk').textContent = S.unk ? '↩ 回到已知物體' : '🎲 未知物體'; el('btnRev').disabled = !(S.unk && S.hid); el('selObj').disabled = S.unk;
+        el('objNote').textContent = S.unk ? (S.hid ? '未知物體：形狀隱藏中' : '已揭曉') : `β = ${shape(S.obj).frac}`;
+        document.querySelectorAll('#shapeRow .chip').forEach(b => b.disabled = S.unk);
+        el('recBody').innerHTML = S.recs.map((r, k) => `<tr><td>${k + 1}</td><td>${r.th}</td><td>${Math.sin(rad(r.th)).toFixed(3)}</td><td>${r.s.toFixed(1)}</td><td>${r.t.toFixed(3)}</td><td>${(2 * r.s / r.t / r.t).toFixed(3)}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:#6a7a92">尚無數據</td></tr>';
+        const pts = S.recs.map(r => [Math.sin(rad(r.th)), 2 * r.s / r.t / r.t]), fit = fitLine(pts), ymax = Math.max(2, ...pts.map(p => p[1])) * 1.15;
+        graph(el('gFit'), { title: 'a–sinθ 圖', xl: 'sinθ', yl: 'a (m/s²)', xmin: 0, xmax: 0.8, ymin: 0, ymax,
+            series: fit ? [{ pts: [[0, fit.b], [0.8, fit.m * 0.8 + fit.b]], col: '#ff9f43', w: 2, label: '最適直線' }] : [], dots: pts.map(p => ({ x: p[0], y: p[1], col: '#ffcc00', r: 5 })) });
+        let s = pts.length < 2 ? '至少記錄 2 組不同斜角（建議 4 組以上）才能畫出最適直線。' : !fit ? '這幾組的斜角都相同，請改變 θ 再測。' : '';
+        if (fit) {
+            const bEst = G / fit.m - 1;
+            s = `最適直線斜率 = <b>${fit.m.toFixed(3)} m/s²</b>（= g／(1+β)）→ β = 9.8／斜率 − 1 = <b>${bEst.toFixed(3)}</b>。`;
+            if (!S.unk) s += ` 理論值 β = ${shape(S.obj).frac} = ${shape(S.obj).beta.toFixed(3)}。`;
+            else if (S.hid) s += ' 對照上方的表：它最接近哪一種形狀？想好再按「揭曉」。';
+            else { const tr = SHAPES.find(x => x.beta === S.unkBeta); s += ` 揭曉：它是<b>${tr.name}</b>，β = ${tr.frac} = ${tr.beta.toFixed(3)}，誤差 ${(Math.abs(bEst - tr.beta) / tr.beta * 100).toFixed(1)}%。`; }
+        }
+        el('fitTxt').innerHTML = s;
+    }
+    function record() {
+        const t = rollTime(subjBeta(), S.th, S.s) * (1 + (el('chkNoise').checked ? noise(0.005) : 0));
+        S.recs.push({ th: S.th, s: S.s, t }); renderExp();
+    }
+
+    /* ---------- 介面 ---------- */
+    function syncLabels() {
+        el('lblTh').textContent = S.th; el('lblS').textContent = S.s.toFixed(1); el('lblR').textContent = (S.R * 100).toFixed(1); el('lblM').textContent = S.M.toFixed(2);
+        el('lblRr').textContent = S.r.toFixed(2); el('lblTau').textContent = S.tau.toFixed(1); el('lblW0').textContent = S.w0.toFixed(1); el('lblMd').textContent = S.md.toFixed(1); el('lblI0').textContent = S.I0.toFixed(1);
+        document.querySelectorAll('#shapeRow .chip').forEach(b => b.classList.toggle('on', !!S.on[b.dataset.id]));
+    }
+    function resetRoll() { S.t = 0; S.playing = false; }
+    function resetSpin() { S.Lz = spinI(S.I0, S.md, S.r) * S.w0; S.phi = 0; S.ts = 0; S.hist = []; S.playing = true; }
+    function refresh() { syncLabels(); panels(); graphs(); }
+    function setMode(m) {
+        S.mode = m; document.querySelectorAll('#modeBar .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.m === m));
+        document.querySelectorAll('[data-for]').forEach(e => { e.hidden = e.dataset.for !== m; });
+        el('g3box').hidden = m !== 'spin'; el('legend').hidden = m !== 'roll';
+        el('cTitle').textContent = m === 'roll' ? '滾下斜面：誰先到底？' : '轉盤上的人：收手臂與外力矩';
+        el('gTitle').textContent = m === 'roll' ? '質心速度與位置對時間的圖' : '角速度、角動量與轉動動能對時間的圖';
+        el('btnPlay').textContent = m === 'roll' ? '▶ 釋放' : '▶ 播放'; el('btnReset').textContent = m === 'roll' ? '↺ 回到起點' : '↺ 重新開始';
+        el('dashTitle').textContent = '即時數據';
+        el('selSpd').value = m === 'roll' ? '0.5' : '1'; S.spd = +el('selSpd').value;
+        if (m === 'roll') { resetRoll(); renderExp(); } else { S.r = 0.8; S.tau = 0; el('slRr').value = 0.8; el('slTau').value = 0; resetSpin(); }
+        refresh();
+    }
+    // 參賽物體與觀察對象
+    el('shapeRow').insertAdjacentHTML('beforeend', SHAPES.map(o => `<button class="chip on" data-id="${o.id}" style="--c:${o.col}"><span class="dot"></span>${o.short}</button>`).join(''));
+    el('selObj').innerHTML = SHAPES.map(o => `<option value="${o.id}"${o.id === S.obj ? ' selected' : ''}>${o.name}</option>`).join('');
+    el('shapeBody').innerHTML = SHAPES.map(o => `<tr><td style="color:${o.col}">${o.name}</td><td>${o.beta ? o.frac + ' mR²' : '不轉動'}</td><td>${o.beta ? 'g sinθ／' + (1 + o.beta).toFixed(3).replace(/0+$/, '').replace(/\.$/, '') : 'g sinθ'}</td><td>${(o.beta / (1 + o.beta) * 100).toFixed(1)}%</td></tr>`).join('');
+    document.querySelectorAll('#shapeRow .chip').forEach(b => b.addEventListener('click', () => {
+        const id = b.dataset.id; if (S.on[id] && SHAPES.filter(x => S.on[x.id]).length === 1) return;         // 至少留一個
+        S.on[id] = !S.on[id]; resetRoll(); refresh();
+    }));
+    el('selObj').addEventListener('change', () => { S.obj = el('selObj').value; S.on[S.obj] = true; S.recs = []; resetRoll(); refresh(); renderExp(); });
+    const bind = (id, fn, after) => el(id).addEventListener('input', () => { fn(+el(id).value); if (after) after(); refresh(); });
+    bind('slTh', v => S.th = v, resetRoll); bind('slS', v => S.s = v, resetRoll); bind('slR', v => S.R = v / 100, resetRoll); bind('slM', v => S.M = v, resetRoll);
+    bind('slRr', v => S.r = v); bind('slTau', v => S.tau = v);
+    bind('slW0', v => S.w0 = v, resetSpin); bind('slMd', v => S.md = v, resetSpin); bind('slI0', v => S.I0 = v, resetSpin);
+    el('selSpd').addEventListener('change', () => S.spd = +el('selSpd').value);
+    document.querySelectorAll('#modeBar .mode-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.m)));
+    el('btnPlay').addEventListener('click', () => {
+        if (S.mode === 'roll' && S.t >= Math.max(...racers().map(o => rollTime(o.beta, S.th, S.s)))) S.t = 0;
+        S.playing = true;
+    });
+    el('btnPause').addEventListener('click', () => S.playing = false);
+    el('btnReset').addEventListener('click', () => { if (S.mode === 'roll') resetRoll(); else { S.tau = 0; el('slTau').value = 0; resetSpin(); } refresh(); });
+    el('btnRec').addEventListener('click', record);
+    el('btnClr').addEventListener('click', () => { S.recs = []; renderExp(); });
+    el('btnUnk').addEventListener('click', () => {
+        S.unk = !S.unk; S.recs = []; S.hid = S.unk;
+        if (S.unk) S.unkBeta = SHAPES[1 + Math.floor(Math.random() * 4)].beta;
+        resetRoll(); refresh(); renderExp();
+    });
+    el('btnRev').addEventListener('click', () => { S.hid = false; refresh(); renderExp(); });
+
+    let last = null, fn = 0;
+    function frame(ts) {
+        if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05) * S.spd; last = ts;
+        if (S.playing) {
+            if (S.mode === 'roll') { S.t += dt; if (S.t >= Math.max(...racers().map(o => rollTime(o.beta, S.th, S.s))) + 0.3) S.playing = false; }
+            else {
+                S.Lz = Math.max(-60, Math.min(60, S.Lz + S.tau * dt)); const I = Inow(), w = S.Lz / I;
+                S.phi += w * dt; S.ts += dt; S.hist.push([S.ts, w, S.Lz, S.Lz * S.Lz / (2 * I)]); if (S.hist.length > 4000) S.hist.splice(0, 1000);
+            }
+        }
+        S.mode === 'roll' ? drawRoll() : drawSpin();
+        if (!(fn++ % 3)) { panels(); graphs(); }
+        requestAnimationFrame(frame);
+    }
+    syncLabels(); panels(); graphs(); renderExp(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

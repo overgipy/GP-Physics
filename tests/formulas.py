@@ -197,9 +197,60 @@ def t_lc(ctx):
     pg.close()
 
 
+def t_rigid(ctx):
+    pg = open_page(ctx, "rigid-rotation", frozen=True)
+    g, th, s_len = 9.8, 30, 2.0
+    set_val(pg, "slTh", th); set_val(pg, "slS", s_len); set_val(pg, "slR", 4); set_val(pg, "slM", 0.8); step(pg, 6)
+    shapes = (("sphere", 2 / 5, "實心球"), ("cyl", 1 / 2, "圓柱"), ("shell", 2 / 3, "空心球"), ("ring", 1.0, "圓環"), ("block", 0.0, "滑塊"))
+    for sid, beta, name in shapes:
+        set_val(pg, "selObj", sid); step(pg, 6)
+        a = g * math.sin(math.radians(th)) / (1 + beta)
+        check(f"滾動 {name} a = g sinθ/(1+β)", meter(pg, "質心加速度"), a, 0.001)
+        check(f"滾動 {name} 到底時間 √(2s/a)", meter(pg, "到底時間"), math.sqrt(2 * s_len / a), 0.001)
+        check(f"滾動 {name} I = βmR²（×10⁻³ kg·m²）", meter(pg, "轉動慣量"), beta * 0.8 * 0.04 ** 2 * 1e3, 0.002, 0.0006)
+    # 質量、半徑不影響到底時間
+    set_val(pg, "selObj", "sphere"); set_val(pg, "slR", 10); set_val(pg, "slM", 2); step(pg, 6)
+    check("滾動 改變 m、R 後到底時間不變", meter(pg, "到底時間"), math.sqrt(2 * s_len * 1.4 / (g * 0.5)), 0.001)
+    # 實際釋放：到底後平動＋轉動動能 = mgh，轉動占 β/(1+β)
+    set_val(pg, "selSpd", 1); pg.click("#btnPlay"); step(pg, 200)
+    kt, kr = meter(pg, "平動動能"), meter(pg, "轉動動能")
+    check("滾動 力學能守恆 ½mv² + ½Iω² = mgs·sinθ", (kt or 0) + (kr or 0), 2 * g * s_len * 0.5, 0.002)
+    check("滾動 實心球轉動動能占比 2/7", (kr or 0) / ((kt or 0) + (kr or 1e-9)), 2 / 7, 0.003)
+    check("滾動 到底速度 √(2gs·sinθ/(1+β))", meter(pg, "質心速度"), math.sqrt(2 * g * s_len * 0.5 / 1.4), 0.003)
+    # 與獨立的數值積分（牛頓第二定律＋力矩方程式，逐步積分）比較
+    tnum = pg.evaluate("""() => { const beta = 2 / 3, th = 25 * Math.PI / 180, g = 9.8, s = 1.7; let d = 0, v = 0, w = 0, t = 0; const R = 0.05, dt = 1e-5;
+        while (d < s) { // 未知數 a、f： m a = m g sinθ − f； (β m R²)(a/R) = f R
+            const a = g * Math.sin(th) / (1 + beta), f = beta * a; v += (g * Math.sin(th) - f) * dt; w += f * R / (beta * R * R) * dt; d += v * dt; t += dt; }
+        return [t, LabTest.rollTime(beta, 25, s), v - w * R]; }""")
+    check("滾動 解析時間 vs 逐步積分", tnum[1], tnum[0], 1e-4); check("滾動 純滾動條件 v − ωR = 0", tnum[2], 0, abs_=1e-9)
+    # 實驗：a–sinθ 圖求 β
+    pg.uncheck("#chkNoise"); set_val(pg, "selObj", "shell")
+    for ang in (10, 20, 30, 40):
+        set_val(pg, "slTh", ang); pg.click("#btnRec")
+    check("滾動 實驗反求 β（空心球 2/3）", after("斜率 − 1 =", text(pg, "fitTxt")), 2 / 3, 0.003)
+    pg.click("#btnUnk")
+    for ang in (10, 25, 40):
+        set_val(pg, "slTh", ang); pg.click("#btnRec")
+    est = after("斜率 − 1 =", text(pg, "fitTxt")); pg.click("#btnRev")
+    m_ = re.search(r"β = [^=]*= (\d\.\d+)，誤差", text(pg, "fitTxt"))
+    check("滾動 未知物體：推算 β vs 揭曉值", est, float(m_.group(1)) if m_ else -1, 0.01)
+    # 模式 ②：角動量守恆與外力矩
+    pg.click('[data-m="spin"]'); set_val(pg, "slW0", 2); set_val(pg, "slMd", 3); set_val(pg, "slI0", 1.2); step(pg, 6)
+    I1 = 1.2 + 2 * 3 * 0.8 ** 2; L = I1 * 2
+    check("轉盤 I = I₀ + 2mr²", meter(pg, "轉動慣量"), I1, 0.001)
+    set_val(pg, "slRr", 0.2); step(pg, 6)
+    I2 = 1.2 + 2 * 3 * 0.2 ** 2
+    check("轉盤 收手臂後 ω₂ = I₁ω₁/I₂", meter(pg, "角速度"), L / I2, 0.002)
+    check("轉盤 角動量不變", meter(pg, "角動量"), L, 0.001)
+    check("轉盤 轉動動能 L²/2I₂", meter(pg, "轉動動能"), L * L / (2 * I2), 0.002)
+    set_val(pg, "slTau", 2); l0 = meter(pg, "角動量"); step(pg, 6); t0 = num(text(pg, "runState")); l0 = meter(pg, "角動量"); step(pg, 120); t1 = num(text(pg, "runState")); l1 = meter(pg, "角動量")
+    check("轉盤 外力矩 τ = ΔL/Δt", (l1 - l0) / (t1 - t0), 2, 0.03)
+    pg.close()
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
-         "lc-circuit": t_lc}
+         "lc-circuit": t_lc, "rigid-rotation": t_rigid}
 
 
 def main():
