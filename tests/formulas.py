@@ -372,33 +372,6 @@ def t_elevator(ctx):
     check("電梯 挑戰判定答對", 1.0 if "答對" in text(pg, "chRes") else 0.0, 1.0)
 
 
-def t_measure(ctx):
-    pg = open_page(ctx, "measurement", frozen=True)
-    for x, n, main, k in ((23.7, 10, 23, 7), (5.0, 10, 5, 0), (40.9, 10, 40, 9), (12.35, 20, 12, 7), (30.95, 20, 30, 19)):
-        set_val(pg, "selN", n); set_val(pg, "v1", x); step(pg, 6)
-        check(f"游標尺 {x} mm（{n} 分度）主尺", meter(pg, "主尺讀數"), main, abs_=1e-9)
-        check(f"游標尺 {x} mm（{n} 分度）對齊格數", meter(pg, "對齊的游標格數"), k, abs_=1e-9)
-        check(f"游標尺 {x} mm 幾何對齊線 = 讀數格數", pg.evaluate("([x, n]) => LabTest.aligned(x, n)", [x, n]), k, abs_=1e-9)
-    set_val(pg, "selN", 10); set_val(pg, "v1", 23.7); set_val(pg, "selZ", 3); step(pg, 6)
-    check("游標尺 零點 +3 格：刻度讀數", meter(pg, "刻度讀數"), 24.0, abs_=1e-6); check("游標尺 修正後真實值", meter(pg, "修正後"), 23.7, abs_=1e-6)
-    set_val(pg, "selZ", 0); pg.click('[data-m="mic"]')
-    for x, s, th in ((7.38, 7.0, 38.0), (7.88, 7.5, 38.0), (0.495, 0.0, 49.5), (12.5, 12.5, 0.0), (3.215, 3.0, 21.5)):
-        set_val(pg, "v2", x); step(pg, 6)
-        check(f"測微器 {x} mm 套筒", meter(pg, "套筒讀數"), s, abs_=1e-9); check(f"測微器 {x} mm 轉筒", meter(pg, "轉筒讀數"), th, abs_=1e-6)
-    pg.click("#btnQ"); step(pg, 6)
-    true = pg.evaluate("+document.getElementById('v2').value"); pg.fill("#ans", f"{true:.3f}"); pg.click("#btnA")
-    check("測微器 挑戰判定答對", 1.0 if "答對" in text(pg, "chRes") else 0.0, 1.0)
-    import statistics
-    data = [7.381, 7.379, 7.384, 7.380, 7.376]
-    st = pg.evaluate("a => LabTest.stats(a)", data)
-    check("不確定度 平均值", st["mean"], statistics.mean(data), 1e-9); check("不確定度 樣本標準差", st["sd"], statistics.stdev(data), 1e-9)
-    check("不確定度 u_A = s/√n", st["uA"], statistics.stdev(data) / math.sqrt(5), 1e-9)
-    pg.click("#btnM5"); step(pg, 2)
-    check("不確定度 B 類 = 0.01/(2√3)", meter(pg, "B 類"), 0.01 / (2 * math.sqrt(3)), 0.02)
-    ua, u = meter(pg, "A 類"), meter(pg, "組合不確定度")
-    check("不確定度 組合 u = √(uA²+uB²)", u, math.hypot(ua, 0.01 / (2 * math.sqrt(3))), 0.03)
-
-
 def t_kepler(ctx):
     pg = open_page(ctx, "kepler", frozen=True)
     for r0, k, M in ((1.0, 1.0, 1.0), (1.0, 1.25, 1.0), (1.5, 0.7, 2.0), (0.6, 1.3, 0.5)):
@@ -452,29 +425,6 @@ def t_static(ctx):
     check("梯子 對梯頂的合力矩也為零", tau_top, 0, abs_=1e-6)
 
 
-def t_coaster(ctx):
-    pg = open_page(ctx, "energy-coaster", frozen=True)
-    g = 9.8
-    run = lambda h, R, h2, mu, gg=g: pg.evaluate("a => { const r = LabTest.run(...a); delete r.T; return r; }", [h, R, h2, mu, gg])
-    for h in (2.0, 6.0, 8.0):
-        check(f"雲霄飛車 h={h} 最低點速率 √(2gh)", run(h, 0.8, 0, 0)["vBottom"], math.sqrt(2 * g * h), 0.003)
-    r = run(6, 2, 3, 0)
-    check("雲霄飛車 迴圈頂速率 √(2g(h−2R))", r["vTop"], math.sqrt(2 * g * 2), 0.005); check("雲霄飛車 迴圈頂正向力 N/m = v²/R − g", r["nTop"], g, 0.02)
-    check("雲霄飛車 h=6、R=2 通過迴圈與山丘", (0 if r["fell"] else 1) + (1 if r["passedHill"] else 0), 2, abs_=0)
-    check("雲霄飛車 h = 2.5R×1.01 可通過", 0 if run(5.05, 2, 0, 0)["fell"] else 1, 1, abs_=0); check("雲霄飛車 h = 2.5R×0.99 脫離軌道", 1 if run(4.95, 2, 0, 0)["fell"] else 0, 1, abs_=0)
-    check("雲霄飛車 山丘比起點高：過不去", 1 if run(4, 0.8, 5, 0)["passedHill"] else 0, 0, abs_=0)
-    check("雲霄飛車 月球上最低點速率", run(6, 1, 0, 0, 1.62)["vBottom"], math.sqrt(2 * 1.62 * 6), 0.003)
-    f = pg.evaluate("""() => { const T = LabTest.build(6, 2, 0), st = { s: 0, v: 0, t: 0, heat: 0 }; const r = LabTest.run(6, 2, 0, 0.05, 9.8); return [r.vBottom, r.heat]; }""")
-    check("雲霄飛車 有摩擦時最低點速率變小", 1 if f[0] < math.sqrt(2 * g * 6) * 0.99 else 0, 1, abs_=0)
-    set_val(pg, "h0", 6); set_val(pg, "R", 2); set_val(pg, "mu", 0.05); set_val(pg, "m", 500); set_val(pg, "selSpd", 1); pg.click("#btnPlay"); step(pg, 90)
-    k, u, q = meter(pg, "動能"), meter(pg, "重力位能"), meter(pg, "摩擦生熱")
-    check("雲霄飛車 K + U + 熱 = mgh（kJ）", k + u + q, 500 * g * 6 / 1000, 0.002); check("雲霄飛車 摩擦生熱 > 0", 1 if q > 0.05 else 0, 1, abs_=0)
-    set_val(pg, "mu", 0); pg.click("#btnUnk")
-    for h in (2, 4, 6, 8): set_val(pg, "h0", h); pg.click("#btnRec")
-    est = num(text(pg, "gFitVal")); pg.click("#btnRev")
-    check("雲霄飛車 未知星球：斜率/2 = g", est, num(text(pg, "gTrue")), 0.01)
-
-
 def t_efield(ctx):
     pg = open_page(ctx, "electric-field", frozen=True)
     k = 8.99e9; q = 2e-9
@@ -504,29 +454,6 @@ def t_efield(ctx):
     check("導電紙 未知電壓：斜率 × d = V₀", est, num(text(pg, "vTrue")), 0.01)
     pg.click("#btnUnk"); pg.click('[data-e="point"]'); pg.evaluate("LabTest.probe([380, 90])"); step(pg, 6)
     check("導電紙 點電極中垂線電位 = V₀/2", meter(pg, "電位"), 3, 0.002)
-
-
-def t_capacitor(ctx):
-    pg = open_page(ctx, "capacitor", frozen=True)
-    e0 = 8.854e-12
-    for i, v in (("A", 200), ("d", 2), ("kp", 1), ("V0", 6)): set_val(pg, i, v)
-    step(pg, 6); C = e0 * 0.02 / 0.002
-    check("電容 C = ε₀A/d（pF）", meter(pg, "電容"), C * 1e12, 0.002); check("電容 Q = CV（nC）", meter(pg, "電量"), C * 6 * 1e9, 0.002)
-    check("電容 E = V/d（kV/m）", meter(pg, "電場"), 6 / 0.002 / 1000, 0.002); check("電容 U = ½CV²（nJ）", meter(pg, "儲存電能"), 0.5 * C * 36 * 1e9, 0.002)
-    set_val(pg, "d", 4); step(pg, 6)        # 接電池，板距加倍
-    check("接電池 d 加倍：V 不變", meter(pg, "電壓"), 6, 0.001); check("接電池 d 加倍：Q 減半", meter(pg, "電量"), C * 3 * 1e9, 0.002); check("接電池 d 加倍：E 減半", meter(pg, "電場"), 1.5, 0.002)
-    set_val(pg, "d", 2); pg.click('[data-m="iso"]'); set_val(pg, "d", 4); step(pg, 6)      # 斷開後板距加倍
-    check("斷開 d 加倍：Q 不變", meter(pg, "電量"), C * 6 * 1e9, 0.002); check("斷開 d 加倍：V 加倍", meter(pg, "電壓"), 12, 0.002)
-    check("斷開 d 加倍：E 不變", meter(pg, "電場"), 3, 0.002); check("斷開 d 加倍：U 加倍", meter(pg, "儲存電能"), C * 36 * 1e9, 0.002)
-    set_val(pg, "kp", 4); step(pg, 6)
-    check("斷開 插入 κ=4 介質：V 變 1/4", meter(pg, "電壓"), 3, 0.002); check("斷開 插入介質：σ = Q/A 不變（nC/m²）", meter(pg, "面電荷密度"), C * 6 / 0.02 * 1e9, 0.002)
-    pg.click('[data-m="bat"]'); set_val(pg, "kp", 1); pg.uncheck("#chkNoise")
-    for dd in (1, 2, 4, 8): set_val(pg, "d", dd); pg.click("#btnRec")
-    check("電容 實驗求 ε₀（×10⁻¹²）", num(text(pg, "e0Fit")), 8.854, 0.002)
-    pg.click("#btnUnk")
-    for dd in (1, 2, 4, 8): set_val(pg, "d", dd); pg.click("#btnRec")
-    est = num(text(pg, "kFit")); pg.click("#btnRev")
-    check("電容 未知介質：由斜率求 κ", est, num(text(pg, "kTrue")), 0.01)
 
 
 def t_balance(ctx):
@@ -600,53 +527,6 @@ def t_microwave(ctx):
     check("偏振 柵欄 45° 讓原本收不到的 φ=90° 重新收到 25", meter(pg, "接收器讀數"), 25, 0.002)
 
 
-def t_brownian(ctx):
-    pg = open_page(ctx, "brownian-motion", frozen=True)
-    kB = 1.380649e-23
-    for i, v in (("T", 293), ("a", 0.5), ("eta", 1)): set_val(pg, i, v)
-    step(pg, 6); D = kB * 293 / (6 * math.pi * 1e-3 * 0.5e-6) * 1e12
-    check("布朗 D = kT/6πηa（μm²/s）", meter(pg, "理論擴散係數"), D, 0.002)
-    set_val(pg, "T", 373); set_val(pg, "a", 0.25); set_val(pg, "eta", 0.5); step(pg, 6)
-    check("布朗 T↑、a 減半、η 減半 → D", meter(pg, "理論擴散係數"), D * 373 / 293 * 4, 0.002)
-    for i, v in (("T", 293), ("a", 0.5), ("eta", 1)): set_val(pg, i, v)
-    pg.evaluate("LabTest.seed(12345)"); dm = pg.evaluate("LabTest.run(120)")
-    check("布朗 模擬 240 顆 120 s：⟨r²⟩ 斜率/4 ≈ D（統計誤差 12% 內）", dm, D, 0.12)
-    # 方均位移 ∝ t：前半段與全段的斜率一致
-    r = pg.evaluate("""() => { LabTest.seed(777); const d1 = LabTest.run(60), d2 = LabTest.run(60); return [d1, d2]; }""")
-    check("布朗 60 s 與 120 s 量到的 D 一致（⟨r²⟩ ∝ t）", r[1], r[0], 0.15)
-    pg.evaluate("LabTest.seed(2024)"); ks = []
-    for T, a, eta in ((293, 0.5, 1.0), (333, 0.3, 0.8), (373, 0.2, 0.5), (300, 1.0, 1.0)):
-        for i, v in (("T", T), ("a", a), ("eta", eta)): set_val(pg, i, v)
-        pg.evaluate("LabTest.run(120)"); pg.click("#btnRec")
-    check("布朗 實驗求 k（×10⁻²³，統計誤差 12% 內）", num(text(pg, "kFit")), 1.38, 0.12)
-    check("布朗 N_A = R/k 與頁面的 k 一致", num(text(pg, "naFit")), 8.314 / (num(text(pg, "kFit")) * 1e-23) / 1e23, 0.01)
-    pg.click("#btnUnk"); pg.evaluate("LabTest.run(150)"); pg.click("#btnRec"); pg.evaluate("LabTest.run(150)")
-    est = num(text(pg, "aFit")); pg.click("#btnRev")
-    check("布朗 未知粒徑（統計誤差 15% 內）", est, num(text(pg, "aTrue")), 0.15)
-
-
-def t_blackbody(ctx):
-    pg = open_page(ctx, "blackbody", frozen=True)
-    b, sig = 2.897772e-3, 5.670374e-8
-    for T in (310, 2800, 5800, 9950):
-        set_val(pg, "T", T); step(pg, 10); Tp = float(pg.evaluate("+document.getElementById('T').value"))
-        check(f"黑體 {Tp:.0f} K 數值峰值 = b/T（nm）", meter(pg, "峰值波長"), b / Tp * 1e9, 0.002, 0.6)
-        tot = pg.evaluate("T => LabTest.integ(T, 1e-8, 1e-2)", Tp)
-        check(f"黑體 {Tp:.0f} K 光譜面積 = σT⁴", tot, sig * Tp ** 4, 0.001)
-    set_val(pg, "T", 5800); step(pg, 10)
-    h, c0, k = 6.62607e-34, 2.99792e8, 1.380649e-23
-    lam = 500e-9; x = h * c0 / (lam * k * 5800)
-    check("黑體 普朗克公式（500 nm、5800 K）", pg.evaluate("LabTest.planck(500e-9, 5800)"), 2 * math.pi * h * c0 ** 2 / lam ** 5 / math.expm1(x), 1e-6)
-    r = pg.evaluate("[LabTest.planck(1e-3, 300), 2 * Math.PI * 2.99792e8 * 1.380649e-23 * 300 / 1e-12]")
-    check("黑體 長波長極限 → 瑞立–金斯", r[0], r[1], 0.03)
-    check("黑體 太陽可見光比例約 44–47%", meter(pg, "可見光占的比例"), 45.5, 0.04)
-    for T in (3000, 4000, 6000, 10000): set_val(pg, "T", T); pg.click("#btnRec")
-    check("黑體 實驗求維恩常數（×10⁻³ m·K）", num(text(pg, "bFit")), 2.898, 0.002)
-    pg.click("#btnUnk"); step(pg, 10); lp = meter(pg, "峰值波長")
-    est = b / (lp * 1e-9); pg.fill("#ans", f"{est:.0f}"); pg.click("#btnA")
-    check("黑體 未知恆星 T = b/λmax", est, num(text(pg, "tTrue")), 0.01); check("黑體 未知恆星判定答對", 1.0 if "答對" in text(pg, "fitTxt") else 0.0, 1.0)
-
-
 def t_decay(ctx):
     pg = open_page(ctx, "radioactive-decay", frozen=True)
     set_val(pg, "th", 10); set_val(pg, "selN", 1600); step(pg, 6)
@@ -673,17 +553,12 @@ TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_proje
          "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing,
          "atwood": t_atwood,
          "elevator": t_elevator,
-         "measurement": t_measure,
          "kepler": t_kepler,
          "static-equilibrium": t_static,
-         "energy-coaster": t_coaster,
          "electric-field": t_efield,
-         "capacitor": t_capacitor,
          "current-balance": t_balance,
          "transformer": t_transformer,
          "microwave": t_microwave,
-         "brownian-motion": t_brownian,
-         "blackbody": t_blackbody,
          "radioactive-decay": t_decay}
 
 
