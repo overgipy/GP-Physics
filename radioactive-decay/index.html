@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>放射性衰變與半衰期 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/lab-mobile.css">
+    <link rel="stylesheet" href="../shared/touch.css">
+    <style>
+        [hidden] { display: none !important; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        input.ans { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 8px; font-size: 1rem; width: 7em; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>☢️ 放射性衰變與半衰期</h1>
+    <p class="subtitle">N = N₀e<sup>−λt</sup> = N₀(½)<sup>t／T½</sup>　｜　A = λN</p>
+</header>
+
+<div class="container">
+<div class="card sticky-sim"><div class="card-title"><span id="cTitle">放射性原子核：何時衰變完全隨機</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div><div class="canvas-wrap"><canvas id="scene" width="760" height="400"></canvas></div></div><div class="card"><div class="card-title">選擇核種與條件</div><div class="preset-row"><span class="lbl">核種：</span><button class="chip on" data-n="自訂,10,秒">自訂</button><button class="chip" data-n="碘-131,8.0,天">碘-131</button><button class="chip" data-n="氡-222,3.8,天">氡-222</button><button class="chip" data-n="鈷-60,5.3,年">鈷-60</button><button class="chip" data-n="碳-14,5730,年">碳-14</button></div><div class="controls-grid"><div class="control-group"><div class="control-label"><span>半衰期 T<sub>½</sub></span><b style="color:var(--yellow)"><span id="thL"></span> <span class="tu">秒</span></b></div><input type="range" id="th" min="1" max="20" step="0.5" value="10"><div class="sub-note">只有「自訂」可以調整</div></div><div class="control-group"><div class="control-label">起始原子核數 N₀</div><select id="selN"><option value="100">100 顆</option><option value="400">400 顆</option><option value="1600" selected>1600 顆</option></select></div><div class="control-group"><div class="control-label">播放速度</div><select id="selSpd"><option value="0.125">每秒 1／8 個半衰期</option><option value="0.25" selected>每秒 1／4 個半衰期</option><option value="1">每秒 1 個半衰期</option></select></div></div><div class="btn-row" style="margin:8px 0"><button class="btn green" id="btnPlay">▶ 開始</button><button class="btn secondary" id="btnPause">⏸ 暫停</button><button class="btn secondary" id="btnReset">↺ 重新開始</button></div></div><div class="card"><div class="card-title">即時數據</div><div class="dashboard" id="dash"></div><div class="status" id="status"></div></div><div class="card"><div class="card-title">N–t 圖與活度–t 圖</div><div class="two-col"><div class="graph-box"><canvas id="g1" width="480" height="260"></canvas></div><div class="graph-box"><canvas id="g2" width="480" height="260"></canvas></div></div><div class="legend"><span style="--c:#00d4ff">模擬（實際數到的）</span><span style="--c:#ffcc00">理論 N₀e^(−λt)</span></div></div><div class="card"><div class="card-title">實驗：由 ln N–t 圖求半衰期</div><div class="fit-text">指數衰減取自然對數後是直線：ln N = ln N₀ − λt，斜率 = −λ，半衰期 T<sub>½</sub> = ln 2／λ。模擬進行一段時間後按「分析目前數據」。按「未知核種」會隱藏半衰期，請由圖求出來。（N 太小時起伏很大，只取 N ≥ 20 的數據）</div><div class="btn-row" style="margin:8px 0"><button class="btn orange" id="btnFit">📈 分析目前數據</button><button class="btn secondary" id="btnUnk">🎲 未知核種</button><button class="btn secondary" id="btnRev">揭曉</button></div><div class="graph-box"><canvas id="gFit" width="760" height="320"></canvas></div><div class="fit-text" id="fitTxt"></div></div>
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary><ul><li>放射性衰變定律：<b>N = N₀ e<sup>−λt</sup> = N₀ (½)<sup>t／T½</sup></b>；N 剩下的原子核數、λ 衰變常數（1/s）、T<sub>½</sub> 半衰期。</li><li>半衰期與衰變常數：<b>T<sub>½</sub> = ln 2／λ ≈ 0.693／λ</b>；每經過一個半衰期，剩下的數量減半。</li><li>活度（每單位時間衰變的次數）：<b>A = λN</b>，單位貝克（Bq = 次/秒）；活度也隨時間指數衰減，半衰期相同。</li><li>取對數：<b>ln N = ln N₀ − λt</b>，ln N–t 圖是斜率 −λ 的直線。</li><li>每一顆原子核在很短的時間 Δt 內衰變的機率是 λΔt，與它已經「活」了多久無關。</li><li>碳-14 定年：由剩下的比例 N／N₀ = (½)<sup>t／5730 年</sup> 反推年代。</li></ul>
+            <p class="assume">理想化假設：每顆原子核的衰變彼此獨立，機率不隨時間、溫度、壓力或化學狀態改變；衰變後的子核是穩定的（不再衰變）；偵測器可以數到每一次衰變。畫面上一格代表一顆原子核，真實樣品的數量是 10²⁰ 以上，所以實際的曲線非常平滑。</p></details>
+        <details><summary>建議講解順序</summary><ol><li>先用 100 顆：開始後看哪一顆先衰變——無法預測；N–t 圖歪歪扭扭。</li><li>換成 1600 顆：個別仍然隨機，但整體很接近理論曲線——大量統計才有規律。</li><li>暫停在 1、2、3 個半衰期，數一數剩下的數量：一半、四分之一、八分之一。</li><li>看活度圖：一開始衰變得最快，越來越慢，形狀與 N–t 一樣。</li><li>問：兩個半衰期後會全部衰變完嗎？</li><li>做實驗：ln N–t 圖求半衰期，再挑戰未知核種；最後換成碳-14 談定年。</li></ol></details>
+        <details><summary>可以問學生的問題</summary><ul><li>經過 3 個半衰期，還剩下原來的幾分之幾？衰變掉幾分之幾？（1／8；7／8）</li><li>某一顆原子核已經撐過 2 個半衰期，它在下一個半衰期內衰變的機率是多少？（仍是 1／2）</li><li>樣品的活度降到原來的 1／16 需要多久？（4 個半衰期）</li><li>古木中碳-14 的含量是活樹的 25%，它大約多久以前死亡？（約 11,460 年）</li><li>半衰期短的核種比較危險還是半衰期長的？（同樣數量下半衰期短的活度大，但很快就衰變完；要看情況）</li></ul></details>
+        <details><summary>常見迷思</summary><ul><li><b>「兩個半衰期就全部衰變完」</b>：每個半衰期只減少「當時剩下」的一半，兩個半衰期後還剩 1／4。</li><li><b>「放越久的原子核越容易衰變」</b>：衰變機率與原子核的「年齡」無關，沒有老化這回事。</li><li><b>「加熱或加壓可以讓衰變變快」</b>：衰變是原子核內部的過程，幾乎不受溫度、壓力、化學反應影響。</li><li><b>「半衰期是某一顆原子核的壽命的一半」</b>：半衰期是統計量，描述一大群原子核減半所需的時間。</li></ul></details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script src="../shared/lab.js"></script>
+<script>
+(() => {
+    'use strict';
+    const { el, rad, deg, arrow, txt, graph, meter, fitLine, fitThroughOrigin, noise, niceStep } = Lab;
+    const $$ = s => [...document.querySelectorAll(s)];
+    // 滑桿：顯示目前數值（id + 'L'），拖動時呼叫 cb；回傳讀值函式
+    function sl(id, dp, cb) { const e = el(id), lb = el(id + 'L'), up = () => { if (lb) lb.textContent = (+e.value).toFixed(dp); };
+        e.addEventListener('input', () => { up(); cb && cb(); }); up(); return () => +e.value; }
+    // 模式切換：有 data-for 的區塊只在對應模式顯示
+    function showFor(m) { $$('[data-for]').forEach(e => e.hidden = !e.dataset.for.split(' ').includes(m));
+        $$('#modeBar .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.m === m)); }
+    function onMode(cb) { $$('#modeBar .mode-btn').forEach(b => b.addEventListener('click', () => { showFor(b.dataset.m); cb(b.dataset.m); })); }
+    const rows = (id, arr) => el(id).innerHTML = arr.map(r => '<tr>' + r.map(v => `<td>${v}</td>`).join('') + '</tr>').join('') || '<tr><td colspan="9" style="text-align:center;color:#6a7a92">尚無數據</td></tr>';
+    // 動畫迴圈：fn(dt)；dt 為秒，最大 0.05
+    function loop(fn) { let last = null; const f = ts => { if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05); last = ts; fn(dt); requestAnimationFrame(f); }; requestAnimationFrame(f); }
+    // 畫布拖曳：cb(x, y, 階段)；x、y 為畫布座標，階段為 'down'／'move'／'up'
+    function dragOn(cv, cb) { let on = false; cv.style.touchAction = 'none'; const P = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
+        cv.addEventListener('pointerdown', e => { on = true; cv.setPointerCapture(e.pointerId); cb(...P(e), 'down'); }); cv.addEventListener('pointermove', e => { if (on) cb(...P(e), 'move'); });
+        const up = e => { if (on) { on = false; cb(...P(e), 'up'); } }; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up); }
+
+    const c = el('scene').getContext('2d'), W = 760, H = 400, LN2 = Math.LN2;
+    let seedV = 0; const rnd = () => { if (!seedV) return Math.random(); seedV = (seedV + 0x6D2B79F5) | 0; let t = Math.imul(seedV ^ seedV >>> 15, 1 | seedV); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+    const S = { t: 0, playing: false, dt: [], N: 0, hist: [], act: [], name: '自訂', unit: '秒', unk: false, hid: false, thU: 10, fit: null };
+    const ths = sl('th', 1, () => reset()), th = () => S.unk ? S.thU : (S.name === '自訂' ? ths() : S.thP), lam = () => LN2 / th(), N0 = () => +el('selN').value;
+    const reset = () => { S.t = 0; S.playing = false; S.dt = new Float64Array(N0()).fill(-1); S.N = N0(); S.hist = [[0, S.N]]; S.act = []; S.bin = 0; S.binT = 0; S.fit = null; el('fitTxt').textContent = ''; };
+    function advance(d) {      // d：時間（與半衰期同單位）
+        const n = Math.max(1, Math.ceil(d / (th() / 200))), h = d / n, p = -Math.expm1(-lam() * h);
+        for (let k = 0; k < n; k++) { S.t += h; for (let i = 0; i < S.dt.length; i++) if (S.dt[i] < 0 && rnd() < p) { S.dt[i] = S.t; S.N--; S.bin++; }
+            if (S.t - S.binT >= th() / 8) { S.act.push([S.binT + th() / 16, S.bin / (S.t - S.binT)]); S.bin = 0; S.binT = S.t; } S.hist.push([S.t, S.N]); }
+        if (S.hist.length > 6000) S.hist = S.hist.filter((_, i) => i % 2 === 0); }
+    function fitHalf() { const pts = S.hist.filter(p => p[1] >= 20).map(p => [p[0], Math.log(p[1])]); if (pts.length < 10 || pts[pts.length - 1][0] < th() * 0.3) return null; const f = fitLine(pts); return f ? { lam: -f.m, th: LN2 / -f.m, b: f.b, pts } : null; }
+    window.LabTest = { seed: n => { seedV = n; reset(); }, run: t => { advance(t); return S.N; }, fitHalf: () => { const f = fitHalf(); return f ? f.th : null; }, hidden: () => S.thU };
+    function draw() {
+        c.fillStyle = '#080a0f'; c.fillRect(0, 0, W, H); const n = S.dt.length, cols = Math.sqrt(n), cs = 380 / cols, r = Math.max(2, cs * 0.36);
+        for (let i = 0; i < n; i++) { const x = 14 + (i % cols + .5) * cs, y = 10 + (Math.floor(i / cols) + .5) * cs, d = S.dt[i]; c.fillStyle = d < 0 ? '#00d4ff' : (S.t - d < th() * 0.06 ? '#ffcc00' : '#3a2530'); c.beginPath(); c.arc(x, y, d >= 0 && S.t - d < th() * 0.06 ? r * 1.5 : r, 0, 7); c.fill(); }
+        const x0 = 430, u = S.hid ? '？' : (S.t / th()).toFixed(2);
+        txt(c, S.hid ? '未知核種' : S.name, x0, 44, '#f0f3f8', 24); txt(c, `剩下 ${S.N} 顆`, x0, 96, '#00d4ff', 28); txt(c, `已衰變 ${n - S.N} 顆`, x0, 136, '#ff6b81', 22);
+        txt(c, `經過時間 ${S.t.toFixed(S.unit === '年' && th() > 100 ? 0 : 2)} ${S.unit}`, x0, 186, '#c3d0e4', 20); txt(c, `= ${u} 個半衰期`, x0, 216, '#ffcc00', 20);
+        const bw = 300; c.fillStyle = '#3a2530'; c.fillRect(x0, 250, bw, 26); c.fillStyle = '#00d4ff'; c.fillRect(x0, 250, bw * S.N / n, 26); c.strokeStyle = '#8a99ad'; c.lineWidth = 1.5; c.strokeRect(x0, 250, bw, 26);
+        [0.5, 0.25, 0.125].forEach((f, i) => { const x = x0 + bw * f; c.strokeStyle = '#ffcc00'; c.beginPath(); c.moveTo(x, 244); c.lineTo(x, 282); c.stroke(); txt(c, ['½', '¼', '⅛'][i], x, 304, '#ffcc00', 18, 'center'); });
+        txt(c, '藍：尚未衰變　暗：已衰變　黃：剛衰變', x0, 350, '#9aa8bd', 16); txt(c, '一格 = 一顆原子核', x0, 376, '#6a7a92', 16);
+    }
+    function panels() {
+        const n = S.dt.length, q = v => S.hid ? '？' : v, thN = n * Math.exp(-lam() * S.t), dp = th() > 100 ? 0 : 2;
+        el('dash').innerHTML = [meter('剩下的原子核 N', S.N, '顆', '#00d4ff'), meter('理論值 N₀e^(−λt)', q(thN.toFixed(1)), '顆', '#ffcc00'), meter('剩下的比例 N／N₀', (S.N / n * 100).toFixed(1), '%', '#00d4ff'), meter('半衰期 T½', q(th().toFixed(th() > 100 ? 0 : 1)), S.unit, '#ffcc00'),
+            meter('衰變常數 λ = ln2／T½', q(lam().toPrecision(3)), '1/' + S.unit, '#ff9f43'), meter('活度 A = λN', q((lam() * S.N).toPrecision(3)), '次/' + S.unit, '#ff6b81'), meter('經過時間', S.t.toFixed(dp), S.unit)].join('');
+        el('status').innerHTML = S.N === 0 ? '全部衰變完了。真實樣品的原子核多到數不完，所以永遠測得到一點點。' : n <= 100 ? '顆數少：隨機起伏明顯，曲線歪歪扭扭。' : '顆數多：個別衰變仍然隨機，但整體很接近理論曲線。';
+        const tm = Math.max(th() * 4, S.t), thy = Array.from({ length: 121 }, (_, i) => { const t = tm * i / 120; return [t, n * Math.exp(-lam() * t)]; });
+        graph(el('g1'), { xmin: 0, xmax: tm, ymin: 0, ymax: n * 1.08, title: `N–t 圖`, xl: `t (${S.unit})`, yl: 'N (顆)', L: 70, series: (S.hid ? [] : [{ pts: thy, col: '#ffcc00', w: 2, dash: [6, 5] }]).concat([{ pts: S.hist, col: '#00d4ff', w: 2.5 }]), dots: S.hid ? [] : [1, 2, 3].map(k => ({ x: k * th(), y: n / 2 ** k, col: '#ffcc00', r: 5 })) });
+        graph(el('g2'), { xmin: 0, xmax: tm, ymin: 0, ymax: lam() * n * 1.3, title: '活度–t 圖', xl: `t (${S.unit})`, yl: `A (次/${S.unit})`, L: 70, series: (S.hid ? [] : [{ pts: thy.map(p => [p[0], lam() * p[1]]), col: '#ffcc00', w: 2, dash: [6, 5] }]).concat([{ pts: S.act, col: '#ff6b81', w: 2 }]), dots: S.act.map(p => ({ x: p[0], y: p[1], col: '#ff6b81', r: 3 })) });
+        const f = S.fit, lp = S.hist.filter(p => p[1] > 0).map(p => [p[0], Math.log(p[1])]);
+        graph(el('gFit'), { xmin: 0, xmax: tm, ymin: 0, ymax: Math.log(n) * 1.08, title: 'ln N–t 圖', xl: `t (${S.unit})`, yl: 'ln N', series: [{ pts: lp, col: '#00d4ff', w: 2 }].concat(f ? [{ pts: [[0, f.b], [tm, Math.max(0, f.b - f.lam * tm)]], col: '#ffcc00', w: 2 }] : []) });
+    }
+    function showFit() { const f = S.fit = fitHalf(); if (!f) { el('fitTxt').textContent = '數據還不夠：讓模擬多跑一會兒（至少 0.3 個半衰期）。'; return; }
+        el('fitTxt').innerHTML = `直線斜率 = −λ = −${f.lam.toPrecision(3)} 1/${S.unit} → 半衰期 T<sub>½</sub> = ln 2／λ = <b id="thFit">${f.th.toPrecision(3)}</b> ${S.unit}。` + (S.unk ? (S.hid ? '　按「揭曉」對答案。' : `　正確答案 T<sub>½</sub> = <b id="thTrue">${S.thU.toFixed(1)}</b> ${S.unit}。`) : `（設定值 ${th()}）`); }
+    const setUI = () => { el('th').disabled = S.unk || S.name !== '自訂'; el('thL').textContent = S.hid ? '？' : String(th()); $$('.tu').forEach(e => e.textContent = S.unit); el('btnUnk').textContent = S.unk ? '回到已知核種' : '🎲 未知核種'; el('btnRev').disabled = !(S.unk && S.hid); };
+    $$('.chip[data-n]').forEach(b => b.addEventListener('click', () => { if (S.unk) return; const [nm, v, u] = b.dataset.n.split(','); S.name = nm; S.unit = u; S.thP = +v; $$('.chip[data-n]').forEach(x => x.classList.toggle('on', x === b)); reset(); setUI(); }));
+    el('btnFit').addEventListener('click', showFit);
+    el('btnUnk').addEventListener('click', () => { S.unk = !S.unk; S.hid = S.unk; if (S.unk) { S.thU = 2 + Math.floor(rnd() * 27) / 2; S.unit = '秒'; S.name = '自訂'; $$('.chip[data-n]').forEach((x, i) => x.classList.toggle('on', i === 0)); } reset(); setUI(); });
+    el('btnRev').addEventListener('click', () => { S.hid = false; setUI(); showFit(); });
+    el('btnPlay').addEventListener('click', () => { if (S.N === 0) reset(); S.playing = true; }); el('btnPause').addEventListener('click', () => S.playing = false); el('btnReset').addEventListener('click', reset); el('selN').addEventListener('change', reset);
+    reset(); setUI(); let fn = 0; loop(dt => { if (S.playing && S.N > 0) advance(dt * +el('selSpd').value * th()); draw(); if (!(fn++ % 4)) panels(); });
+
+})();
+</script>
+</body>
+</html>

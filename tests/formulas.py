@@ -647,6 +647,27 @@ def t_blackbody(ctx):
     check("黑體 未知恆星 T = b/λmax", est, num(text(pg, "tTrue")), 0.01); check("黑體 未知恆星判定答對", 1.0 if "答對" in text(pg, "fitTxt") else 0.0, 1.0)
 
 
+def t_decay(ctx):
+    pg = open_page(ctx, "radioactive-decay", frozen=True)
+    set_val(pg, "th", 10); set_val(pg, "selN", 1600); step(pg, 6)
+    check("衰變 λ = ln2/T½", meter(pg, "衰變常數"), math.log(2) / 10, 0.003); check("衰變 起始活度 λN₀", meter(pg, "活度"), math.log(2) / 10 * 1600, 0.003)
+    pg.evaluate("LabTest.seed(4242)")
+    for k, frac in ((1, 0.5), (2, 0.25), (3, 0.125)):
+        n = pg.evaluate("LabTest.run(10)"); step(pg, 6)
+        check(f"衰變 第 {k} 個半衰期後剩下 ≈ N₀/{2 ** k}（3σ 內）", n, 1600 * frac, abs_=3 * math.sqrt(1600 * frac * (1 - frac)))
+        check(f"衰變 第 {k} 個半衰期的理論值", meter(pg, "理論值"), 1600 * frac, 0.001)
+    check("衰變 ln N–t 斜率求得半衰期（6% 內）", pg.evaluate("LabTest.fitHalf()"), 10, 0.06)
+    pg.click("#btnFit"); check("衰變 頁面顯示的擬合半衰期", num(text(pg, "thFit")), 10, 0.06)
+    # 無記憶性：撐過第一個半衰期的原子核，再過一個半衰期仍衰變一半
+    r = pg.evaluate("() => { LabTest.seed(99); const a = LabTest.run(10), b = LabTest.run(10); return [a, b]; }")
+    check("衰變 無記憶性：第二個半衰期衰變掉剩下的約一半", r[1] / r[0], 0.5, 0.08)
+    pg.click('[data-n="碳-14,5730,年"]'); step(pg, 6)
+    check("衰變 碳-14 半衰期 5730 年", meter(pg, "半衰期"), 5730, 0.001)
+    pg.click("#btnUnk"); pg.evaluate("LabTest.seed(31337)"); thU = pg.evaluate("LabTest.hidden()"); pg.evaluate("t => LabTest.run(t)", thU * 4)
+    pg.click("#btnFit"); est = num(text(pg, "thFit")); pg.click("#btnRev")
+    check("衰變 未知核種半衰期（7% 內）", est, num(text(pg, "thTrue")), 0.07)
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
          "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing,
@@ -662,7 +683,8 @@ TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_proje
          "transformer": t_transformer,
          "microwave": t_microwave,
          "brownian-motion": t_brownian,
-         "blackbody": t_blackbody}
+         "blackbody": t_blackbody,
+         "radioactive-decay": t_decay}
 
 
 def main():
