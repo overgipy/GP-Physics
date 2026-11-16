@@ -549,6 +549,28 @@ def t_balance(ctx):
     check("電流天平 未知匝數", est, num(text(pg, "nTrue")), 0.005)
 
 
+def t_transformer(ctx):
+    pg = open_page(ctx, "transformer", frozen=True)
+    for i, v in (("Np", 200), ("Ns", 400), ("Vp", 110), ("R", 100)): set_val(pg, i, v)
+    step(pg, 6)
+    check("變壓器 Vs = Vp·Ns/Np", meter(pg, "副線圈電壓"), 220, 0.001); check("變壓器 Is = Vs/R", meter(pg, "副線圈電流"), 2.2, 0.001)
+    check("變壓器 Ip = Is·Ns/Np", meter(pg, "原線圈電流"), 4.4, 0.001); check("變壓器 輸入功率 = 輸出功率", meter(pg, "輸入功率"), meter(pg, "輸出功率"), 0.001)
+    set_val(pg, "Ns", 50); step(pg, 6); check("變壓器 降壓 200:50", meter(pg, "副線圈電壓"), 27.5, 0.002)
+    pg.check("#chkDC"); step(pg, 6); check("變壓器 直流電時 Vs = 0", meter(pg, "副線圈電壓"), 0, abs_=1e-9); pg.uncheck("#chkDC")
+    pg.uncheck("#chkNoise"); pg.click("#btnUnk")
+    for v in (40, 80, 120, 200): set_val(pg, "Vp", v); pg.click("#btnRec")
+    est = num(text(pg, "nsFit")); pg.click("#btnRev")
+    check("變壓器 未知線圈匝數", est, num(text(pg, "nsTrue")), 0.005)
+    pg.click('[data-m="line"]')
+    for i, v in (("P", 100), ("kV", 2), ("r", 4)): set_val(pg, i, v)
+    step(pg, 6)
+    check("輸電 I = P/V", meter(pg, "線路電流"), 50, 0.001); check("輸電 損失 I²r（kW）", meter(pg, "線路發熱"), 10, 0.001); check("輸電 效率", meter(pg, "輸電效率"), 90, 0.001); check("輸電 電壓降 Ir", meter(pg, "線路電壓降"), 200, 0.003)
+    set_val(pg, "kV", 20); step(pg, 6)
+    check("輸電 電壓升 10 倍 → 損失 1/100（kW）", meter(pg, "線路發熱"), 0.1, 0.005)
+    set_val(pg, "kV", 0.5); step(pg, 6)
+    check("輸電 0.5 kV 時電全耗在線路上", meter(pg, "用戶收到"), 0, abs_=1e-6)
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
          "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing,
@@ -560,7 +582,8 @@ TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_proje
          "energy-coaster": t_coaster,
          "electric-field": t_efield,
          "capacitor": t_capacitor,
-         "current-balance": t_balance}
+         "current-balance": t_balance,
+         "transformer": t_transformer}
 
 
 def main():
