@@ -506,6 +506,29 @@ def t_efield(ctx):
     check("導電紙 點電極中垂線電位 = V₀/2", meter(pg, "電位"), 3, 0.002)
 
 
+def t_capacitor(ctx):
+    pg = open_page(ctx, "capacitor", frozen=True)
+    e0 = 8.854e-12
+    for i, v in (("A", 200), ("d", 2), ("kp", 1), ("V0", 6)): set_val(pg, i, v)
+    step(pg, 6); C = e0 * 0.02 / 0.002
+    check("電容 C = ε₀A/d（pF）", meter(pg, "電容"), C * 1e12, 0.002); check("電容 Q = CV（nC）", meter(pg, "電量"), C * 6 * 1e9, 0.002)
+    check("電容 E = V/d（kV/m）", meter(pg, "電場"), 6 / 0.002 / 1000, 0.002); check("電容 U = ½CV²（nJ）", meter(pg, "儲存電能"), 0.5 * C * 36 * 1e9, 0.002)
+    set_val(pg, "d", 4); step(pg, 6)        # 接電池，板距加倍
+    check("接電池 d 加倍：V 不變", meter(pg, "電壓"), 6, 0.001); check("接電池 d 加倍：Q 減半", meter(pg, "電量"), C * 3 * 1e9, 0.002); check("接電池 d 加倍：E 減半", meter(pg, "電場"), 1.5, 0.002)
+    set_val(pg, "d", 2); pg.click('[data-m="iso"]'); set_val(pg, "d", 4); step(pg, 6)      # 斷開後板距加倍
+    check("斷開 d 加倍：Q 不變", meter(pg, "電量"), C * 6 * 1e9, 0.002); check("斷開 d 加倍：V 加倍", meter(pg, "電壓"), 12, 0.002)
+    check("斷開 d 加倍：E 不變", meter(pg, "電場"), 3, 0.002); check("斷開 d 加倍：U 加倍", meter(pg, "儲存電能"), C * 36 * 1e9, 0.002)
+    set_val(pg, "kp", 4); step(pg, 6)
+    check("斷開 插入 κ=4 介質：V 變 1/4", meter(pg, "電壓"), 3, 0.002); check("斷開 插入介質：σ = Q/A 不變（nC/m²）", meter(pg, "面電荷密度"), C * 6 / 0.02 * 1e9, 0.002)
+    pg.click('[data-m="bat"]'); set_val(pg, "kp", 1); pg.uncheck("#chkNoise")
+    for dd in (1, 2, 4, 8): set_val(pg, "d", dd); pg.click("#btnRec")
+    check("電容 實驗求 ε₀（×10⁻¹²）", num(text(pg, "e0Fit")), 8.854, 0.002)
+    pg.click("#btnUnk")
+    for dd in (1, 2, 4, 8): set_val(pg, "d", dd); pg.click("#btnRec")
+    est = num(text(pg, "kFit")); pg.click("#btnRev")
+    check("電容 未知介質：由斜率求 κ", est, num(text(pg, "kTrue")), 0.01)
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
          "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing,
@@ -515,7 +538,8 @@ TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_proje
          "kepler": t_kepler,
          "static-equilibrium": t_static,
          "energy-coaster": t_coaster,
-         "electric-field": t_efield}
+         "electric-field": t_efield,
+         "capacitor": t_capacitor}
 
 
 def main():
