@@ -571,6 +571,35 @@ def t_transformer(ctx):
     check("輸電 0.5 kV 時電全耗在線路上", meter(pg, "用戶收到"), 0, abs_=1e-6)
 
 
+def t_microwave(ctx):
+    pg = open_page(ctx, "microwave", frozen=True)
+    c0 = 2.998e8
+    set_val(pg, "selF", 10.5); step(pg, 6); lam = c0 / 10.5e9 * 100
+    check("微波 λ = c/f（cm）", meter(pg, "波長"), lam, 0.001)
+    set_val(pg, "ti", 40); best = max(((pg.evaluate("a => LabTest.iRef(40, a)", a / 2), a / 2) for a in range(0, 181)))[1]
+    check("微波 反射讀數最大處 θr = θi", best, 40, abs_=0.26)
+    set_val(pg, "tr", 40); step(pg, 6); check("微波 θr = θi 時讀數 100", meter(pg, "接收器讀數"), 100, 0.001)
+    pg.click('[data-m="std"]'); set_val(pg, "x", round(lam / 4, 2)); step(pg, 6)
+    check("駐波 x = λ/4 為腹點", meter(pg, "接收器讀數"), 100, 0.002); check("駐波 節點間距 λ/2", meter(pg, "節點間距"), lam / 2, 0.001)
+    # 獨立驗算：入射波＋反射波（反射時相位差 π）疊加後的時間平均強度
+    v = pg.evaluate("""() => { const L = LabTest.lam(10.5), k = 2 * Math.PI / L, x = 1.0; let s = 0; const n = 2000;
+        for (let i = 0; i < n; i++) { const wt = 2 * Math.PI * i / n, e = Math.sin(k * x + wt) - Math.sin(-k * x + wt); s += e * e; } return [s / n / 2 * 100, LabTest.iStd(x, 10.5)]; }""")
+    check("駐波 兩行進波疊加的強度 = 4sin²(kx)·½", v[1], v[0], 1e-6)
+    pg.click("#btnUnk"); fU = pg.evaluate("LabTest.hidden()"); h = c0 / (fU * 1e9) * 100 / 2
+    n_max = int(12 / h)
+    for n in range(1, min(n_max, 5) + 1): set_val(pg, "x", round(n * h / 0.02) * 0.02); pg.click("#btnRec")
+    est = num(text(pg, "fFit")); pg.click("#btnRev")
+    check("駐波 未知頻率（由節點間距）", est, fU, 0.01)
+    pg.click('[data-m="pol"]')
+    for a in (0, 30, 45, 60, 90):
+        set_val(pg, "ph", a); step(pg, 6); check(f"偏振 φ={a}° 讀數 = 100cos²φ", meter(pg, "接收器讀數"), 100 * math.cos(math.radians(a)) ** 2, 0.002, 0.06)
+    set_val(pg, "ph", 0); pg.check("#chkG")
+    for a, want in ((0, 0), (90, 100), (45, 25)):
+        set_val(pg, "al", a); step(pg, 6); check(f"偏振 柵欄 α={a}°（接收器不轉）", meter(pg, "接收器讀數"), want, 0.002, 0.06)
+    set_val(pg, "al", 45); set_val(pg, "ph", 90); step(pg, 6)
+    check("偏振 柵欄 45° 讓原本收不到的 φ=90° 重新收到 25", meter(pg, "接收器讀數"), 25, 0.002)
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
          "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing,
@@ -583,7 +612,8 @@ TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_proje
          "electric-field": t_efield,
          "capacitor": t_capacitor,
          "current-balance": t_balance,
-         "transformer": t_transformer}
+         "transformer": t_transformer,
+         "microwave": t_microwave}
 
 
 def main():

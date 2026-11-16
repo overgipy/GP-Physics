@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>認識電磁波：微波實驗 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/lab-mobile.css">
+    <link rel="stylesheet" href="../shared/touch.css">
+    <style>
+        [hidden] { display: none !important; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        input.ans { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 8px; font-size: 1rem; width: 7em; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>📡 認識電磁波：微波實驗</h1>
+    <p class="subtitle">c = fλ　｜　節點間距 λ／2　｜　I = I₀cos²φ</p>
+</header>
+
+<div class="container">
+<div class="card sticky-sim"><div class="card-title"><span id="cTitle">微波的反射：接收器轉到哪裡讀數最大？</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div><div class="canvas-wrap"><canvas id="scene" width="760" height="400"></canvas></div></div><div class="card"><div class="card-title">選擇實驗與條件</div><div class="mode-bar" id="modeBar"><button class="mode-btn active" data-m="ref"><b>① 反射</b>金屬板反射微波：反射角 = 入射角</button><button class="mode-btn" data-m="std"><b>② 駐波測波長</b>入射波與反射波疊加，量節點間距</button><button class="mode-btn" data-m="pol"><b>③ 偏振</b>轉動接收器或金屬柵欄：電磁波是橫波</button></div><div class="controls-grid"><div class="control-group" data-for="ref"><div class="control-label"><span>入射角 θ<sub>i</sub></span><b style="color:var(--cyan)"><span id="tiL"></span> °</b></div><input type="range" id="ti" min="20" max="70" step="1" value="40"></div><div class="control-group" data-for="ref"><div class="control-label"><span>接收器角度 θ<sub>r</sub></span><b style="color:var(--orange)"><span id="trL"></span> °</b></div><input type="range" id="tr" min="0" max="90" step="0.5" value="20"><div class="sub-note">由法線量起</div></div><div class="control-group" data-for="std pol ref"><div class="control-label">微波頻率</div><select id="selF"><option value="10.5" selected>10.5 GHz</option><option value="9.4">9.4 GHz</option><option value="24">24 GHz</option></select></div><div class="control-group" data-for="std"><div class="control-label"><span>探測器到反射板的距離 x</span><b style="color:var(--orange)"><span id="xL"></span> cm</b></div><input type="range" id="x" min="0" max="12" step="0.02" value="3"></div><div class="control-group" data-for="pol"><div class="control-label"><span>接收器轉角 φ</span><b style="color:var(--orange)"><span id="phL"></span> °</b></div><input type="range" id="ph" min="0" max="180" step="1" value="0"><div class="sub-note">接收天線與發射天線電場方向的夾角</div></div><div class="control-group" data-for="pol"><div class="control-label"><span>金屬柵欄的金屬條方向 α</span><b style="color:var(--green)"><span id="alL"></span> °</b></div><input type="range" id="al" min="0" max="180" step="1" value="90"><div class="sub-note">金屬條與發射電場方向的夾角</div></div></div><div class="check-row" data-for="pol"><label><input type="checkbox" id="chkG"> 在中間放入金屬柵欄</label></div></div><div class="card"><div class="card-title">接收器讀數</div><div class="dashboard" id="dash"></div><div class="status" id="status"></div></div><div class="card"><div class="card-title"><span id="gT">讀數–接收器角度</span></div><div class="graph-box"><canvas id="g1" width="760" height="300"></canvas></div></div><div class="card" data-for="std"><div class="card-title">實驗：量節點位置求波長與頻率</div><div class="fit-text">慢慢移動探測器，讀數降到最小的位置就是<b>節點</b>。把探測器停在節點上按「記錄節點」（讀數要夠小才會被接受）。相鄰節點相距 λ／2，節點位置–編號圖的斜率就是 λ／2，再由 c = fλ 求頻率。</div><div class="btn-row" style="margin:8px 0"><button class="btn orange" id="btnRec">📍 記錄節點</button><button class="btn secondary" id="btnNext">⏭ 移到下一個節點附近</button><button class="btn secondary" id="btnClr">清除數據</button><button class="btn secondary" id="btnUnk">🎲 未知頻率</button><button class="btn secondary" id="btnRev">揭曉</button></div><div class="two-col"><div class="graph-box"><canvas id="gFit" width="480" height="320"></canvas></div><div class="table-scroll"><table><thead><tr><th>節點編號</th><th>位置 x (cm)</th><th>與前一個的間距 (cm)</th></tr></thead><tbody id="recBody"></tbody></table></div></div><div class="fit-text" id="fitTxt"></div></div>
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary><ul><li>電磁波在真空（空氣）中的速率 <b>c = fλ</b> = 3.00 × 10⁸ m/s；10.5 GHz 的微波 λ ≈ 2.86 cm。</li><li>反射定律：<b>反射角 = 入射角</b>（都由法線量起），入射線、反射線與法線在同一平面。</li><li>駐波：入射波與反射波疊加，金屬板表面電場為零（節點）；<b>相鄰節點（或腹點）相距 λ／2</b>，節點位置 x = n·λ／2。</li><li>偏振（馬呂士定律）：接收天線只接收沿天線方向的電場分量，<b>I = I₀cos²φ</b>；φ = 90° 時收不到。</li><li>金屬柵欄：電場平行金屬條時，電子被驅動而把波反射回去；<b>只有垂直金屬條的電場分量能通過</b>。</li><li>電磁波是橫波：電場、磁場都垂直於傳播方向，所以才有偏振現象（縱波沒有）。</li></ul>
+            <p class="assume">理想化假設：發射器送出單一頻率、沿固定方向偏振的平面波；金屬板是理想導體（完全反射）；不計桌面、牆壁的雜散反射與波束擴散造成的強度衰減。反射模式的讀數隨角度的變化用固定寬度的波束形狀近似；讀數是相對強度（最大 100）。</p></details>
+        <details><summary>建議講解順序</summary><ol><li>反射：固定入射角，慢慢轉接收器，在哪個角度讀數最大？換幾個入射角驗證。</li><li>駐波：沿著發射器與金屬板的連線移動探測器，讀數忽大忽小；找出幾個讀數最小的位置。</li><li>記錄 4 個以上節點，由間距求波長，再算頻率，與標示值比較。</li><li>偏振：把接收器繞軸轉 90°，讀數歸零；轉 45° 是多少？</li><li>放入金屬柵欄：金屬條「平行」電場時反而擋住——和直覺（柵欄讓平行的東西穿過）相反。</li><li>最後挑戰未知頻率。</li></ol></details>
+        <details><summary>可以問學生的問題</summary><ul><li>相鄰兩個節點相距 1.43 cm，波長與頻率是多少？（2.86 cm；約 10.5 GHz）</li><li>接收器轉 60°，讀數剩下多少？（cos²60° = 25%）</li><li>為什麼聲波沒有偏振現象？（聲波是縱波，振動方向只有沿傳播方向一種）</li><li>金屬柵欄的金屬條與電場夾 45° 時，接收器（不轉）讀數是多少？（sin⁴45° = 25%）</li><li>微波爐門上的金屬網孔，為什麼擋得住微波卻看得到裡面？（孔徑遠小於微波波長、遠大於可見光波長）</li></ul></details>
+        <details><summary>常見迷思</summary><ul><li><b>「柵欄的縫與電場平行時，波才穿得過去」</b>：相反，電場平行金屬條時會在金屬條上驅動電流而被反射。</li><li><b>「駐波的節點相距一個波長」</b>：相鄰節點相距半個波長。</li><li><b>「接收器轉 45°，讀數就剩 0.71 倍」</b>：電場分量剩 cos45° ≈ 0.71 倍，但讀數是強度（正比於電場的平方），所以剩一半。</li><li><b>「電磁波需要介質才能傳播」</b>：電磁波是電場與磁場的振盪，真空中就能傳播。</li></ul></details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script src="../shared/lab.js"></script>
+<script>
+(() => {
+    'use strict';
+    const { el, rad, deg, arrow, txt, graph, meter, fitLine, fitThroughOrigin, noise, niceStep } = Lab;
+    const $$ = s => [...document.querySelectorAll(s)];
+    // 滑桿：顯示目前數值（id + 'L'），拖動時呼叫 cb；回傳讀值函式
+    function sl(id, dp, cb) { const e = el(id), lb = el(id + 'L'), up = () => { if (lb) lb.textContent = (+e.value).toFixed(dp); };
+        e.addEventListener('input', () => { up(); cb && cb(); }); up(); return () => +e.value; }
+    // 模式切換：有 data-for 的區塊只在對應模式顯示
+    function showFor(m) { $$('[data-for]').forEach(e => e.hidden = !e.dataset.for.split(' ').includes(m));
+        $$('#modeBar .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.m === m)); }
+    function onMode(cb) { $$('#modeBar .mode-btn').forEach(b => b.addEventListener('click', () => { showFor(b.dataset.m); cb(b.dataset.m); })); }
+    const rows = (id, arr) => el(id).innerHTML = arr.map(r => '<tr>' + r.map(v => `<td>${v}</td>`).join('') + '</tr>').join('') || '<tr><td colspan="9" style="text-align:center;color:#6a7a92">尚無數據</td></tr>';
+    // 動畫迴圈：fn(dt)；dt 為秒，最大 0.05
+    function loop(fn) { let last = null; const f = ts => { if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05); last = ts; fn(dt); requestAnimationFrame(f); }; requestAnimationFrame(f); }
+    // 畫布拖曳：cb(x, y, 階段)；x、y 為畫布座標，階段為 'down'／'move'／'up'
+    function dragOn(cv, cb) { let on = false; cv.style.touchAction = 'none'; const P = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
+        cv.addEventListener('pointerdown', e => { on = true; cv.setPointerCapture(e.pointerId); cb(...P(e), 'down'); }); cv.addEventListener('pointermove', e => { if (on) cb(...P(e), 'move'); });
+        const up = e => { if (on) { on = false; cb(...P(e), 'up'); } }; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up); }
+
+    const c = el('scene').getContext('2d'), W = 760, H = 400, C0 = 2.998e8;
+    const lam = fGHz => C0 / (fGHz * 1e9) * 100;                                   // 波長（cm）
+    const iRef = (ti, tr) => 100 * Math.exp(-(((tr - ti) / 7) ** 2));            // 反射：相對讀數
+    const iStd = (x, fGHz) => 100 * Math.sin(2 * Math.PI * x / lam(fGHz)) ** 2;  // 駐波：金屬板處為節點
+    const iPol = (ph, grid, al) => 100 * (grid ? Math.sin(rad(al)) ** 2 * Math.sin(rad(al - ph)) ** 2 : Math.cos(rad(ph)) ** 2);
+    const S = { mode: 'ref', t: 0, recs: [], unk: false, hid: false, fU: 10.5 };
+    const ti = sl('ti', 0), tr = sl('tr', 1), x = sl('x', 2), ph = sl('ph', 0), al = sl('al', 0), f = () => S.unk ? S.fU : +el('selF').value, grid = () => el('chkG').checked;
+    const reading = () => S.mode === 'ref' ? iRef(ti(), tr()) : S.mode === 'std' ? iStd(x(), f()) : iPol(ph(), grid(), al());
+    window.LabTest = { lam, iRef, iStd, iPol, hidden: () => S.fU };
+    function horn(x0, y0, ang, col, name) { c.save(); c.translate(x0, y0); c.rotate(ang); c.fillStyle = col; c.beginPath(); c.moveTo(0, -8); c.lineTo(34, -20); c.lineTo(34, 20); c.lineTo(0, 8); c.closePath(); c.fill(); c.fillRect(-36, -12, 36, 24); c.restore(); txt(c, name, x0, y0 - 30, col, 17, 'center'); }
+    function gauge(v) { const x0 = 560, y0 = 44, w = 180; c.fillStyle = '#141923'; c.fillRect(x0, y0, w, 22); c.fillStyle = '#00e676'; c.fillRect(x0, y0, w * v / 100, 22); c.strokeStyle = '#8a99ad'; c.lineWidth = 1.5; c.strokeRect(x0, y0, w, 22); txt(c, `讀數 ${v.toFixed(1)}`, x0 + w / 2, y0 - 10, '#00e676', 20, 'center'); }
+    function waves(x0, y0, ang, len, col, phase) { c.save(); c.translate(x0, y0); c.rotate(ang); c.strokeStyle = col; c.lineWidth = 2; for (let d = (phase % 26 + 26) % 26; d < len; d += 26) { c.beginPath(); c.moveTo(d, -16); c.lineTo(d, 16); c.stroke(); } c.restore(); }
+    function drawRef() { const px = 380, py = 320, a1 = rad(ti()), a2 = rad(tr()), Rr = 230, tx = px - Rr * Math.sin(a1), ty = py - Rr * Math.cos(a1), rx = px + Rr * Math.sin(a2), ry = py - Rr * Math.cos(a2), v = iRef(ti(), tr());
+        c.fillStyle = '#c3d0e4'; c.fillRect(px - 150, py, 300, 10); txt(c, '金屬板', px + 160, py + 12, '#c3d0e4', 17); c.strokeStyle = '#4a586e'; c.setLineDash([6, 6]); c.lineWidth = 1.5; c.beginPath(); c.moveTo(px, py); c.lineTo(px, 60); c.stroke(); c.setLineDash([]); txt(c, '法線', px + 6, 74, '#6a7a92', 16);
+        waves(tx, ty, Math.atan2(py - ty, px - tx), Rr - 20, 'rgba(0,212,255,.6)', S.t * 60); waves(px, py, Math.atan2(-Math.cos(a1), Math.sin(a1)), Rr - 20, 'rgba(255,159,67,.5)', S.t * 60);
+        horn(tx, ty, Math.atan2(py - ty, px - tx), '#00d4ff', '發射器'); horn(rx, ry, Math.atan2(py - ry, px - rx), '#ff9f43', '接收器');
+        c.strokeStyle = '#00d4ff'; c.beginPath(); c.arc(px, py, 70, -Math.PI / 2 - a1, -Math.PI / 2); c.stroke(); c.strokeStyle = '#ff9f43'; c.beginPath(); c.arc(px, py, 90, -Math.PI / 2, -Math.PI / 2 + a2); c.stroke();
+        txt(c, `θi = ${ti()}°`, px - 60, py - 96, '#00d4ff', 18, 'right'); txt(c, `θr = ${tr().toFixed(1)}°`, px + 60, py - 110, '#ff9f43', 18); gauge(v); }
+    function drawStd() { const L = lam(f()), sc = 48, px = 660, y0 = 190, X = d => px - d * sc;
+        c.fillStyle = '#c3d0e4'; c.fillRect(px, 90, 10, 200); txt(c, '金屬板', px + 5, 80, '#c3d0e4', 17, 'center'); horn(40, y0, 0, '#00d4ff', '發射器');
+        c.strokeStyle = 'rgba(255,204,0,.35)'; c.lineWidth = 1.5; [1, -1].forEach(s => { c.beginPath(); for (let d = 0; d <= 12.2; d += 0.03) { const y = y0 - s * 70 * Math.abs(Math.sin(2 * Math.PI * d / L)); d ? c.lineTo(X(d), y) : c.moveTo(X(d), y); } c.stroke(); });
+        c.strokeStyle = '#ffcc00'; c.lineWidth = 2.5; c.beginPath(); for (let d = 0; d <= 12.2; d += 0.03) { const y = y0 - 70 * Math.sin(2 * Math.PI * d / L) * Math.cos(S.t * 6); d ? c.lineTo(X(d), y) : c.moveTo(X(d), y); } c.stroke();
+        const dx = X(x()); c.strokeStyle = '#ff9f43'; c.lineWidth = 3; c.beginPath(); c.moveTo(dx, 100); c.lineTo(dx, 300); c.stroke(); c.fillStyle = '#ff9f43'; c.beginPath(); c.arc(dx, y0, 8, 0, 7); c.fill(); txt(c, '探測器', dx, 322, '#ff9f43', 17, 'center');
+        c.strokeStyle = '#6a7a92'; c.lineWidth = 1.5; for (let d = 0; d <= 12; d++) { c.beginPath(); c.moveTo(X(d), 340); c.lineTo(X(d), d % 5 ? 348 : 354); c.stroke(); if (d % 2 === 0) txt(c, String(d), X(d), 372, '#9aa8bd', 16, 'center'); } txt(c, 'x (cm)', X(12) - 30, 372, '#9aa8bd', 16, 'right');
+        S.recs.forEach(r => { c.fillStyle = '#00e676'; c.beginPath(); c.arc(X(r), 340, 5, 0, 7); c.fill(); }); gauge(iStd(x(), f())); }
+    function drawPol() { const v = iPol(ph(), grid(), al()), R0 = 80, ring = (cx, t, col) => { c.strokeStyle = '#3a4558'; c.lineWidth = 2; c.beginPath(); c.arc(cx, 170, R0, 0, 7); c.stroke(); txt(c, t, cx, 290, col, 18, 'center'); };
+        const ax = (cx, a, col, len, w = 4) => { const dx = Math.sin(rad(a)) * len, dy = Math.cos(rad(a)) * len; arrow(c, cx - dx, 170 + dy, cx + dx, 170 - dy, col, w, 12); };
+        ring(120, '發射器：電場方向', '#00d4ff'); ax(120, 0, '#00d4ff', R0 - 8);
+        if (grid()) { ring(380, '金屬柵欄', '#00e676'); c.save(); c.translate(380, 170); c.rotate(rad(al())); c.strokeStyle = '#c3d0e4'; c.lineWidth = 3; for (let i = -3; i <= 3; i++) { const h = Math.sqrt(R0 * R0 - (i * 22) ** 2); c.beginPath(); c.moveTo(i * 22, -h); c.lineTo(i * 22, h); c.stroke(); } c.restore();
+            const amp = Math.abs(Math.sin(rad(al()))); if (amp > 0.02) ax(380, al() + 90, '#ffcc00', (R0 - 8) * amp, 3); txt(c, '黃：通過的電場', 380, 314, '#ffcc00', 16, 'center'); }
+        else txt(c, '（沒有柵欄）', 380, 176, '#4a586e', 18, 'center');
+        ring(620, '接收器：天線方向', '#ff9f43'); ax(620, ph(), '#ff9f43', R0 - 8); gauge(v);
+        txt(c, '沿著傳播方向看過去（傳播方向垂直紙面）', 20, 40, '#9aa8bd', 17); }
+    function panels() {
+        const v = reading(), q = z => S.hid ? '？' : z, L = lam(f()), ms = [meter('接收器讀數（相對強度）', v.toFixed(1), '', '#00e676'), meter('頻率 f', q(f().toFixed(1)), 'GHz', '#00d4ff'), meter('波長 λ = c／f', q(L.toFixed(3)), 'cm', '#ffcc00')];
+        if (S.mode === 'std') ms.push(meter('節點間距 λ／2', q((L / 2).toFixed(3)), 'cm', '#ff9f43')); if (S.mode === 'pol') ms.push(meter('讀數 ÷ 最大值', (v / 100).toFixed(3), '', '#ff9f43'));
+        el('dash').innerHTML = ms.join('');
+        el('status').innerHTML = S.mode === 'ref' ? (Math.abs(tr() - ti()) < 1 ? '<b>反射角 = 入射角</b>：讀數最大。' : '把接收器轉到讀數最大的位置，看看那時的角度。') : S.mode === 'std' ? (v < 2 ? '探測器在<b>節點</b>上：入射波與反射波在這裡永遠互相抵消。' : v > 98 ? '探測器在<b>腹點</b>上：振幅最大。' : '移動探測器，找讀數最小的位置（節點）。') : grid() ? '電場平行金屬條的分量被反射，只有<b>垂直金屬條</b>的分量通過。' : (Math.abs(ph() - 90) < 1 ? '接收天線與電場垂直：<b>收不到訊號</b>。' : '接收器只收到沿天線方向的電場分量：I = I₀cos²φ。');
+        const g = el('g1'), mk = (fn, a, b, n = 300) => Array.from({ length: n + 1 }, (_, i) => { const u = a + (b - a) * i / n; return [u, fn(u)]; });
+        if (S.mode === 'ref') graph(g, { xmin: 0, xmax: 90, ymin: 0, ymax: 110, title: '讀數–接收器角度', xl: 'θr (°)', yl: '讀數', series: [{ pts: mk(u => iRef(ti(), u), 0, 90), col: '#00e676', w: 2.5 }], dots: [{ x: tr(), y: v }] });
+        else if (S.mode === 'std') graph(g, { xmin: 0, xmax: 12, ymin: 0, ymax: 110, title: '讀數–探測器位置', xl: 'x (cm)', yl: '讀數', series: [{ pts: mk(u => iStd(u, f()), 0, 12, 600), col: '#00e676', w: 2.5 }], dots: [{ x: x(), y: v }] });
+        else graph(g, { xmin: 0, xmax: 180, ymin: 0, ymax: 110, title: '讀數–接收器轉角', xl: 'φ (°)', yl: '讀數', series: [{ pts: mk(u => iPol(u, grid(), al()), 0, 180), col: '#00e676', w: 2.5 }], dots: [{ x: ph(), y: v }] });
+    }
+    function renderExp() {
+        const r = S.recs.slice().sort((a, b) => a - b); rows('recBody', r.map((v, i) => [i + 1, v.toFixed(2), i ? (v - r[i - 1]).toFixed(2) : '—']));
+        const pts = r.map((v, i) => [i + 1, v]), fl = pts.length >= 2 ? fitLine(pts) : null;
+        graph(el('gFit'), { xmin: 0, xmax: Math.max(5, pts.length + 1), ymin: 0, ymax: 12.5, title: '節點位置–編號', xl: '節點編號 n', yl: 'x (cm)', series: fl ? [{ pts: [[0, fl.b], [pts.length + 1, fl.m * (pts.length + 1) + fl.b]], col: '#ffcc00', w: 2 }] : [], dots: pts.map(p => ({ x: p[0], y: p[1], col: '#00d4ff' })) });
+        el('fitTxt').innerHTML = fl ? `斜率 = λ／2 = <b>${fl.m.toFixed(3)}</b> cm → λ = <b id="lamFit">${(2 * fl.m).toFixed(3)}</b> cm → f = c／λ = <b id="fFit">${(C0 / (2 * fl.m / 100) / 1e9).toFixed(2)}</b> GHz。` + (S.unk ? (S.hid ? '　按「揭曉」對答案。' : `　正確答案 f = <b id="fTrue">${S.fU.toFixed(1)}</b> GHz。`) : '') : '記錄 2 個以上（最好是連續的）節點。若中間漏掉節點，斜率會變成 λ／2 的整數倍。';
+        el('btnUnk').textContent = S.unk ? '回到已知頻率' : '🎲 未知頻率'; el('btnRev').disabled = !(S.unk && S.hid); el('selF').disabled = S.unk;
+    }
+    el('btnRec').addEventListener('click', () => { if (iStd(x(), f()) > 3) { el('fitTxt').textContent = '讀數還不夠小，這裡不是節點。再微調探測器位置。'; return; } if (x() < 0.1) { el('fitTxt').textContent = '金屬板表面本身就是節點（x = 0），請記錄板子前方的節點。'; return; } if (!S.recs.some(r => Math.abs(r - x()) < 0.3)) S.recs.push(x()); renderExp(); });
+    el('btnNext').addEventListener('click', () => { const h = lam(f()) / 2, nx = (Math.floor(x() / h + 0.3) + 1) * h + 0.13; el('x').value = nx > 12 ? h + 0.13 : nx; el('x').dispatchEvent(new Event('input')); });
+    el('btnClr').addEventListener('click', () => { S.recs = []; renderExp(); });
+    el('btnUnk').addEventListener('click', () => { S.unk = !S.unk; S.hid = S.unk; S.recs = []; if (S.unk) S.fU = [8.2, 9.0, 11.2, 12.4, 15.0, 18.0][Math.floor(Math.random() * 6)]; renderExp(); });
+    el('btnRev').addEventListener('click', () => { S.hid = false; renderExp(); }); el('selF').addEventListener('change', () => { S.recs = []; renderExp(); });
+    const T = { ref: ['微波的反射：接收器轉到哪裡讀數最大？', '讀數–接收器角度'], std: ['駐波：入射波＋反射波，節點相距 λ／2', '讀數–探測器位置'], pol: ['偏振：電磁波的電場只沿一個方向振動', '讀數–接收器轉角'] };
+    onMode(m => { S.mode = m; el('cTitle').textContent = T[m][0]; el('gT').textContent = T[m][1]; });
+    showFor('ref'); renderExp(); let fn = 0; loop(dt => { S.t += dt; c.fillStyle = '#080a0f'; c.fillRect(0, 0, W, H); ({ ref: drawRef, std: drawStd, pol: drawPol })[S.mode](); if (!(fn++ % 4)) panels(); });
+
+})();
+</script>
+</body>
+</html>
