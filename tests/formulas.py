@@ -248,9 +248,66 @@ def t_rigid(ctx):
     pg.close()
 
 
+def t_standing(ctx):
+    pg = open_page(ctx, "standing-wave", frozen=True)
+    # 弦：v = √(F/μ)，f_n = n v / 2L
+    L, F, mu = 1.0, 25, 2.5e-3          # v = 100 m/s、f₁ = 50 Hz，共鳴頻率剛好落在滑桿刻度上
+    set_val(pg, "slLs", L); set_val(pg, "slT", F); set_val(pg, "slMu", mu * 1e3); step(pg, 6)
+    v = math.sqrt(F / mu)
+    check("弦 波速 v = √(F/μ)", meter(pg, "波速"), v, 0.001)
+    check("弦 基頻 f₁ = v/2L", meter(pg, "基頻"), v / (2 * L), 0.002)
+    for n in (1, 2, 3, 5):
+        set_val(pg, "slF", n * v / (2 * L)); step(pg, 6)
+        check(f"弦 f = {n}·v/2L 時共鳴（相對振幅 %）", meter(pg, "相對振幅"), 100, 0.03)
+        check(f"弦 n = {n} 時 L÷λ = n/2", meter(pg, "L ÷ λ"), n / 2, 0.003)
+    set_val(pg, "slF", 1.5 * v / (2 * L)); step(pg, 6)
+    check("弦 兩共鳴頻率的正中間振幅很小（%）", meter(pg, "相對振幅"), 6, 0.2)
+    # 共鳴頻率不在滑桿刻度上時，「跳到共鳴頻率」按鈕仍要給精確值
+    set_val(pg, "slLs", 1.5); set_val(pg, "slT", 36); set_val(pg, "slMu", 4); step(pg, 6)
+    for n in (1, 2, 4):
+        pg.click(f"#harmRow .chip:nth-of-type({n})"); step(pg, 6)
+        check(f"弦 按鈕 n = {n}（f = {n}·√9000/3 Hz）共鳴（%）", meter(pg, "相對振幅"), 100, 0.005)
+        check(f"弦 按鈕 n = {n} 時 L÷λ", meter(pg, "L ÷ λ"), n / 2, 0.001)
+    # 閉管：f = (2n−1)v/4L；開管：f = n v/2L
+    pg.click('[data-m="closed"]'); set_val(pg, "slTemp", 30); step(pg, 6)
+    check("聲速 v = 331 + 0.6T（30°C）", meter(pg, "聲速"), 349, 0.001)
+    set_val(pg, "slTemp", 20); set_val(pg, "slLp", 0.5); step(pg, 6)
+    check("閉管 基頻 v/4L", meter(pg, "基頻"), 343 / 2, 0.002)
+    for n in (1, 2, 3):
+        check(f"閉管 第 {n} 個共鳴頻率 (2n−1)v/4L", pg.evaluate("n => LabTest.resFreq('closed', n, 343, 0.5)", n), (2 * n - 1) * 343 / 2, 1e-9)
+        set_val(pg, "slF", round((2 * n - 1) * 343 / 2)); step(pg, 6)
+        check(f"閉管 f = {(2 * n - 1)}f₁ 時共鳴（音量 %）", meter(pg, "音量"), 100, 0.03)
+    set_val(pg, "slF", 343); step(pg, 6)
+    check("閉管 2 倍頻不共鳴（音量 %）", meter(pg, "音量"), 6, 0.2)
+    pg.click('[data-m="open"]'); set_val(pg, "slLp", 0.5); step(pg, 6)
+    check("開管 基頻 v/2L（同管長為閉管的 2 倍）", meter(pg, "基頻"), 343, 0.002)
+    set_val(pg, "slF", 686); step(pg, 6)
+    check("開管 2 倍頻共鳴（音量 %）", meter(pg, "音量"), 100, 0.03)
+    # 實驗：共鳴管測聲速（只看音量找共鳴點，不使用已知聲速）
+    def scan_and_record():
+        best, prev, rising = [], -1, False
+        for mm in range(50, 1201, 2):
+            set_val(pg, "slLp", mm / 1000); g = meter(pg, "音量")
+            if g < prev and rising and prev >= 85: best.append(mm - 2)
+            rising = g > prev; prev = g
+        for mm in best:
+            top = max(range(mm - 4, mm + 5), key=lambda x: (set_val(pg, "slLp", x / 1000), meter(pg, "音量"))[1])
+            set_val(pg, "slLp", top / 1000); pg.click("#btnRec")
+        return best
+    pg.click('[data-m="closed"]'); pg.uncheck("#chkNoise"); set_val(pg, "slTemp", 20); pg.click('.chip.fork[data-f="512"]'); step(pg, 4)
+    found = scan_and_record()
+    check("共鳴管 512 Hz、120 cm 內的共鳴點數 (λ/4 的 1,3,5,7 倍)", len(found), 4, abs_=0)
+    check("共鳴管 第 1 共鳴點 ≈ λ/4（mm）", found[0] if found else None, 343 / 512 / 4 * 1000, 0.03)
+    check("共鳴管 由 Lₙ–n 斜率求聲速（20°C）", after("v = fλ =", text(pg, "fitTxt")), 343, 0.01)
+    pg.click("#btnUnk"); pg.click('.chip.fork[data-f="1000"]'); step(pg, 4)
+    scan_and_record(); est = after("v = fλ =", text(pg, "fitTxt")); pg.click("#btnRev")
+    check("共鳴管 未知聲速：推算值 vs 揭曉值", est, after("真正的聲速是", text(pg, "fitTxt")) or -1, 0.01)
+    pg.close()
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
-         "lc-circuit": t_lc, "rigid-rotation": t_rigid}
+         "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing}
 
 
 def main():

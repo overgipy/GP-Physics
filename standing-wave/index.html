@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>駐波與共鳴管 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/lab-mobile.css">
+    <link rel="stylesheet" href="../shared/touch.css">
+    <style>
+        .control-group.off { display: none; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
+        [hidden] { display: none !important; }
+        .mode-btn { flex: 1 1 150px; }
+        .chip:disabled { opacity: .4; cursor: not-allowed; }
+        .nudge { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
+        .nudge .lbl { font-size: .9rem; color: var(--text-muted); width: 100%; }
+        .nudge .big { font-family: monospace; font-size: 1.15rem; color: var(--cyan); font-weight: bold; min-width: 96px; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>🎵 駐波與共鳴管</h1>
+    <p class="subtitle">弦與氣柱的共鳴　｜　v = fλ　｜　L = nλ／2　L = (2n − 1)λ／4</p>
+</header>
+
+<div class="container">
+    <div class="card sticky-sim">
+        <div class="card-title"><span id="cTitle">弦上的駐波（兩端固定）</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div>
+        <div class="canvas-wrap"><canvas id="scene" width="760" height="400"></canvas></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">選擇系統與條件</div>
+        <div class="mode-bar" id="modeBar">
+            <button class="mode-btn active" data-m="string"><b>① 弦</b>兩端固定：L = nλ／2</button>
+            <button class="mode-btn" data-m="closed"><b>② 閉管</b>一端閉口：L = (2n−1)λ／4</button>
+            <button class="mode-btn" data-m="open"><b>③ 開管</b>兩端開口：L = nλ／2</button>
+        </div>
+        <div class="controls-grid">
+            <div class="control-group"><div class="control-label"><span>頻率 f</span><b style="color:var(--yellow)"><span id="lblF">50.0</span> Hz</b></div><input type="range" id="slF" min="5" max="400" step="0.5" value="50"><div class="sub-note" id="fNote"></div></div>
+            <div class="control-group" data-for="string"><div class="control-label"><span>弦長 L</span><b style="color:var(--cyan)"><span id="lblLs">1.20</span> m</b></div><input type="range" id="slLs" min="0.5" max="2" step="0.05" value="1.2"></div>
+            <div class="control-group" data-for="string"><div class="control-label"><span>張力 F</span><b style="color:var(--green)"><span id="lblT">20</span> N</b></div><input type="range" id="slT" min="5" max="50" step="1" value="20"></div>
+            <div class="control-group" data-for="string"><div class="control-label"><span>線密度 μ</span><b style="color:var(--orange)"><span id="lblMu">2.0</span> g/m</b></div><input type="range" id="slMu" min="1" max="10" step="0.5" value="2"><div class="sub-note" id="vNote"></div></div>
+            <div class="control-group" data-for="pipe" hidden><div class="control-label"><span>管長（氣柱長）L</span><b style="color:var(--cyan)"><span id="lblLp">50.0</span> cm</b></div><input type="range" id="slLp" min="0.05" max="1.2" step="0.001" value="0.5"><div class="sub-note">閉管：相當於改變水面高度</div></div>
+            <div class="control-group" data-for="pipe" hidden><div class="control-label"><span>氣溫 T</span><b style="color:var(--orange)"><span id="lblTemp">20</span> °C</b></div><input type="range" id="slTemp" min="0" max="40" step="1" value="20"><div class="sub-note" id="tNote"></div></div>
+            <div class="control-group"><div class="control-label">動畫速度</div><select id="selSpd"><option value="0.5">慢</option><option value="1" selected>正常</option><option value="2">快</option></select><div class="sub-note">動畫已大幅放慢</div></div>
+        </div>
+        <div class="preset-row" id="harmRow"><span class="lbl" id="harmLbl">直接跳到共鳴頻率：</span></div>
+        <div class="check-row">
+            <label><input type="checkbox" id="chkDisp" checked> 位移（振幅）包絡線</label>
+            <label data-for="pipe" hidden><input type="checkbox" id="chkPres" checked> 壓力變化包絡線</label>
+            <label><input type="checkbox" id="chkNA" checked> 標出波節 N、波腹 A</label>
+        </div>
+        <div class="btn-row"><button class="btn green" id="btnPlay">▶ 播放</button><button class="btn secondary" id="btnPause">⏸ 暫停</button></div>
+    </div>
+
+    <div class="card"><div class="card-title">即時數據</div><div class="dashboard" id="dash"></div><div class="status" id="status"></div></div>
+
+    <div class="card">
+        <div class="card-title">共鳴曲線：振幅怎麼隨頻率、長度改變</div>
+        <div class="two-col">
+            <div class="graph-box"><canvas id="gF" width="480" height="260"></canvas></div>
+            <div class="graph-box"><canvas id="gL" width="480" height="260"></canvas></div>
+        </div>
+        <div class="fit-text">黃色虛線是目前的設定。尖峰就是共鳴：只有特定的頻率（或長度）才能形成大振幅的駐波。</div>
+    </div>
+
+    <div class="card" data-for="closed" hidden>
+        <div class="card-title"><span id="expTitle">實驗：共鳴管測聲速</span></div>
+        <div class="fit-text" id="expHint"></div>
+        <div class="preset-row"><span class="lbl">音叉頻率：</span><button class="chip fork" data-f="256">256 Hz</button><button class="chip fork" data-f="384">384 Hz</button><button class="chip fork" data-f="512">512 Hz</button><button class="chip fork" data-f="1000">1000 Hz</button></div>
+        <div class="nudge"><span class="lbl">微調氣柱長度（移動水面），找出最響的位置：</span>
+            <button class="btn secondary" data-d="-0.01">−1 cm</button><button class="btn secondary" data-d="-0.001">−1 mm</button><span class="big" id="bigL">50.0 cm</span><button class="btn secondary" data-d="0.001">＋1 mm</button><button class="btn secondary" data-d="0.01">＋1 cm</button>
+        </div>
+        <div class="btn-row" style="margin:8px 0"><button class="btn orange" id="btnRec">＋ 記錄共鳴點</button><button class="btn secondary" id="btnClr">清除數據</button><button class="btn secondary" id="btnUnk">🎲 未知聲速</button><button class="btn secondary" id="btnRev" disabled>揭曉</button></div>
+        <div class="check-row"><label><input type="checkbox" id="chkNoise" checked> 加入讀數誤差（±1 mm）</label></div>
+        <div class="two-col">
+            <div class="graph-box"><canvas id="gFit" width="480" height="320"></canvas></div>
+            <div class="table-scroll"><table><thead><tr><th>第 n 個共鳴點</th><th>氣柱長 L<sub>n</sub> (cm)</th><th>與前一點的差 (cm)</th></tr></thead><tbody id="recBody"></tbody></table></div>
+        </div>
+        <div class="fit-text" id="fitTxt"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary>
+            <ul>
+                <li>波速、頻率與波長：<b>v = fλ</b>；v：m/s、f：Hz、λ：m。</li>
+                <li>弦上的波速 <b>v = √(F／μ)</b>；F：張力（N）、μ：線密度（kg/m）。空氣中的聲速 <b>v ≈ 331 + 0.6T</b>（m/s，T 為攝氏溫度）。</li>
+                <li>兩端固定的弦：兩端是波節，<b>L = nλ／2</b>，<b>f<sub>n</sub> = nv／2L</b>（n = 1, 2, 3 …），所有整數倍諧音都有。</li>
+                <li>一端閉口的氣柱（閉管）：閉口端是位移波節、開口端是位移波腹，<b>L = (2n − 1)λ／4</b>，<b>f = (2n − 1)v／4L</b>，只有奇數倍諧音。</li>
+                <li>兩端開口的氣柱（開管）：兩端都是位移波腹，<b>L = nλ／2</b>，<b>f<sub>n</sub> = nv／2L</b>。</li>
+                <li>位移波節 ⇄ 壓力波腹：空氣分子幾乎不動的地方，壓力變化最大；位移波腹處壓力幾乎不變（等於大氣壓）。</li>
+                <li>共鳴管實驗：頻率固定時，相鄰兩個共鳴位置相差半個波長，<b>L<sub>n+1</sub> − L<sub>n</sub> = λ／2</b>，所以 v = 2f(L<sub>n+1</sub> − L<sub>n</sub>)。</li>
+            </ul>
+            <p class="assume">理想化假設：弦均勻、完全柔軟，振幅很小；氣柱視為一維，波腹恰在管口（不計管口修正，實際波腹約在管口外 0.6 倍管半徑處）；聲速用課本近似式 331 + 0.6T。振動源的振幅很小，駐波振幅用「有少量能量損失的受迫振動」穩定解計算，所以不在共鳴頻率時振幅很小但不為零。動畫中的振幅與分子位移都經過放大，時間大幅放慢。</p>
+        </details>
+        <details><summary>建議講解順序</summary>
+            <ol>
+                <li>弦：把頻率慢慢調高，大部分時候弦幾乎不動，只有到特定頻率振幅才突然變大 —— 這就是共鳴。</li>
+                <li>用「跳到共鳴頻率」看 n = 1、2、3：數波腹的個數，確認 L = nλ／2、f<sub>n</sub> = n f₁。</li>
+                <li>改變張力或線密度：波速 v = √(F／μ) 改變，共鳴頻率跟著變（調吉他弦）。</li>
+                <li>切到閉管：看空氣分子來回振動，閉口端不動（位移波節），開口端振動最大（位移波腹）。</li>
+                <li>打開壓力包絡線：位移波節的地方正是壓力變化最大的地方，兩者錯開四分之一波長。</li>
+                <li>比較閉管與開管：同樣管長，開管基頻是閉管的 2 倍；閉管只有 1、3、5… 倍頻。</li>
+                <li>實驗：選一支音叉，慢慢加長氣柱找出第 1、2、3 個最響的位置，作 L<sub>n</sub>–n 圖，由斜率（λ／2）求聲速；再挑戰「未知聲速」。</li>
+            </ol>
+        </details>
+        <details><summary>可以問學生的問題</summary>
+            <ul>
+                <li>弦的張力變成 4 倍，基頻變成幾倍？（2 倍）</li>
+                <li>同樣長度的閉管與開管，誰的基頻比較高？高幾倍？（開管，2 倍）</li>
+                <li>閉管的第二個共鳴頻率是基頻的幾倍？為什麼沒有 2 倍頻？（3 倍；閉口端必須是波節、開口端必須是波腹）</li>
+                <li>氣溫升高，同一支笛子吹出來的音會變高還是變低？（聲速變大，頻率變高）</li>
+                <li>共鳴管實驗中，為什麼用相鄰共鳴點的距離差，而不是直接用 L₁ = λ／4？（可以消去管口修正的影響）</li>
+                <li>512 Hz 的音叉，量到相鄰共鳴點相差 33.5 cm，聲速是多少？（2 × 512 × 0.335 ≈ 343 m/s）</li>
+            </ul>
+        </details>
+        <details><summary>常見迷思</summary>
+            <ul>
+                <li><b>「駐波的波節是完全沒有能量的地方」</b>：波節只是位移恆為零；氣柱中位移波節處的壓力變化反而最大。</li>
+                <li><b>「開口端空氣不動」</b>：開口端連通大氣，壓力固定，是壓力波節、位移波腹，空氣振動最劇烈。</li>
+                <li><b>「閉管也有 2 倍、4 倍頻」</b>：閉管只能有基頻的奇數倍。</li>
+                <li><b>「頻率越高，波在弦上跑得越快」</b>：波速由介質決定（弦的張力與線密度、空氣的溫度），與頻率無關；頻率高只是波長短。</li>
+                <li><b>「駐波不會動」</b>：駐波的各點都在原地振動（波節除外），只是波形不向前傳播。</li>
+            </ul>
+        </details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script src="../shared/lab.js"></script>
+<script>
+(() => {
+    'use strict';
+    const { el, arrow, txt, graph, meter, fitLine, noise } = Lab;
+    const TAU = 2 * Math.PI, DELTA = 0.06;                      // DELTA：能量損失的程度，決定共鳴峰的寬度
+    const c = el('scene').getContext('2d'), W = 760, H = 400;
+
+    /* ---------- 物理 ---------- */
+    const stringSpeed = (F, mu) => Math.sqrt(F / mu);                       // F: N，mu: kg/m
+    const soundSpeed = T => 331 + 0.6 * T;                                 // 課本近似式
+    // 第 n 個共鳴頻率
+    const resFreq = (mode, n, v, L) => mode === 'closed' ? (2 * n - 1) * v / (4 * L) : n * v / (2 * L);
+    // 受迫振動的相對振幅（共鳴時為 1）：兩端固定的弦／開管的分母是 sin(kL)，閉管是 cos(kL)
+    function gain(mode, f, v, L) {
+        const kL = TAU * f / v * L, den = mode === 'closed' ? Math.cos(kL) : Math.sin(kL), M = kL >= Math.PI / 2 ? 1 : Math.sin(kL);
+        return DELTA * M / Math.sqrt(den * den + DELTA * DELTA);
+    }
+    window.LabTest = { stringSpeed, soundSpeed, resFreq, gain };
+
+    /* ---------- 狀態 ---------- */
+    const S = { mode: 'string', fs: 50, fp: 343, Ls: 1.2, F: 20, mu: 2e-3, Lp: 0.5, T: 20, ph: 0, playing: true, spd: 1,
+        recs: [], unk: false, hid: false, vUnk: 343 };
+    const isPipe = () => S.mode !== 'string';
+    const V = () => S.mode === 'string' ? stringSpeed(S.F, S.mu) : (S.unk ? S.vUnk : soundSpeed(S.T));
+    const Lcur = () => S.mode === 'string' ? S.Ls : S.Lp, Fcur = () => S.mode === 'string' ? S.fs : S.fp;
+    const mask = v => (S.unk && S.hid && isPipe()) ? '？' : v;
+    function nearest() {         // 最接近目前頻率的共鳴
+        const v = V(), L = Lcur(), f = Fcur(); let n = S.mode === 'closed' ? Math.round((f * 4 * L / v + 1) / 2) : Math.round(f * 2 * L / v); n = Math.max(1, n);
+        return { n, f: resFreq(S.mode, n, v, L) };
+    }
+
+    /* ---------- 場景 ---------- */
+    function drawString() {
+        const x0 = 70, sc = 310, Lpx = S.Ls * sc, y0 = 190, v = V(), k = TAU * S.fs / v, g = gain('string', S.fs, v, S.Ls), A = 92 * g, cs = Math.cos(TAU * S.ph);
+        // 固定端與振動器
+        c.fillStyle = '#3a4558'; c.fillRect(x0 - 14, y0 - 50, 14, 100);
+        const dy = (4 + 0) * cs * (g < 0.5 ? 1 : 0.4); c.fillStyle = '#ff9f43'; c.fillRect(x0 + Lpx, y0 - 22 + dy, 16, 44); txt(c, '振動器', x0 + Lpx + 8, y0 + 44, '#ff9f43', 17, 'center'); txt(c, '固定端', x0 - 8, y0 + 66, '#9aa8bd', 17, 'center');
+        // 包絡線
+        if (el('chkDisp').checked && A > 2) { c.strokeStyle = '#00d4ff55'; c.lineWidth = 1.5; c.setLineDash([5, 5]); [1, -1].forEach(sg => { c.beginPath(); for (let px = 0; px <= Lpx; px += 3) { const y = y0 + sg * A * Math.sin(k * px / sc); px ? c.lineTo(x0 + px, y) : c.moveTo(x0 + px, y); } c.stroke(); }); c.setLineDash([]); }
+        // 弦
+        c.strokeStyle = '#00d4ff'; c.lineWidth = 3.5; c.beginPath();
+        for (let px = 0; px <= Lpx; px += 2) { const y = y0 - A * Math.sin(k * px / sc) * cs; px ? c.lineTo(x0 + px, y) : c.moveTo(x0 + px, y); } c.stroke();
+        // 波節、波腹
+        if (el('chkNA').checked && g > 0.5) { const lam = v / S.fs;
+            for (let m = 0; m * lam / 2 <= S.Ls + 0.004; m++) { txt(c, 'N', x0 + m * lam / 2 * sc, y0 + 122, '#ff4d6d', 17, 'center'); if ((m + .5) * lam / 2 <= S.Ls) txt(c, 'A', x0 + (m + .5) * lam / 2 * sc, y0 - 122, '#00e676', 17, 'center'); } }
+        // 長度標示
+        c.strokeStyle = '#6a7a92'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(x0, 348); c.lineTo(x0 + Lpx, 348); c.moveTo(x0, 341); c.lineTo(x0, 355); c.moveTo(x0 + Lpx, 341); c.lineTo(x0 + Lpx, 355); c.stroke();
+        txt(c, `L = ${S.Ls.toFixed(2)} m`, x0 + Lpx / 2, 368, '#c3d0e4', 18, 'center');
+    }
+    function drawPipe() {
+        const x0 = 96, sc = 520, Lpx = S.Lp * sc, yT = 96, hT = 76, v = V(), f = S.fp, k = TAU * f / v, g = gain(S.mode, f, v, S.Lp), cs = Math.cos(TAU * S.ph), closed = S.mode === 'closed';
+        const xE = x0 + Lpx;                                    // 右端：閉管的閉口端（水面／活塞）或開管的另一個開口
+        const dispEnv = u => closed ? Math.sin(k * u) : Math.cos(k * u);       // u：到右端的距離 (m)
+        const presEnv = u => closed ? Math.cos(k * u) : Math.sin(k * u);
+        // 喇叭
+        c.fillStyle = '#ff9f43'; c.beginPath(); c.moveTo(x0 - 60, yT + hT / 2 - 12); c.lineTo(x0 - 44, yT + hT / 2 - 12); c.lineTo(x0 - 22, yT + 6); c.lineTo(x0 - 22, yT + hT - 6); c.lineTo(x0 - 44, yT + hT / 2 + 12); c.lineTo(x0 - 60, yT + hT / 2 + 12); c.closePath(); c.fill();
+        txt(c, '聲源', x0 - 42, yT + hT + 16, '#ff9f43', 17, 'center');
+        // 管壁
+        c.fillStyle = '#0d121b'; c.fillRect(x0, yT, Lpx, hT);
+        c.strokeStyle = '#8a99ad'; c.lineWidth = 4; c.beginPath(); c.moveTo(x0, yT); c.lineTo(xE, yT); c.moveTo(x0, yT + hT); c.lineTo(xE, yT + hT); c.stroke();
+        if (closed) { c.fillStyle = '#1e4a7a'; c.fillRect(xE, yT - 2, Math.min(26, W - xE - 6), hT + 4); c.strokeStyle = '#4d8dff'; c.lineWidth = 4; c.beginPath(); c.moveTo(xE, yT - 2); c.lineTo(xE, yT + hT + 2); c.stroke(); txt(c, '閉口端', xE + 4, yT - 18, '#4d8dff', 17, 'center'); }
+        else txt(c, '開口端', xE, yT - 18, '#9aa8bd', 17, 'center');
+        txt(c, '開口端', x0, yT - 18, '#9aa8bd', 17, 'center');
+        // 空氣分子：縱向位移
+        const amp = 10 * g; c.fillStyle = '#c3d0e4';
+        for (let px = 6; px < Lpx - 2; px += 11) { const u = (Lpx - px) / sc, d = amp * dispEnv(u) * cs;
+            for (let r = 0; r < 5; r++) { c.beginPath(); c.arc(Math.min(xE - 3, x0 + px + d + (r % 2 ? 3 : 0)), yT + 11 + r * 13.5, 2.3, 0, 7); c.fill(); } }
+        // 包絡線圖
+        const yA = 268, AH = 54;
+        c.strokeStyle = '#2c3749'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(x0, yA); c.lineTo(xE, yA); c.stroke();
+        c.strokeStyle = '#1f2736'; c.setLineDash([3, 5]); c.beginPath(); c.moveTo(x0, yT + hT); c.lineTo(x0, yA + AH + 8); c.moveTo(xE, yT + hT); c.lineTo(xE, yA + AH + 8); c.stroke(); c.setLineDash([]);
+        const env = (fn, col, dash) => { c.strokeStyle = col; c.lineWidth = 2.5; c.setLineDash(dash); [1, -1].forEach(sg => { c.beginPath(); for (let px = 0; px <= Lpx; px += 3) { const y = yA - sg * AH * Math.max(g, 0.12) * fn((Lpx - px) / sc); px ? c.lineTo(x0 + px, y) : c.moveTo(x0 + px, y); } c.stroke(); }); c.setLineDash([]); };
+        if (el('chkPres').checked) env(presEnv, '#ff9f43', [7, 5]);
+        if (el('chkDisp').checked) env(dispEnv, '#00d4ff', []);
+        txt(c, '位移', 20, yA - 14, '#00d4ff', 17, 'left'); if (el('chkPres').checked) txt(c, '壓力', 20, yA + 10, '#ff9f43', 17, 'left');
+        // 位移波節、波腹
+        if (el('chkNA').checked && g > 0.5) { const lam = v / f;
+            for (let m = 0; m < 12; m++) { const uN = closed ? m * lam / 2 : (m + .5) * lam / 2, uA = closed ? (m + .5) * lam / 2 : m * lam / 2;
+                if (uN <= S.Lp + 0.004) txt(c, 'N', xE - uN * sc, yA + AH + 22, '#ff4d6d', 17, 'center'); if (uA <= S.Lp + 0.004) txt(c, 'A', xE - uA * sc, yA + AH + 22, '#00e676', 17, 'center'); } }
+        txt(c, `L = ${(S.Lp * 100).toFixed(1)} cm`, x0 + Lpx / 2, 376, '#c3d0e4', 18, 'center');
+        // 音量條
+        const vx = 20, vy = 40, vw = 150; txt(c, '音量', vx, vy - 14, '#c3d0e4', 17, 'left'); c.fillStyle = '#141923'; c.fillRect(vx, vy, vw, 12); c.fillStyle = g > 0.85 ? '#00e676' : g > 0.4 ? '#ffcc00' : '#4d8dff'; c.fillRect(vx, vy, vw * g, 12);
+    }
+    function draw() {
+        c.fillStyle = '#080a0f'; c.fillRect(0, 0, W, H);
+        S.mode === 'string' ? drawString() : drawPipe();
+        if (el('chkNA').checked) txt(c, 'N：位移波節　A：位移波腹', W - 16, 22, '#6a7a92', 17, 'right');
+    }
+
+    /* ---------- 面板 ---------- */
+    function panels() {
+        const v = V(), L = Lcur(), f = Fcur(), lam = v / f, g = gain(S.mode, f, v, L), nr = nearest(), f1 = resFreq(S.mode, 1, v, L), on = g > 0.85;
+        el('dash').innerHTML = meter(S.mode === 'string' ? '波速 v = √(F／μ)' : '聲速 v', mask(v.toFixed(1)), 'm/s', '#00e676') + meter('頻率 f', f.toFixed(1), 'Hz', '#ffcc00') + meter('波長 λ = v／f', mask(lam >= 1 ? lam.toFixed(3) : (lam * 100).toFixed(1)), lam >= 1 ? 'm' : 'cm', '#00d4ff')
+            + meter('L ÷ λ', mask((L / lam).toFixed(3)), '', '#c3d0e4') + meter('基頻 f₁', mask(f1.toFixed(1)), 'Hz', '#ff9f43') + meter(isPipe() ? '音量（相對振幅）' : '相對振幅', (g * 100).toFixed(0), '%', on ? '#00e676' : '#c3d0e4');
+        const which = S.mode === 'closed' ? `L = ${2 * nr.n - 1}λ／4（第 ${nr.n} 個共鳴，基頻的 ${2 * nr.n - 1} 倍）` : `L = ${nr.n}λ／2（第 ${nr.n} 諧音）`;
+        el('status').innerHTML = (S.unk && S.hid && isPipe())
+            ? (on ? '<b>共鳴！</b>這個位置的聲音最響，可以記錄下來。' : `還沒共鳴（音量 ${(g * 100).toFixed(0)}%）。慢慢改變氣柱長度，找出最響的位置。`)
+            : on ? `<b>共鳴！</b>${which}，λ = <b>${(lam * 100).toFixed(1)} cm</b>，形成大振幅的駐波。`
+                : `還沒共鳴（振幅只有共鳴時的 ${(g * 100).toFixed(0)}%）。最接近的共鳴頻率是 <b>${nr.f.toFixed(1)} Hz</b>（${which.split('（')[0]}）。`;
+        el('runState').textContent = on ? '共鳴中' : '';
+    }
+    function graphs() {
+        const v = V(), L = Lcur(), f = Fcur(), fmax = +el('slF').max, fmin = +el('slF').min, N = 480, pf = [], pl = [], hide = S.unk && S.hid && isPipe();
+        for (let k = 0; k <= N; k++) { const ff = fmin + (fmax - fmin) * k / N; pf.push([ff, gain(S.mode, ff, v, L) * 100]); }
+        const sl = el(S.mode === 'string' ? 'slLs' : 'slLp'), l0 = +sl.min, l1 = +sl.max, u = isPipe() ? 100 : 1;
+        for (let k = 0; k <= N; k++) { const ll = l0 + (l1 - l0) * k / N; pl.push([ll * u, gain(S.mode, f, v, ll) * 100]); }
+        graph(el('gF'), { title: '相對振幅–頻率（長度固定）', xl: '頻率 f (Hz)', yl: '相對振幅 (%)', xmin: fmin, xmax: fmax, ymin: 0, ymax: 105, vline: f, series: [{ pts: pf, col: '#ffcc00', w: 2 }] });
+        graph(el('gL'), { title: '相對振幅–長度（頻率固定）', xl: isPipe() ? '氣柱長 L (cm)' : '弦長 L (m)', yl: '相對振幅 (%)', xmin: l0 * u, xmax: l1 * u, ymin: 0, ymax: 105, vline: L * u, series: [{ pts: pl, col: '#00d4ff', w: 2 }] });
+        if (hide) { const x = el('gF').getContext('2d'); x.fillStyle = '#0d121b'; x.fillRect(62, 30, 402, 190); x.fillStyle = '#6a7a92'; x.font = '14px sans-serif'; x.textAlign = 'center'; x.fillText('未知聲速：這張圖先藏起來', 262, 128); }
+    }
+    function harmonics() {
+        const v = V(), L = Lcur(), fmax = +el('slF').max, fmin = +el('slF').min, row = el('harmRow');
+        row.querySelectorAll('.chip').forEach(b => b.remove());
+        for (let n = 1; n <= 6; n++) { const fr = resFreq(S.mode, n, v, L); if (fr > fmax || fr < fmin) continue;
+            const b = document.createElement('button'); b.className = 'chip harm'; b.disabled = S.unk && S.hid && isPipe();
+            b.textContent = S.mode === 'closed' ? `第 ${n} 個（${2 * n - 1} 倍頻）` : `n = ${n}`;
+            b.addEventListener('click', () => setF(resFreq(S.mode, n, V(), Lcur()))); row.appendChild(b); }   // 用精確的共鳴頻率（滑桿只顯示最接近的刻度）
+    }
+
+    /* ---------- 實驗（閉管） ---------- */
+    function renderExp() {
+        el('expTitle').textContent = S.unk ? '實驗：未知聲速 —— 管內的聲速是多少？' : '實驗：共鳴管測聲速';
+        el('expHint').innerHTML = (S.unk ? '管內換成未知的氣體（或未知的溫度），聲速被藏起來了。' : '')
+            + '選一支音叉（頻率固定），從最短的氣柱開始慢慢加長，每找到一個最響的位置就按「記錄共鳴點」（不要跳過）。相鄰共鳴點相差半個波長，所以 L<sub>n</sub>–n 圖的斜率 = λ／2，<b>v = fλ = 2f × 斜率</b>。';
+        el('btnUnk').textContent = S.unk ? '↩ 回到已知聲速' : '🎲 未知聲速'; el('btnRev').disabled = !(S.unk && S.hid); el('slTemp').disabled = S.unk;
+        el('tNote').textContent = S.unk ? (S.hid ? '未知聲速：數值隱藏中' : `已揭曉：v = ${S.vUnk} m/s`) : `聲速 v = 331 + 0.6T = ${soundSpeed(S.T).toFixed(1)} m/s`;
+        document.querySelectorAll('.chip.fork').forEach(b => b.classList.toggle('on', +b.dataset.f === S.fp));
+        const rs = S.recs.slice().sort((a, b) => a - b);
+        el('recBody').innerHTML = rs.map((L, k) => `<tr><td>${k + 1}</td><td>${(L * 100).toFixed(1)}</td><td>${k ? ((L - rs[k - 1]) * 100).toFixed(1) : '—'}</td></tr>`).join('') || '<tr><td colspan="3" style="text-align:center;color:#6a7a92">尚無數據</td></tr>';
+        const pts = rs.map((L, k) => [k + 1, L * 100]), fit = fitLine(pts);
+        graph(el('gFit'), { title: 'Lₙ–n 圖', xl: '第 n 個共鳴點', yl: 'Lₙ (cm)', xmin: 0, xmax: Math.max(4, pts.length + 1), ymin: 0, ymax: 125,
+            series: fit ? [{ pts: [[0, fit.b], [Math.max(4, pts.length + 1), fit.m * Math.max(4, pts.length + 1) + fit.b]], col: '#ff9f43', w: 2, label: '最適直線' }] : [], dots: pts.map(p => ({ x: p[0], y: p[1], col: '#ffcc00', r: 5 })) });
+        let s = pts.length < 2 ? `音叉頻率 <b>${S.fp} Hz</b>。至少要找到 2 個共鳴點；氣柱最長 120 cm，頻率太低時可能只找得到 1 個，請換高一點的音叉。` : '';
+        if (fit) {
+            const lam = 2 * fit.m / 100, vEst = S.fp * lam;
+            s = `音叉頻率 <b>${S.fp} Hz</b>；斜率 = <b>${fit.m.toFixed(2)} cm</b> = λ／2 → λ = <b>${(lam * 100).toFixed(1)} cm</b>，聲速 v = fλ = <b>${vEst.toFixed(1)} m/s</b>。`;
+            if (!S.unk) s += ` 理論值 331 + 0.6 × ${S.T} = ${soundSpeed(S.T).toFixed(1)} m/s，誤差 ${(Math.abs(vEst - soundSpeed(S.T)) / soundSpeed(S.T) * 100).toFixed(1)}%。`;
+            else if (!S.hid) s += ` 揭曉：真正的聲速是 <b>${S.vUnk} m/s</b>，誤差 ${(Math.abs(vEst - S.vUnk) / S.vUnk * 100).toFixed(1)}%。`;
+            else s += ' 算好了再按「揭曉」。';
+        }
+        el('fitTxt').innerHTML = s;
+    }
+    function record() {
+        const g = gain('closed', S.fp, V(), S.Lp);
+        if (g < 0.85) { el('fitTxt').innerHTML = `<b>這裡還不是最響的位置</b>（音量 ${(g * 100).toFixed(0)}%）。用「±1 mm」慢慢微調，音量到 85% 以上再記錄。`; return; }
+        if (S.recs.some(L => Math.abs(L - S.Lp) < 0.03)) { el('fitTxt').innerHTML = '<b>這個共鳴點已經記錄過了</b>，請把氣柱再加長，找下一個最響的位置。'; return; }
+        S.recs.push(S.Lp + (el('chkNoise').checked ? noise(0.001) : 0)); renderExp();
+    }
+
+    /* ---------- 介面 ---------- */
+    function syncLabels() {
+        el('lblF').textContent = Fcur().toFixed(1); el('lblLs').textContent = S.Ls.toFixed(2); el('lblT').textContent = S.F; el('lblMu').textContent = (S.mu * 1e3).toFixed(1);
+        el('lblLp').textContent = (S.Lp * 100).toFixed(1); el('bigL').textContent = (S.Lp * 100).toFixed(1) + ' cm'; el('lblTemp').textContent = S.unk ? '？' : S.T;
+        el('vNote').textContent = `波速 v = √(F／μ) = ${stringSpeed(S.F, S.mu).toFixed(1)} m/s`;
+        el('fNote').textContent = S.mode === 'string' ? '振動器的頻率' : '聲源（音叉）的頻率';
+    }
+    function refresh(rebuild) { syncLabels(); if (rebuild) harmonics(); panels(); graphs(); if (S.mode === 'closed') renderExp(); }
+    function setF(f) { if (S.mode === 'string') S.fs = f; else { S.fp = f; S.recs = []; } el('slF').value = f; refresh(false); }
+    function setMode(m) {
+        S.mode = m; document.querySelectorAll('#modeBar .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.m === m));
+        document.querySelectorAll('[data-for]').forEach(e => { const k = e.dataset.for; e.hidden = !(k === m || (k === 'pipe' && m !== 'string')); });
+        const sf = el('slF'); if (m === 'string') { sf.min = 5; sf.max = 400; sf.step = 0.5; sf.value = S.fs; } else { sf.min = 50; sf.max = 1200; sf.step = 1; sf.value = S.fp; }
+        el('cTitle').textContent = m === 'string' ? '弦上的駐波（兩端固定）' : m === 'closed' ? '閉管：一端閉口的氣柱' : '開管：兩端開口的氣柱';
+        refresh(true);
+    }
+    el('slF').addEventListener('input', () => { const f = +el('slF').value; if (S.mode === 'string') S.fs = f; else { S.fp = f; S.recs = []; } refresh(false); });
+    const bind = (id, fn, rebuild) => el(id).addEventListener('input', () => { fn(+el(id).value); refresh(rebuild); });
+    bind('slLs', v => S.Ls = v, true); bind('slT', v => S.F = v, true); bind('slMu', v => S.mu = v * 1e-3, true);
+    bind('slLp', v => S.Lp = v, true); bind('slTemp', v => { S.T = v; S.recs = []; }, true);
+    el('selSpd').addEventListener('change', () => S.spd = +el('selSpd').value);
+    document.querySelectorAll('#modeBar .mode-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.m)));
+    el('btnPlay').addEventListener('click', () => S.playing = true); el('btnPause').addEventListener('click', () => S.playing = false);
+    document.querySelectorAll('.chip.fork').forEach(b => b.addEventListener('click', () => setF(+b.dataset.f)));
+    document.querySelectorAll('.nudge button').forEach(b => b.addEventListener('click', () => { S.Lp = Math.min(1.2, Math.max(0.05, Math.round((S.Lp + +b.dataset.d) * 1000) / 1000)); el('slLp').value = S.Lp; refresh(true); }));
+    el('btnRec').addEventListener('click', record);
+    el('btnClr').addEventListener('click', () => { S.recs = []; renderExp(); });
+    el('btnUnk').addEventListener('click', () => { S.unk = !S.unk; S.hid = S.unk; S.recs = []; if (S.unk) S.vUnk = 280 + Math.floor(Math.random() * 141); refresh(true); });
+    el('btnRev').addEventListener('click', () => { S.hid = false; refresh(true); });
+
+    let last = null, fn = 0;
+    function frame(ts) {
+        if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05); last = ts;
+        if (S.playing) S.ph += dt * 0.9 * S.spd;
+        draw(); if (!(fn++ % 4)) panels();
+        requestAnimationFrame(frame);
+    }
+    setMode('string'); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
