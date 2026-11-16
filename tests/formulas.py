@@ -600,6 +600,31 @@ def t_microwave(ctx):
     check("偏振 柵欄 45° 讓原本收不到的 φ=90° 重新收到 25", meter(pg, "接收器讀數"), 25, 0.002)
 
 
+def t_brownian(ctx):
+    pg = open_page(ctx, "brownian-motion", frozen=True)
+    kB = 1.380649e-23
+    for i, v in (("T", 293), ("a", 0.5), ("eta", 1)): set_val(pg, i, v)
+    step(pg, 6); D = kB * 293 / (6 * math.pi * 1e-3 * 0.5e-6) * 1e12
+    check("布朗 D = kT/6πηa（μm²/s）", meter(pg, "理論擴散係數"), D, 0.002)
+    set_val(pg, "T", 373); set_val(pg, "a", 0.25); set_val(pg, "eta", 0.5); step(pg, 6)
+    check("布朗 T↑、a 減半、η 減半 → D", meter(pg, "理論擴散係數"), D * 373 / 293 * 4, 0.002)
+    for i, v in (("T", 293), ("a", 0.5), ("eta", 1)): set_val(pg, i, v)
+    pg.evaluate("LabTest.seed(12345)"); dm = pg.evaluate("LabTest.run(120)")
+    check("布朗 模擬 240 顆 120 s：⟨r²⟩ 斜率/4 ≈ D（統計誤差 12% 內）", dm, D, 0.12)
+    # 方均位移 ∝ t：前半段與全段的斜率一致
+    r = pg.evaluate("""() => { LabTest.seed(777); const d1 = LabTest.run(60), d2 = LabTest.run(60); return [d1, d2]; }""")
+    check("布朗 60 s 與 120 s 量到的 D 一致（⟨r²⟩ ∝ t）", r[1], r[0], 0.15)
+    pg.evaluate("LabTest.seed(2024)"); ks = []
+    for T, a, eta in ((293, 0.5, 1.0), (333, 0.3, 0.8), (373, 0.2, 0.5), (300, 1.0, 1.0)):
+        for i, v in (("T", T), ("a", a), ("eta", eta)): set_val(pg, i, v)
+        pg.evaluate("LabTest.run(120)"); pg.click("#btnRec")
+    check("布朗 實驗求 k（×10⁻²³，統計誤差 12% 內）", num(text(pg, "kFit")), 1.38, 0.12)
+    check("布朗 N_A = R/k 與頁面的 k 一致", num(text(pg, "naFit")), 8.314 / (num(text(pg, "kFit")) * 1e-23) / 1e23, 0.01)
+    pg.click("#btnUnk"); pg.evaluate("LabTest.run(150)"); pg.click("#btnRec"); pg.evaluate("LabTest.run(150)")
+    est = num(text(pg, "aFit")); pg.click("#btnRev")
+    check("布朗 未知粒徑（統計誤差 15% 內）", est, num(text(pg, "aTrue")), 0.15)
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
          "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing,
@@ -613,7 +638,8 @@ TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_proje
          "capacitor": t_capacitor,
          "current-balance": t_balance,
          "transformer": t_transformer,
-         "microwave": t_microwave}
+         "microwave": t_microwave,
+         "brownian-motion": t_brownian}
 
 
 def main():
