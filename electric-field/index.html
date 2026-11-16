@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電場與等位線 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/lab-mobile.css">
+    <link rel="stylesheet" href="../shared/touch.css">
+    <style>
+        [hidden] { display: none !important; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        input.ans { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 8px; font-size: 1rem; width: 7em; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>⚡ 電場與等位線</h1>
+    <p class="subtitle">E = kQ／r²　｜　V = kQ／r　｜　E = −ΔV／Δs</p>
+</header>
+
+<div class="container">
+<div class="card sticky-sim"><div class="card-title"><span id="cTitle">電場與等位線：拖曳電荷與探針（綠色十字）</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div><div class="canvas-wrap"><canvas id="scene" width="760" height="400"></canvas></div></div><div class="card"><div class="card-title">選擇模式與條件</div><div class="mode-bar" id="modeBar"><button class="mode-btn active" data-m="pt"><b>① 點電荷</b>電力線、等位線與試探電荷</button><button class="mode-btn" data-m="paper"><b>② 導電紙實驗</b>用探針量電位，自己找等位線、求電場</button></div><div class="preset-row" data-for="pt"><span class="lbl">電荷組合：</span><button class="chip" data-c="1">一個正電荷</button><button class="chip" data-c="-1">一個負電荷</button><button class="chip on" data-c="1,-1">電偶極</button><button class="chip" data-c="1,1">兩個正電荷</button><button class="chip" data-c="2,-1">+2q 與 −q</button><button class="chip" data-c="1,-1,1,-1">四個電荷</button></div><div class="preset-row" data-for="paper"><span class="lbl">電極形狀：</span><button class="chip on" data-e="plate">兩片平行電極</button><button class="chip" data-e="point">兩個點電極</button></div><div class="controls-grid"><div class="control-group" data-for="pt"><div class="control-label"><span>單位電量 q</span><b style="color:var(--cyan)"><span id="qL"></span> nC</b></div><input type="range" id="q" min="0.5" max="5" step="0.5" value="2"></div><div class="control-group" data-for="paper"><div class="control-label"><span>電源電壓 V₀</span><b style="color:var(--orange)"><span id="V0L"></span> V</b></div><input type="range" id="V0" min="2" max="12" step="0.5" value="6"><div class="sub-note">左電極 0 V，右電極 V₀</div></div></div><div class="check-row"><label><input type="checkbox" id="chkL" checked> 電力線</label><label><input type="checkbox" id="chkV" checked> 等位線</label></div><div data-for="pt"><div class="btn-row" style="margin:8px 0"><button class="btn green" id="btnGo">▶ 在探針處釋放正的試探電荷</button><button class="btn secondary" id="btnStop">↺ 收回</button></div></div></div><div class="card"><div class="card-title">探針讀數</div><div class="dashboard" id="dash"></div><div class="status" id="status"></div></div><div class="card" data-for="paper"><div class="card-title">實驗：在導電紙上找等位線、求電場</div><div class="fit-text">把探針拖到想量的位置，按「記錄這一點」，畫面會留下記號與電位值。<b>平行電極</b>：沿著中線記錄幾個點，V–x 圖的斜率就是電場大小 E = ΔV／Δx。也可以試著找出電位相同的點，連成等位線。</div><div class="btn-row" style="margin:8px 0"><button class="btn orange" id="btnRec">📍 記錄這一點</button><button class="btn secondary" id="btnClr">清除記號</button><button class="btn secondary" id="btnUnk">🎲 未知電壓</button><button class="btn secondary" id="btnRev">揭曉</button></div><div class="two-col"><div class="graph-box"><canvas id="gFit" width="480" height="320"></canvas></div><div class="table-scroll"><table><thead><tr><th>#</th><th>x (cm)</th><th>y (cm)</th><th>V (V)</th></tr></thead><tbody id="recBody"></tbody></table></div></div><div class="fit-text" id="fitTxt"></div></div>
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary><ul><li>點電荷的電場 <b>E = kQ／r²</b>（N/C 或 V/m），方向：正電荷向外、負電荷向內；k = 8.99 × 10⁹ N·m²/C²。多個電荷時電場是<b>向量和</b>。</li><li>點電荷的電位 <b>V = kQ／r</b>（V，取無窮遠為零）；多個電荷時電位是<b>代數和</b>（純量，有正負）。</li><li>電荷 q 受力 <b>F = qE</b>，電位能 <b>U = qV</b>；只受電力時 <b>½mv² + qV = 定值</b>。</li><li>電場與電位的關係：電場指向電位降低最快的方向，大小 <b>E = −ΔV／Δs</b>；所以<b>電力線處處垂直等位線</b>，等位線越密的地方電場越強。</li><li>平行電極之間是均勻電場：<b>E = V₀／d</b>，電位隨位置線性變化 V = E·x。</li><li>沿著等位線移動電荷，電力不作功（W = qΔV = 0）。</li></ul>
+            <p class="assume">理想化假設：點電荷模式：電荷固定不動，位於同一平面，畫面是三維電場在該平面上的切面；電力線的條數只是示意（與電量成正比）。導電紙模式：紙的導電性均勻、電極是理想導體；平行電極之間視為均勻電場（不計邊緣效應）；點電極用二維電流場的對數電位近似。試探電荷電量很小，不影響原來的電場。</p></details>
+        <details><summary>建議講解順序</summary><ol><li>一個正電荷：電力線向外輻射，等位線是同心圓，越靠近越密。</li><li>換成負電荷：電力線反向，電位變成負的。</li><li>電偶極：把探針放在兩電荷連線的中垂線上，電位是零，但電場不是零。</li><li>兩個正電荷：中點電場是零，但電位不是零——對照上一步。</li><li>釋放試探電荷：它不一定沿電力線走（有慣性），但動能＋電位能守恆。</li><li>導電紙實驗：先關掉等位線，讓學生自己找 3 V 的點；再用 V–x 圖求電場，挑戰未知電壓。</li></ol></details>
+        <details><summary>可以問學生的問題</summary><ul><li>電位為零的地方，電場一定是零嗎？反過來呢？（都不一定：電偶極中點、兩同號電荷中點）</li><li>等位線很密的地方代表什麼？（電場強）</li><li>正電荷由靜止釋放，會往電位高還是低的地方跑？負電荷呢？（正往低、負往高，但電位能都減少）</li><li>兩條電力線為什麼不會相交？（交點的電場方向會不唯一）</li><li>平行電極間距 20 cm、電壓 6 V，電場多大？（30 V/m）</li></ul></details>
+        <details><summary>常見迷思</summary><ul><li><b>「電力線就是電荷運動的軌跡」</b>：電力線是受力方向，只有從靜止出發且電力線是直線時，軌跡才與它重合。</li><li><b>「電場為零的地方電位也為零」</b>：電場看的是電位的變化率，不是電位的值。</li><li><b>「電位是向量，要用平行四邊形相加」</b>：電位是純量，直接加（含正負號）。</li><li><b>「沒有畫電力線的地方就沒有電場」</b>：電力線只是挑幾條畫出來，空白處一樣有電場。</li></ul></details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script src="../shared/lab.js"></script>
+<script>
+(() => {
+    'use strict';
+    const { el, rad, deg, arrow, txt, graph, meter, fitLine, fitThroughOrigin, noise, niceStep } = Lab;
+    const $$ = s => [...document.querySelectorAll(s)];
+    // 滑桿：顯示目前數值（id + 'L'），拖動時呼叫 cb；回傳讀值函式
+    function sl(id, dp, cb) { const e = el(id), lb = el(id + 'L'), up = () => { if (lb) lb.textContent = (+e.value).toFixed(dp); };
+        e.addEventListener('input', () => { up(); cb && cb(); }); up(); return () => +e.value; }
+    // 模式切換：有 data-for 的區塊只在對應模式顯示
+    function showFor(m) { $$('[data-for]').forEach(e => e.hidden = !e.dataset.for.split(' ').includes(m));
+        $$('#modeBar .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.m === m)); }
+    function onMode(cb) { $$('#modeBar .mode-btn').forEach(b => b.addEventListener('click', () => { showFor(b.dataset.m); cb(b.dataset.m); })); }
+    const rows = (id, arr) => el(id).innerHTML = arr.map(r => '<tr>' + r.map(v => `<td>${v}</td>`).join('') + '</tr>').join('') || '<tr><td colspan="9" style="text-align:center;color:#6a7a92">尚無數據</td></tr>';
+    // 動畫迴圈：fn(dt)；dt 為秒，最大 0.05
+    function loop(fn) { let last = null; const f = ts => { if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05); last = ts; fn(dt); requestAnimationFrame(f); }; requestAnimationFrame(f); }
+    // 畫布拖曳：cb(x, y, 階段)；x、y 為畫布座標，階段為 'down'／'move'／'up'
+    function dragOn(cv, cb) { let on = false; cv.style.touchAction = 'none'; const P = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
+        cv.addEventListener('pointerdown', e => { on = true; cv.setPointerCapture(e.pointerId); cb(...P(e), 'down'); }); cv.addEventListener('pointermove', e => { if (on) cb(...P(e), 'move'); });
+        const up = e => { if (on) { on = false; cb(...P(e), 'up'); } }; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up); }
+
+    const cv = el('scene'), c = cv.getContext('2d'), W = 760, H = 400, K = 8.99, MM = 0.001;   // 1 px = 1 mm；電量 nC → K·q／r（m）得到 V
+    const S = { mode: 'pt', ch: [], probe: [380, 120], grab: null, dirty: true, tc: null, elec: 'plate', marks: [], unk: false, hid: false, VU: 6 };
+    const q0 = sl('q', 1, () => { S.dirty = true; }), V0s = sl('V0', 1, () => { S.dirty = true; S.marks = []; renderExp(); }), V0 = () => S.unk ? S.VU : V0s();
+    const X1 = 180, X2 = 580, PD = 200;     // 平行電極位置；點電極在中心左右各 PD
+    // 回傳 [Ex, Ey, V]（V/m、V）；y 向下為正的畫布座標，Ey 也是畫布方向
+    function field(x, y) {
+        if (S.mode === 'pt') { let ex = 0, ey = 0, v = 0; for (const p of S.ch) { const dx = (x - p.x) * MM, dy = (y - p.y) * MM, r2 = Math.max(dx * dx + dy * dy, 9e-6), r = Math.sqrt(r2), kq = K * p.s * q0(); v += kq / r; ex += kq * dx / (r2 * r); ey += kq * dy / (r2 * r); } return [ex, ey, v]; }
+        if (S.elec === 'plate') { const E = V0() / ((X2 - X1) * MM); return x < X1 ? [0, 0, 0] : x > X2 ? [0, 0, V0()] : [-E, 0, V0() * (x - X1) / (X2 - X1)]; }
+        const a = 8, A = V0() / (2 * Math.log((2 * PD - a) / a)), dx1 = x - (380 - PD), dx2 = x - (380 + PD), dy = y - 200, r1 = Math.max(Math.hypot(dx1, dy), a), r2 = Math.max(Math.hypot(dx2, dy), a);
+        return [-A * (dx1 / (r1 * r1) - dx2 / (r2 * r2)) / MM, -A * (dy / (r1 * r1) - dy / (r2 * r2)) / MM, V0() / 2 + A * Math.log(r1 / r2)]; }
+    window.LabTest = { field, set: (ch, pr) => { S.ch = ch.map(([x, y, s]) => ({ x, y, s })); S.probe = pr; S.dirty = true; }, probe: p => { S.probe = p; }, hidden: () => S.VU, K };
+    const layout = sg => { const n = sg.length, pos = n === 1 ? [[380, 200]] : n === 2 ? [[280, 200], [480, 200]] : [[290, 120], [470, 120], [470, 280], [290, 280]]; S.ch = sg.map((s, i) => ({ x: pos[i][0], y: pos[i][1], s })); S.dirty = true; S.tc = null; };
+    const bg = document.createElement('canvas'); bg.width = W; bg.height = H; const b = bg.getContext('2d');
+    function renderBg() {
+        b.fillStyle = S.mode === 'pt' ? '#080a0f' : '#15120c'; b.fillRect(0, 0, W, H); const pt = S.mode === 'pt';
+        if (el('chkV').checked && !(S.hid && !pt)) { const g = 8, nx = W / g, ny = H / g, v = []; for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) v.push(field(i * g, j * g)[2]);
+            const lv = pt ? [-320, -160, -80, -40, -20, 20, 40, 80, 160, 320].map(u => u * q0() / 2) : Array.from({ length: 9 }, (_, i) => V0() * (i + 1) / 10); b.lineWidth = 1.5;
+            for (const L of lv) { b.strokeStyle = pt ? (L > 0 ? 'rgba(255,107,129,.75)' : 'rgba(0,212,255,.75)') : 'rgba(0,230,118,.7)'; b.beginPath();
+                for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) { const a = v[j * (nx + 1) + i], bb = v[j * (nx + 1) + i + 1], cc = v[(j + 1) * (nx + 1) + i + 1], d = v[(j + 1) * (nx + 1) + i], P = [];
+                    if ((a > L) !== (bb > L)) P.push([i + (L - a) / (bb - a), j]); if ((bb > L) !== (cc > L)) P.push([i + 1, j + (L - bb) / (cc - bb)]); if ((d > L) !== (cc > L)) P.push([i + (L - d) / (cc - d), j + 1]); if ((a > L) !== (d > L)) P.push([i, j + (L - a) / (d - a)]);
+                    if (P.length >= 2) { b.moveTo(P[0][0] * g, P[0][1] * g); b.lineTo(P[1][0] * g, P[1][1] * g); } } b.stroke(); } }
+        if (el('chkL').checked && !(S.hid && !pt)) { b.strokeStyle = 'rgba(255,204,0,.8)'; b.lineWidth = 1.5; const seeds = [];
+            if (pt) { const pos = S.ch.some(p => p.s > 0); S.ch.forEach(p => { if (pos ? p.s > 0 : true) { const n = Math.round(10 * Math.abs(p.s)); for (let i = 0; i < n; i++) seeds.push([p.x + 9 * Math.cos((i + .5) / n * 6.2832), p.y + 9 * Math.sin((i + .5) / n * 6.2832), p.s > 0 ? 1 : -1]); } }); }
+            else if (S.elec === 'plate') for (let y = 70; y <= 330; y += 37) seeds.push([X2 - 2, y, 1]); else for (let i = 0; i < 12; i++) seeds.push([380 + PD + 10 * Math.cos((i + .5) / 12 * 6.2832), 200 + 10 * Math.sin((i + .5) / 12 * 6.2832), 1]);
+            for (let [x, y, dir] of seeds) { b.beginPath(); b.moveTo(x, y); let n = 0, mid = null;
+                for (; n < 700; n++) { let [ex, ey] = field(x, y), m = Math.hypot(ex, ey); if (m < 1e-6) break; const hx = x + dir * ex / m * 2, hy = y + dir * ey / m * 2; [ex, ey] = field(hx, hy); m = Math.hypot(ex, ey); if (m < 1e-6) break; x += dir * ex / m * 4; y += dir * ey / m * 4; b.lineTo(x, y);
+                    if (n === 14) mid = [x, y, Math.atan2(ey, ex)]; if (x < -40 || x > W + 40 || y < -40 || y > H + 40) break; if (pt ? S.ch.some(p => Math.hypot(x - p.x, y - p.y) < 8) : (S.elec === 'plate' ? x <= X1 : Math.hypot(x - 380 + PD, y - 200) < 9)) break; }
+                b.stroke(); if (mid) { b.save(); b.translate(mid[0], mid[1]); b.rotate(mid[2]); b.fillStyle = '#ffcc00'; b.beginPath(); b.moveTo(7, 0); b.lineTo(-5, -5); b.lineTo(-5, 5); b.fill(); b.restore(); } } }
+        if (!pt) { b.fillStyle = '#c3d0e4'; if (S.elec === 'plate') { b.fillRect(X1 - 8, 50, 8, 300); b.fillRect(X2, 50, 8, 300); } else { [380 - PD, 380 + PD].forEach(x => { b.beginPath(); b.arc(x, 200, 8, 0, 7); b.fill(); }); }
+            txt(b, '0 V', S.elec === 'plate' ? X1 - 4 : 380 - PD, 36, '#00d4ff', 18, 'center'); txt(b, S.hid ? '？ V' : V0().toFixed(1) + ' V', S.elec === 'plate' ? X2 + 4 : 380 + PD, 36, '#ff6b81', 18, 'center'); }
+        S.dirty = false; }
+    function draw() {
+        if (S.dirty) renderBg(); c.drawImage(bg, 0, 0);
+        if (S.mode === 'pt') S.ch.forEach(p => { c.fillStyle = p.s > 0 ? '#ff6b81' : '#00d4ff'; c.beginPath(); c.arc(p.x, p.y, 13, 0, 7); c.fill(); txt(c, p.s > 0 ? '+' : '−', p.x, p.y + 7, '#080a0f', 22, 'center'); if (Math.abs(p.s) > 1) txt(c, Math.abs(p.s) + 'q', p.x, p.y - 20, '#f0f3f8', 17, 'center'); });
+        else S.marks.forEach(m => { c.fillStyle = '#ffcc00'; c.beginPath(); c.arc(m.x, m.y, 5, 0, 7); c.fill(); txt(c, m.v.toFixed(2), m.x + 8, m.y - 6, '#ffcc00', 16); });
+        const [px, py] = S.probe, [ex, ey] = field(px, py), m = Math.hypot(ex, ey);
+        if (m > 1e-6 && !(S.hid && S.mode !== 'pt')) { const L = Math.min(90, 18 + 14 * Math.log10(1 + m)); arrow(c, px, py, px + ex / m * L, py + ey / m * L, '#00e676', 4, 12); }
+        c.strokeStyle = '#00e676'; c.lineWidth = 3; c.beginPath(); c.moveTo(px - 12, py); c.lineTo(px + 12, py); c.moveTo(px, py - 12); c.lineTo(px, py + 12); c.stroke();
+        if (S.tc) { c.fillStyle = '#ffffff'; c.beginPath(); c.arc(S.tc.x, S.tc.y, 6, 0, 7); c.fill(); c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = 1.5; c.beginPath(); S.tc.tr.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.stroke(); }
+        txt(c, '比例尺 10 cm', 14, 392, '#6a7a92', 16); c.strokeStyle = '#6a7a92'; c.lineWidth = 2; c.beginPath(); c.moveTo(124, 386); c.lineTo(224, 386); c.stroke();
+    }
+    function panels() {
+        const [px, py] = S.probe, [ex, ey, v] = field(px, py), m = Math.hypot(ex, ey), q = x => (S.hid && S.mode !== 'pt') ? '？' : x, ang = ((deg(Math.atan2(-ey, ex)) % 360) + 360) % 360;
+        const ms = [meter('探針位置 x', (px / 10).toFixed(1), 'cm'), meter('探針位置 y', ((H - py) / 10).toFixed(1), 'cm'), meter('電位 V', v.toFixed(S.mode === 'pt' ? 1 : 2), 'V', '#ffcc00'), meter('電場大小 E', q(m.toFixed(1)), 'V/m', '#00e676'), meter('電場方向（由 +x 逆時針）', m > 1e-6 ? q(ang.toFixed(0)) : '—', '°', '#00e676')];
+        if (S.tc) { const Kc = 0.5 * S.tc.m * (S.tc.vx ** 2 + S.tc.vy ** 2) * 1e9, U = field(S.tc.x, S.tc.y)[2]; ms.push(meter('試探電荷動能', Kc.toFixed(2), 'nJ', '#00e676'), meter('試探電荷電位能 qV', U.toFixed(2), 'nJ', '#00d4ff'), meter('動能＋電位能', (Kc + U).toFixed(2), 'nJ', '#ffcc00')); }
+        el('dash').innerHTML = ms.join('');
+        el('status').innerHTML = S.mode === 'pt' ? '黃線：電力線；紅線：正電位的等位線；藍線：負電位的等位線。綠色箭頭是探針處的電場方向。' : '探針像伏特計的一支探棒，讀到的是該點相對於左電極的電位。';
+    }
+    function renderExp() {
+        rows('recBody', S.marks.map((m, i) => [i + 1, (m.x / 10).toFixed(1), ((H - m.y) / 10).toFixed(1), m.v.toFixed(2)]));
+        const pts = S.marks.map(m => [m.x / 1000, m.v]), f = S.elec === 'plate' && pts.length >= 2 ? fitLine(pts) : null, d = (X2 - X1) * MM;
+        graph(el('gFit'), { xmin: 0.15, xmax: 0.61, ymin: 0, ymax: 13, title: 'V–x 圖', xl: 'x (m)', yl: 'V (V)', series: f ? [{ pts: [[0.15, f.m * 0.15 + f.b], [0.61, f.m * 0.61 + f.b]], col: '#ffcc00', w: 2 }] : [], dots: pts.map(p => ({ x: p[0], y: p[1], col: '#00d4ff' })) });
+        el('fitTxt').innerHTML = S.elec !== 'plate' ? '點電極的電場不均勻，V–x 不是直線；試著找出電位相同的點，看等位線的形狀。' : f ? `直線斜率 = 電場大小 E = <b id="eFit">${f.m.toFixed(1)}</b> V/m；兩電極相距 d = ${d.toFixed(2)} m，所以電源電壓 V₀ = E·d = <b id="vFit">${(f.m * d).toFixed(2)}</b> V。` + (S.unk ? (S.hid ? '　按「揭曉」對答案。' : `　正確答案 V₀ = <b id="vTrue">${S.VU.toFixed(1)}</b> V。`) : '') : '在兩電極之間記錄 2 個以上不同 x 的點。';
+        el('btnUnk').textContent = S.unk ? '回到已知電壓' : '🎲 未知電壓'; el('btnRev').disabled = !(S.unk && S.hid); el('V0').disabled = S.unk; el('V0L').textContent = S.hid ? '？' : V0().toFixed(1);
+    }
+    el('btnRec').addEventListener('click', () => { const [x, y] = S.probe; S.marks.push({ x, y, v: field(x, y)[2] }); renderExp(); });
+    el('btnClr').addEventListener('click', () => { S.marks = []; renderExp(); });
+    el('btnUnk').addEventListener('click', () => { S.unk = !S.unk; S.hid = S.unk; S.marks = []; if (S.unk) S.VU = 2.5 + Math.floor(Math.random() * 19) / 2; S.dirty = true; renderExp(); });
+    el('btnRev').addEventListener('click', () => { S.hid = false; S.dirty = true; renderExp(); });
+    $$('.chip[data-c]').forEach(bn => bn.addEventListener('click', () => { layout(bn.dataset.c.split(',').map(Number)); $$('.chip[data-c]').forEach(x => x.classList.toggle('on', x === bn)); }));
+    $$('.chip[data-e]').forEach(bn => bn.addEventListener('click', () => { S.elec = bn.dataset.e; S.marks = []; S.dirty = true; $$('.chip[data-e]').forEach(x => x.classList.toggle('on', x === bn)); renderExp(); }));
+    ['chkL', 'chkV'].forEach(id => el(id).addEventListener('change', () => S.dirty = true));
+    el('btnGo').addEventListener('click', () => { S.tc = { x: S.probe[0], y: S.probe[1], vx: 0, vy: 0, m: 2e-9, tr: [] }; }); el('btnStop').addEventListener('click', () => S.tc = null);
+    dragOn(cv, (x, y, ph) => { x = Math.min(Math.max(x, 6), W - 6); y = Math.min(Math.max(y, 6), H - 6);
+        if (ph === 'down') { S.grab = 'probe'; if (S.mode === 'pt') { const i = S.ch.findIndex(p => Math.hypot(p.x - x, p.y - y) < 30); if (i >= 0 && Math.hypot(S.probe[0] - x, S.probe[1] - y) > 24) S.grab = i; } }
+        if (S.grab === 'probe') S.probe = [x, y]; else if (S.grab !== null) { S.ch[S.grab].x = x; S.ch[S.grab].y = y; S.dirty = true; S.tc = null; } if (ph === 'up') S.grab = null; });
+    onMode(m => { S.mode = m; S.dirty = true; S.tc = null; el('cTitle').textContent = m === 'pt' ? '電場與等位線：拖曳電荷與探針（綠色十字）' : '導電紙：拖曳探針（綠色十字）量電位'; if (m === 'pt') { S.hid = false; } else S.hid = S.unk; });
+    layout([1, -1]); showFor('pt'); renderExp(); let fn = 0;
+    loop(dt => { if (S.tc) { const t = S.tc, h = 2e-5; for (let i = 0; i < 60; i++) { const [ex, ey] = field(t.x, t.y); t.vx += 1e-9 * ex / t.m * h; t.vy += 1e-9 * ey / t.m * h; t.x += t.vx * h / MM; t.y += t.vy * h / MM; }
+            t.tr.push([t.x, t.y]); if (t.x < -20 || t.x > W + 20 || t.y < -20 || t.y > H + 20 || S.ch.some(p => Math.hypot(p.x - t.x, p.y - t.y) < 10)) S.tc = null; } draw(); if (!(fn++ % 4)) panels(); });
+
+})();
+</script>
+</body>
+</html>

@@ -475,6 +475,37 @@ def t_coaster(ctx):
     check("雲霄飛車 未知星球：斜率/2 = g", est, num(text(pg, "gTrue")), 0.01)
 
 
+def t_efield(ctx):
+    pg = open_page(ctx, "electric-field", frozen=True)
+    k = 8.99e9; q = 2e-9
+    set_val(pg, "q", 2)
+    pg.evaluate("LabTest.set([[380, 200, 1]], [480, 200])"); step(pg, 6)       # 單一正電荷，探針在右方 10 cm
+    check("點電荷 V = kQ/r", meter(pg, "電位"), k * q / 0.1, 0.002); check("點電荷 E = kQ/r²", meter(pg, "電場大小"), k * q / 0.01, 0.002)
+    check("點電荷 電場方向向外（0°）", meter(pg, "電場方向"), 0, abs_=0.6)
+    pg.evaluate("LabTest.set([[280, 200, 1], [480, 200, -1]], [380, 200])"); step(pg, 6)   # 電偶極中點
+    check("電偶極 中點電位 = 0", meter(pg, "電位"), 0, abs_=0.06); check("電偶極 中點電場 = 2kQ/r²", meter(pg, "電場大小"), 2 * k * q / 0.01, 0.002)
+    pg.evaluate("LabTest.probe([380, 100])"); step(pg, 6)                       # 中垂線上
+    r = math.hypot(0.1, 0.1)
+    check("電偶極 中垂線上電位 = 0", meter(pg, "電位"), 0, abs_=0.06); check("電偶極 中垂線上 E = 2kQ·cos45°/r²", meter(pg, "電場大小"), 2 * k * q / r ** 2 * (0.1 / r), 0.002)
+    pg.evaluate("LabTest.set([[280, 200, 1], [480, 200, 1]], [380, 200])"); step(pg, 6)    # 兩正電荷中點
+    check("兩正電荷 中點電場 = 0", meter(pg, "電場大小"), 0, abs_=0.06); check("兩正電荷 中點電位 = 2kQ/r", meter(pg, "電位"), 2 * k * q / 0.1, 0.002)
+    g = pg.evaluate("""() => { LabTest.set([[250, 150, 2], [500, 260, -1]], [0, 0]); const h = 0.01, f = (x, y) => LabTest.field(x, y), e = f(400, 180);
+        return [e[0], -(f(400 + h, 180)[2] - f(400 - h, 180)[2]) / (2 * h * 0.001), e[1], -(f(400, 180 + h)[2] - f(400, 180 - h)[2]) / (2 * h * 0.001)]; }""")
+    check("E = −∇V（x 分量，數值微分）", g[0], g[1], 1e-4); check("E = −∇V（y 分量，數值微分）", g[2], g[3], 1e-4)
+    # 試探電荷能量守恆
+    pg.evaluate("LabTest.set([[280, 200, 1], [480, 200, -1]], [330, 150])"); pg.click("#btnGo"); step(pg, 3)
+    e0 = meter(pg, "動能＋電位能"); step(pg, 40)
+    check("試探電荷 動能＋電位能守恆", meter(pg, "動能＋電位能") or e0, e0, 0.01)
+    pg.click('[data-m="paper"]'); set_val(pg, "V0", 6); pg.evaluate("LabTest.probe([380, 200])"); step(pg, 6)
+    check("導電紙 平行電極中點電位 = V₀/2", meter(pg, "電位"), 3, 0.002); check("導電紙 E = V₀/d", meter(pg, "電場大小"), 6 / 0.4, 0.002)
+    pg.click("#btnUnk")
+    for x in (220, 300, 380, 460, 540): pg.evaluate("x => LabTest.probe([x, 200])", x); pg.click("#btnRec")
+    est = num(text(pg, "vFit")); pg.click("#btnRev")
+    check("導電紙 未知電壓：斜率 × d = V₀", est, num(text(pg, "vTrue")), 0.01)
+    pg.click("#btnUnk"); pg.click('[data-e="point"]'); pg.evaluate("LabTest.probe([380, 90])"); step(pg, 6)
+    check("導電紙 點電極中垂線電位 = V₀/2", meter(pg, "電位"), 3, 0.002)
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
          "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing,
@@ -483,7 +514,8 @@ TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_proje
          "measurement": t_measure,
          "kepler": t_kepler,
          "static-equilibrium": t_static,
-         "energy-coaster": t_coaster}
+         "energy-coaster": t_coaster,
+         "electric-field": t_efield}
 
 
 def main():
