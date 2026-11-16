@@ -625,6 +625,28 @@ def t_brownian(ctx):
     check("布朗 未知粒徑（統計誤差 15% 內）", est, num(text(pg, "aTrue")), 0.15)
 
 
+def t_blackbody(ctx):
+    pg = open_page(ctx, "blackbody", frozen=True)
+    b, sig = 2.897772e-3, 5.670374e-8
+    for T in (310, 2800, 5800, 9950):
+        set_val(pg, "T", T); step(pg, 10); Tp = float(pg.evaluate("+document.getElementById('T').value"))
+        check(f"黑體 {Tp:.0f} K 數值峰值 = b/T（nm）", meter(pg, "峰值波長"), b / Tp * 1e9, 0.002, 0.6)
+        tot = pg.evaluate("T => LabTest.integ(T, 1e-8, 1e-2)", Tp)
+        check(f"黑體 {Tp:.0f} K 光譜面積 = σT⁴", tot, sig * Tp ** 4, 0.001)
+    set_val(pg, "T", 5800); step(pg, 10)
+    h, c0, k = 6.62607e-34, 2.99792e8, 1.380649e-23
+    lam = 500e-9; x = h * c0 / (lam * k * 5800)
+    check("黑體 普朗克公式（500 nm、5800 K）", pg.evaluate("LabTest.planck(500e-9, 5800)"), 2 * math.pi * h * c0 ** 2 / lam ** 5 / math.expm1(x), 1e-6)
+    r = pg.evaluate("[LabTest.planck(1e-3, 300), 2 * Math.PI * 2.99792e8 * 1.380649e-23 * 300 / 1e-12]")
+    check("黑體 長波長極限 → 瑞立–金斯", r[0], r[1], 0.03)
+    check("黑體 太陽可見光比例約 44–47%", meter(pg, "可見光占的比例"), 45.5, 0.04)
+    for T in (3000, 4000, 6000, 10000): set_val(pg, "T", T); pg.click("#btnRec")
+    check("黑體 實驗求維恩常數（×10⁻³ m·K）", num(text(pg, "bFit")), 2.898, 0.002)
+    pg.click("#btnUnk"); step(pg, 10); lp = meter(pg, "峰值波長")
+    est = b / (lp * 1e-9); pg.fill("#ans", f"{est:.0f}"); pg.click("#btnA")
+    check("黑體 未知恆星 T = b/λmax", est, num(text(pg, "tTrue")), 0.01); check("黑體 未知恆星判定答對", 1.0 if "答對" in text(pg, "fitTxt") else 0.0, 1.0)
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
          "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing,
@@ -639,7 +661,8 @@ TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_proje
          "current-balance": t_balance,
          "transformer": t_transformer,
          "microwave": t_microwave,
-         "brownian-motion": t_brownian}
+         "brownian-motion": t_brownian,
+         "blackbody": t_blackbody}
 
 
 def main():
