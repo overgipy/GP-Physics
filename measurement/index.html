@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測量與不確定度 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
+    <link rel="stylesheet" href="../shared/lab-exp.css">
+    <link rel="stylesheet" href="../shared/lab-mobile.css">
+    <link rel="stylesheet" href="../shared/touch.css">
+    <style>
+        [hidden] { display: none !important; }
+        .fit-text { margin-top: 8px; font-size: .95rem; color: #c3d0e4; line-height: 1.8; }
+        .legend span::before { content: ""; display: inline-block; width: 14px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+        input.ans { background: var(--bg-control); color: var(--text-main); border: 1px solid #3a4558; border-radius: 6px; padding: 8px; font-size: 1rem; width: 7em; }
+    </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
+<header>
+    <h1>📏 測量與不確定度</h1>
+    <p class="subtitle">游標尺（0.1、0.05 mm）｜螺旋測微器（0.01 mm）｜x̄ ± u</p>
+</header>
+
+<div class="container">
+<div class="card sticky-sim"><div class="card-title"><span id="cTitle">游標尺：主尺讀整數毫米，游標找「對齊的那一條」</span><span id="runState" style="font-size:.85rem;color:var(--text-muted)"></span></div><div class="canvas-wrap"><canvas id="scene" width="760" height="400"></canvas></div></div><div class="card"><div class="card-title">選擇量具與條件</div><div class="mode-bar" id="modeBar"><button class="mode-btn active" data-m="ver"><b>① 游標尺</b>主尺＋游標，精度 0.1 或 0.05 mm</button><button class="mode-btn" data-m="mic"><b>② 螺旋測微器</b>套筒＋轉筒，精度 0.01 mm，再估讀一位</button></div><div class="controls-grid"><div class="control-group" data-for="ver"><div class="control-label"><span>物體長度（拖動＝移動游標）</span><b style="color:var(--cyan)"><span id="v1L"></span> mm</b></div><input type="range" id="v1" min="0" max="60" step="0.05" value="23.7"></div><div class="control-group" data-for="ver"><div class="control-label">游標分度</div><select id="selN"><option value="10" selected>10 分度（精度 0.1 mm）</option><option value="20">20 分度（精度 0.05 mm）</option></select></div><div class="control-group" data-for="mic"><div class="control-label"><span>物體厚度（拖動＝旋轉轉筒）</span><b style="color:var(--cyan)"><span id="v2L"></span> mm</b></div><input type="range" id="v2" min="0" max="25" step="0.005" value="7.38"></div><div class="control-group"><div class="control-label">零點誤差</div><select id="selZ"><option value="0" selected>沒有</option><option value="3">正：夾緊時讀數 +3 格</option><option value="-2">負：夾緊時讀數 −2 格</option></select><div class="sub-note">有零點誤差時：真實值 = 讀數 − 零點讀數</div></div></div></div><div class="card"><div class="card-title">讀數拆解</div><div class="dashboard" id="dash"></div><div class="status" id="status"></div></div><div class="card"><div class="card-title">練習：讀數挑戰</div><div class="fit-text">按「出題」後數值會被隱藏，請看上方刻度讀出數值（不必修正零點誤差）。</div><div class="btn-row" style="margin:8px 0"><button class="btn orange" id="btnQ">🎲 出題</button><button class="btn secondary" id="btnA">對答案</button></div><div class="check-row"><label>讀數 = <input class="ans" id="ans" type="number" step="0.01" inputmode="decimal"> mm</label></div><div class="fit-text" id="chRes"></div></div><div class="card"><div class="card-title">多次測量與不確定度</div><div class="fit-text">同一個物體重複測量，每次讀數會有小小的隨機差異。按幾次「測量一次」，看平均值與不確定度怎麼變。</div><div class="btn-row" style="margin:8px 0"><button class="btn green" id="btnM">📏 測量一次</button><button class="btn secondary" id="btnM5">連測 5 次</button><button class="btn secondary" id="btnMC">清除</button></div><div class="two-col"><div class="graph-box"><canvas id="gM" width="480" height="260"></canvas></div><div class="table-scroll"><table><thead><tr><th>#</th><th>讀數 (mm)</th><th>與平均的差 (mm)</th></tr></thead><tbody id="mBody"></tbody></table></div></div><div class="dashboard" id="dashU" style="margin-top:10px"></div><div class="fit-text" id="uTxt"></div></div>
+    <div class="card">
+        <div class="card-title">公式與教學提示</div>
+        <details open><summary>核心公式（符號與單位）</summary><ul><li>游標尺：N 分度的游標，N 格的總長等於主尺 (N − 1) mm，所以每格比主尺短 <b>1／N mm</b>（精度）。<b>讀數 = 主尺讀數 + 對齊的格數 × 精度</b>。</li><li>螺旋測微器：轉筒轉一圈前進 0.5 mm，轉筒分 50 格，每格 <b>0.01 mm</b>。<b>讀數 = 套筒讀數（到 0.5 mm）+ 轉筒格數 × 0.01 mm</b>，轉筒可再估讀一位（0.001 mm）。</li><li>零點誤差：兩測砧夾緊時讀數不為零。<b>真實值 = 讀數 − 零點讀數</b>（零點讀數可正可負）。</li><li>A 類不確定度（多次測量）：<b>u<sub>A</sub> = s／√n</b>，s 是樣本標準差 √[Σ(xᵢ − x̄)²／(n − 1)]，n 是測量次數。</li><li>B 類不確定度（儀器）：<b>u<sub>B</sub> = 最小刻度／(2√3)</b>；組合不確定度 <b>u = √(u<sub>A</sub>² + u<sub>B</sub>²)</b>。結果寫成 x̄ ± u，不確定度取兩位有效數字，平均值對齊到同一位。</li></ul>
+            <p class="assume">理想化假設：刻度完全準確、沒有熱脹冷縮；游標尺的「對齊」取最接近的一條線；模擬的隨機誤差是常態分布（標準差約為精度的 0.6 倍）。本頁的游標尺不估讀，螺旋測微器估讀到 0.001 mm。</p></details>
+        <details><summary>建議講解順序</summary><ol><li>先拖動長度，讓學生看游標 0 刻度在主尺的位置：主尺只能確定到整數毫米。</li><li>指出游標上只有一條線和主尺對齊，數它是第幾格，乘上精度。</li><li>切到 20 分度：格子變密，精度變成 0.05 mm。</li><li>螺旋測微器：先看套筒露出幾毫米、有沒有過半毫米線，再讀轉筒。7.38 與 7.88 是最常讀錯的一組。</li><li>加上零點誤差，練習修正。</li><li>做讀數挑戰；最後連續測量，看平均值的不確定度隨次數下降。</li></ol></details>
+        <details><summary>可以問學生的問題</summary><ul><li>10 分度游標的 10 格總長是多少？（9 mm）為什麼這樣設計就能讀到 0.1 mm？</li><li>游標第 7 條線對齊，代表游標 0 刻度超過主尺整數刻度多少？（0.7 mm）</li><li>螺旋測微器套筒露出 7 mm 刻度且超過半毫米線，轉筒對到 38，讀數是多少？（7.88 mm）</li><li>夾緊時讀數是 +0.03 mm，量到 5.21 mm，真實厚度是多少？（5.18 mm）</li><li>測量次數從 4 次增加到 16 次，A 類不確定度大約變成幾倍？（一半）</li></ul></details>
+        <details><summary>常見迷思</summary><ul><li><b>「游標尺要估讀到下一位」</b>：游標尺是找對齊的線，一般不再估讀；螺旋測微器才估讀一位。</li><li><b>「精度越高的儀器，量出來就一定越準」</b>：有零點誤差沒修正時，再精密也會偏掉（系統誤差）。</li><li><b>「多量幾次，誤差就會消失」</b>：多次測量只能降低隨機誤差（A 類），不能消除儀器本身的 B 類不確定度與系統誤差。</li><li><b>「不確定度就是誤差」</b>：誤差是與真值的差（通常不知道）；不確定度是對測量值可能範圍的估計。</li></ul></details>
+    </div>
+</div>
+<footer>© 李捷物理實驗室</footer>
+
+<script src="../shared/lab.js"></script>
+<script>
+(() => {
+    'use strict';
+    const { el, rad, deg, arrow, txt, graph, meter, fitLine, fitThroughOrigin, noise, niceStep } = Lab;
+    const $$ = s => [...document.querySelectorAll(s)];
+    // 滑桿：顯示目前數值（id + 'L'），拖動時呼叫 cb；回傳讀值函式
+    function sl(id, dp, cb) { const e = el(id), lb = el(id + 'L'), up = () => { if (lb) lb.textContent = (+e.value).toFixed(dp); };
+        e.addEventListener('input', () => { up(); cb && cb(); }); up(); return () => +e.value; }
+    // 模式切換：有 data-for 的區塊只在對應模式顯示
+    function showFor(m) { $$('[data-for]').forEach(e => e.hidden = !e.dataset.for.split(' ').includes(m));
+        $$('#modeBar .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.m === m)); }
+    function onMode(cb) { $$('#modeBar .mode-btn').forEach(b => b.addEventListener('click', () => { showFor(b.dataset.m); cb(b.dataset.m); })); }
+    const rows = (id, arr) => el(id).innerHTML = arr.map(r => '<tr>' + r.map(v => `<td>${v}</td>`).join('') + '</tr>').join('') || '<tr><td colspan="9" style="text-align:center;color:#6a7a92">尚無數據</td></tr>';
+    // 動畫迴圈：fn(dt)；dt 為秒，最大 0.05
+    function loop(fn) { let last = null; const f = ts => { if (last === null) last = ts; const dt = Math.min((ts - last) / 1000, 0.05); last = ts; fn(dt); requestAnimationFrame(f); }; requestAnimationFrame(f); }
+
+    const c = el('scene').getContext('2d'), W = 760, H = 400;
+    // 讀數拆解
+    const readVer = (x, N) => { const p = 1 / N, n = Math.round(x / p + 1e-9), main = Math.floor(n / N + 1e-9); return { main, k: n - main * N, p }; };
+    const readMic = x => { const n = Math.round(x * 1000 + 1e-6), sl = Math.floor(n / 500 + 1e-9) * 0.5; return { sl, th: (n - sl * 1000) / 10 }; };
+    // 用幾何找對齊的線：第 k 條游標線位置 = x + k(N−1)/N，找離主尺整數刻度最近的 k
+    const aligned = (x, N) => { let b = 0, bd = 9; for (let k = 0; k < N; k++) { const pos = x + k * (N - 1) / N, d = Math.abs(pos - Math.round(pos)); if (d < bd - 1e-9) { bd = d; b = k; } } return b; };
+    const stats = a => { const n = a.length, mean = a.reduce((s, v) => s + v, 0) / n, sd = n > 1 ? Math.sqrt(a.reduce((s, v) => s + (v - mean) ** 2, 0) / (n - 1)) : 0; return { n, mean, sd, uA: n > 1 ? sd / Math.sqrt(n) : 0 }; };
+    window.LabTest = { readVer, readMic, aligned, stats };
+    const S = { mode: 'ver', hid: false, ms: [] };
+    const clr = () => { S.ms = []; };
+    const v1 = sl('v1', 2, clr), v2 = sl('v2', 3, clr), N = () => +el('selN').value, prec = () => S.mode === 'ver' ? 1 / N() : 0.01;
+    const zero = () => +el('selZ').value * prec(), shown = () => +((S.mode === 'ver' ? v1() : v2()) + zero()).toFixed(3);   // 刻度上顯示的讀數
+    function drawVer() {
+        const x = Math.max(0, shown()), n = N(), sc = 24, x0 = 110, yM = 210, k = aligned(x, n), X = mm => x0 + (mm - x) * sc;
+        // 上方小示意圖
+        const jx = 90, js = 5, o = v1() * js; c.fillStyle = '#3a4558'; c.fillRect(jx - 14, 30, 430, 16); c.fillRect(jx - 14, 30, 14, 62); c.fillStyle = '#00d4ff'; c.fillRect(jx + o, 46, 14, 46); c.fillRect(jx + o, 26, 90, 24);
+        c.fillStyle = '#ff9f43'; if (o > 1) c.fillRect(jx, 62, o, 22); txt(c, '被測物體', jx + o + 24, 82, '#ff9f43', 17);
+        // 主尺
+        c.fillStyle = '#1d2432'; c.fillRect(0, yM - 80, W, 80); c.strokeStyle = '#f0f3f8'; c.fillStyle = '#f0f3f8';
+        for (let m = Math.max(0, Math.floor(x - 8)); m <= x + 40; m++) { const px = X(m); if (px < 0 || px > W) continue; const L = m % 10 === 0 ? 40 : m % 5 === 0 ? 30 : 20; c.lineWidth = m % 10 === 0 ? 3 : 2; c.beginPath(); c.moveTo(px, yM); c.lineTo(px, yM - L); c.stroke(); if (m % 10 === 0) txt(c, String(m / 10), px, yM - 50, '#f0f3f8', 22, 'center'); }
+        txt(c, '主尺（數字：cm，每小格 1 mm）', W - 12, yM - 58, '#9aa8bd', 17, 'right');
+        // 游標
+        c.fillStyle = '#12303a'; c.fillRect(x0 - 26, yM, n * (n - 1) / n * sc + 52, 92); const sp = (n - 1) / n * sc;
+        for (let i = 0; i <= n; i++) { const px = x0 + i * sp, on = i === k && !S.hid, big = n === 10 || i % 2 === 0; c.strokeStyle = on ? '#ffcc00' : '#00d4ff'; c.lineWidth = on ? 4 : 2; c.beginPath(); c.moveTo(px, yM); c.lineTo(px, yM + (i % (n / 2) === 0 ? 38 : big ? 30 : 20)); c.stroke();
+            if (n === 10 || i % 2 === 0) txt(c, String(n === 10 ? i : i / 2), px, yM + 62, on ? '#ffcc00' : '#00d4ff', 18, 'center');
+            if (on) { c.strokeStyle = '#ffcc00'; c.lineWidth = 4; c.beginPath(); c.moveTo(px, yM); c.lineTo(px, yM - 24); c.stroke(); } }
+        txt(c, `游標（${n} 分度）`, x0 - 20, yM + 86, '#9aa8bd', 17);
+        arrow(c, x0, yM - 110, x0, yM - 84, '#00e676', 3); txt(c, '游標 0 刻度', x0 + 8, yM - 96, '#00e676', 18);
+        if (!S.hid) { const r = readVer(x, n); txt(c, `讀數 = ${r.main} + ${r.k} × ${r.p} = ${(r.main + r.k * r.p).toFixed(2)} mm`, W / 2, 370, '#ffcc00', 24, 'center'); }
+    }
+    function drawMic() {
+        const x = Math.max(0, shown()), sc = 21, x0 = 90, y0 = 200, xe = x0 + x * sc, r = readMic(x), tv = (x - r.sl) / 0.01, dy = 9;
+        c.fillStyle = '#3a4558'; c.fillRect(0, y0 - 46, xe, 92); c.strokeStyle = '#f0f3f8'; c.lineWidth = 2; c.beginPath(); c.moveTo(0, y0); c.lineTo(xe, y0); c.stroke();
+        for (let h = 0; h <= 50; h++) { const px = x0 + h * 0.5 * sc; if (px > xe + 0.5) break; c.lineWidth = 2; c.beginPath(); c.moveTo(px, y0); c.lineTo(px, h % 2 ? y0 + 16 : y0 - (h % 10 === 0 ? 26 : 18)); c.stroke(); if (h % 10 === 0) txt(c, String(h / 2), px, y0 - 30, '#f0f3f8', 18, 'center'); }
+        c.fillStyle = '#12303a'; c.fillRect(xe, y0 - 120, 150, 240); c.strokeStyle = '#00d4ff'; c.lineWidth = 2; c.strokeRect(xe, y0 - 120, 150, 240);
+        for (let d = Math.floor(tv) - 14; d <= tv + 14; d++) { const yy = y0 - (d - tv) * dy, v = ((d % 50) + 50) % 50; if (yy < y0 - 116 || yy > y0 + 116) continue; c.lineWidth = v % 5 ? 1.5 : 3; c.beginPath(); c.moveTo(xe, yy); c.lineTo(xe + (v % 5 ? 20 : 34), yy); c.stroke(); if (v % 5 === 0) txt(c, String(v), xe + 44, yy + 6, '#00d4ff', 18); }
+        txt(c, '套筒（上：mm，下：半毫米線）', 12, y0 - 62, '#9aa8bd', 17); txt(c, '轉筒（每格 0.01 mm）', Math.min(xe, W - 190), y0 + 146, '#9aa8bd', 17);
+        if (!S.hid) txt(c, `讀數 = ${r.sl.toFixed(1)} + ${tv.toFixed(1)} × 0.01 = ${x.toFixed(3)} mm`, W / 2, 380, '#ffcc00', 24, 'center');
+    }
+    function draw() { c.fillStyle = '#080a0f'; c.fillRect(0, 0, W, H); S.mode === 'ver' ? drawVer() : drawMic(); }
+    function panels() {
+        const x = shown(), q = v => S.hid ? '？' : v, z = zero(); let ms;
+        if (S.mode === 'ver') { const r = readVer(x, N()); ms = [meter('主尺讀數', q(r.main), 'mm', '#f0f3f8'), meter('對齊的游標格數', q(r.k), '格', '#ffcc00'), meter('精度', r.p, 'mm'), meter('刻度讀數', q(x.toFixed(2)), 'mm', '#00d4ff')]; }
+        else { const r = readMic(x); ms = [meter('套筒讀數', q(r.sl.toFixed(1)), 'mm', '#f0f3f8'), meter('轉筒讀數', q(r.th.toFixed(1)), '格', '#ffcc00'), meter('精度', 0.01, 'mm'), meter('刻度讀數', q(x.toFixed(3)), 'mm', '#00d4ff')]; }
+        ms.push(meter('零點讀數', z.toFixed(2), 'mm', '#ff6b81'), meter('修正後的真實值', q((x - z).toFixed(S.mode === 'ver' ? 2 : 3)), 'mm', '#00e676'));
+        el('dash').innerHTML = ms.join('');
+        el('status').innerHTML = S.mode === 'ver' ? '游標 0 刻度落在主尺兩條刻度之間；<b>黃色那條線</b>是唯一與主尺對齊的游標線。' : '先看套筒：露出的毫米數，以及<b>有沒有超過下方的半毫米線</b>；再讀轉筒對準橫線的格數。';
+    }
+    function renderU() {
+        const a = S.ms, dp = S.mode === 'ver' ? 2 : 3; if (!a.length) { rows('mBody', []); el('dashU').innerHTML = ''; el('uTxt').textContent = ''; graph(el('gM'), { xmin: 0, xmax: 5, ymin: 0, ymax: 1, title: '各次讀數', xl: '第幾次', yl: '讀數 (mm)', series: [] }); return; }
+        const s = stats(a), uB = prec() / (2 * Math.sqrt(3)), u = Math.hypot(s.uA, uB);
+        rows('mBody', a.map((v, i) => [i + 1, v.toFixed(dp), (v - s.mean >= 0 ? '+' : '') + (v - s.mean).toFixed(dp + 1)]));
+        const lo = Math.min(...a) - prec() * 2, hi = Math.max(...a) + prec() * 2;
+        graph(el('gM'), { xmin: 0, xmax: Math.max(5, a.length + 1), ymin: lo, ymax: hi, title: '各次讀數（黃線：平均值）', xl: '第幾次', yl: '讀數 (mm)', L: 74, series: [{ pts: [[0, s.mean], [Math.max(5, a.length + 1), s.mean]], col: '#ffcc00', w: 2 }], dots: a.map((v, i) => ({ x: i + 1, y: v, col: '#00d4ff' })) });
+        el('dashU').innerHTML = [meter('次數 n', s.n, '次'), meter('平均值 x̄', s.mean.toFixed(dp + 1), 'mm', '#ffcc00'), meter('樣本標準差 s', s.sd.toFixed(4), 'mm'), meter('A 類 u_A = s／√n', s.uA.toFixed(4), 'mm', '#00d4ff'), meter('B 類 u_B', uB.toFixed(4), 'mm', '#ff9f43'), meter('組合不確定度 u', u.toFixed(4), 'mm', '#00e676')].join('');
+        el('uTxt').innerHTML = s.n < 2 ? '至少測 2 次才能算標準差。' : `測量結果：<b>${s.mean.toFixed(dp + 1)} ± ${u.toPrecision(2)} mm</b>。次數越多 u<sub>A</sub> 越小，但 u<sub>B</sub> 由儀器決定，不會因為多量幾次而變小。`;
+    }
+    const gauss = () => { let s = 0; for (let i = 0; i < 6; i++) s += Math.random(); return (s - 3) / Math.sqrt(0.5); };
+    function measure(k) { const p = prec(), t = S.mode === 'ver' ? v1() : v2(), q = S.mode === 'ver' ? p : 0.001; for (let i = 0; i < k; i++) S.ms.push(Math.round((t + gauss() * p * 0.6) / q) * q); renderU(); }
+    el('btnM').addEventListener('click', () => measure(1)); el('btnM5').addEventListener('click', () => measure(5)); el('btnMC').addEventListener('click', () => { clr(); renderU(); });
+    const unhide = () => { S.hid = false; ['v1', 'v2'].forEach(id => { el(id).disabled = false; el(id).dispatchEvent(new Event('input')); }); };
+    el('btnQ').addEventListener('click', () => { const ver = S.mode === 'ver', id = ver ? 'v1' : 'v2'; el(id).value = ver ? (2 + Math.random() * 50).toFixed(2) : (1 + Math.random() * 22).toFixed(3); el(id).dispatchEvent(new Event('input')); S.hid = true; el(id).disabled = true; el(id + 'L').textContent = '？'; el('chRes').textContent = '請看刻度讀出數值。'; el('ans').value = ''; });
+    el('btnA').addEventListener('click', () => { if (!S.hid) { el('chRes').textContent = '先按「出題」。'; return; } const x = shown(), ver = S.mode === 'ver', ok = Math.abs(parseFloat(el('ans').value) - x) <= (ver ? prec() / 2 - 1e-9 : 0.0031);
+        el('chRes').innerHTML = (ok ? '✅ 答對了！' : '❌ 不對喔。') + `正確讀數是 <b id="chTrue">${x.toFixed(ver ? 2 : 3)}</b> mm。`; unhide(); });
+    onMode(m => { S.mode = m; unhide(); clr(); renderU(); el('cTitle').textContent = m === 'ver' ? '游標尺：主尺讀整數毫米，游標找「對齊的那一條」' : '螺旋測微器：套筒讀到 0.5 mm，轉筒讀 0.01 mm'; });
+    ['selN', 'selZ'].forEach(id => el(id).addEventListener('change', () => { clr(); renderU(); }));
+    showFor('ver'); renderU(); let fn = 0; loop(() => { draw(); if (!(fn++ % 4)) panels(); });
+
+})();
+</script>
+</body>
+</html>

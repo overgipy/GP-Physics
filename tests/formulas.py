@@ -372,11 +372,39 @@ def t_elevator(ctx):
     check("電梯 挑戰判定答對", 1.0 if "答對" in text(pg, "chRes") else 0.0, 1.0)
 
 
+def t_measure(ctx):
+    pg = open_page(ctx, "measurement", frozen=True)
+    for x, n, main, k in ((23.7, 10, 23, 7), (5.0, 10, 5, 0), (40.9, 10, 40, 9), (12.35, 20, 12, 7), (30.95, 20, 30, 19)):
+        set_val(pg, "selN", n); set_val(pg, "v1", x); step(pg, 6)
+        check(f"游標尺 {x} mm（{n} 分度）主尺", meter(pg, "主尺讀數"), main, abs_=1e-9)
+        check(f"游標尺 {x} mm（{n} 分度）對齊格數", meter(pg, "對齊的游標格數"), k, abs_=1e-9)
+        check(f"游標尺 {x} mm 幾何對齊線 = 讀數格數", pg.evaluate("([x, n]) => LabTest.aligned(x, n)", [x, n]), k, abs_=1e-9)
+    set_val(pg, "selN", 10); set_val(pg, "v1", 23.7); set_val(pg, "selZ", 3); step(pg, 6)
+    check("游標尺 零點 +3 格：刻度讀數", meter(pg, "刻度讀數"), 24.0, abs_=1e-6); check("游標尺 修正後真實值", meter(pg, "修正後"), 23.7, abs_=1e-6)
+    set_val(pg, "selZ", 0); pg.click('[data-m="mic"]')
+    for x, s, th in ((7.38, 7.0, 38.0), (7.88, 7.5, 38.0), (0.495, 0.0, 49.5), (12.5, 12.5, 0.0), (3.215, 3.0, 21.5)):
+        set_val(pg, "v2", x); step(pg, 6)
+        check(f"測微器 {x} mm 套筒", meter(pg, "套筒讀數"), s, abs_=1e-9); check(f"測微器 {x} mm 轉筒", meter(pg, "轉筒讀數"), th, abs_=1e-6)
+    pg.click("#btnQ"); step(pg, 6)
+    true = pg.evaluate("+document.getElementById('v2').value"); pg.fill("#ans", f"{true:.3f}"); pg.click("#btnA")
+    check("測微器 挑戰判定答對", 1.0 if "答對" in text(pg, "chRes") else 0.0, 1.0)
+    import statistics
+    data = [7.381, 7.379, 7.384, 7.380, 7.376]
+    st = pg.evaluate("a => LabTest.stats(a)", data)
+    check("不確定度 平均值", st["mean"], statistics.mean(data), 1e-9); check("不確定度 樣本標準差", st["sd"], statistics.stdev(data), 1e-9)
+    check("不確定度 u_A = s/√n", st["uA"], statistics.stdev(data) / math.sqrt(5), 1e-9)
+    pg.click("#btnM5"); step(pg, 2)
+    check("不確定度 B 類 = 0.01/(2√3)", meter(pg, "B 類"), 0.01 / (2 * math.sqrt(3)), 0.02)
+    ua, u = meter(pg, "A 類"), meter(pg, "組合不確定度")
+    check("不確定度 組合 u = √(uA²+uB²)", u, math.hypot(ua, 0.01 / (2 * math.sqrt(3))), 0.03)
+
+
 TESTS = {"shared": t_shared, "oscillation": t_oscillation, "projectile": t_projectile, "lens-mirror": t_lens,
          "calorimetry": t_calorimetry, "refraction": t_refraction, "doppler": t_doppler,
          "lc-circuit": t_lc, "rigid-rotation": t_rigid, "standing-wave": t_standing,
          "atwood": t_atwood,
-         "elevator": t_elevator}
+         "elevator": t_elevator,
+         "measurement": t_measure}
 
 
 def main():
