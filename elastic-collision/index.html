@@ -6,61 +6,14 @@
     <title>一維完全彈性碰撞模擬器 - 完美教學版</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="../shared/touch.css">
+    <link rel="stylesheet" href="../shared/lab.css">
     <style>
-        :root {
-            --bg-main: #0a0c10;
-            --bg-card: #141923;
-            --bg-control: #1d2432;
-            --text-main: #f0f3f8;
-            --text-muted: #8a99ad;
-            --cyan: #00d4ff;
-            --pink: #ff2e63;
-            --yellow: #ffcc00;
-            --green: #00e676;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            margin: 0;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
-        .nav { width: 100%; max-width: 800px; margin-bottom: 10px; }
-        .nav a { color: var(--cyan); text-decoration: none; font-size: 14px; }
-        header { text-align: center; margin-bottom: 15px; width: 100%; max-width: 800px; }
-        h1 { margin: 0; font-size: 1.6rem; color: var(--cyan); letter-spacing: 1px; }
-        p.subtitle { margin: 5px 0 0 0; font-size: 0.9rem; color: var(--text-muted); }
-        .container { width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 15px; }
-        .card {
-            background-color: var(--bg-card);
-            border-radius: 12px; border: 1px solid #252e3d;
-            padding: 15px; box-sizing: border-box;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-        }
-        .card-title {
-            font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;
-            color: var(--text-muted); margin-bottom: 10px; font-weight: bold;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        /* 顏色、卡片、控制項、儀表等共用樣式來自 shared/lab.css；這裡只放本單元特有的樣式 */
+        :root { --pink: #ff2e63; }
         /* 控制區樣式 */
         .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 15px; }
-        .control-group { background-color: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid #222b3a; }
-        .control-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px; color: #b0c0d6; }
-        .control-label b { font-family: monospace; font-size: 1rem; }
         .cyan-text { color: var(--cyan); }
         .pink-text { color: var(--pink); }
-        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; margin: 0; }
-        input[type=range]:focus { outline: none; }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 5px; cursor: pointer; background: #2c3749; border-radius: 3px; }
-        input[type=range]::-webkit-slider-thumb {
-            height: 16px; width: 16px; border-radius: 50%; background: #fff; cursor: pointer;
-            -webkit-appearance: none; margin-top: -5px; box-shadow: 0 0 8px rgba(255,255,255,0.5);
-        }
         .playback-bar {
             display: flex; align-items: center; gap: 15px; margin-top: 5px;
             background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px;
@@ -83,10 +36,6 @@
         .chart-container { position: relative; width: 100%; height: 220px; }
         /* 儀表板樣式 */
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
-        .meter { background: #111622; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #1f2736; }
-        .meter-title { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
-        .meter-value { font-size: 1.3rem; font-weight: bold; font-family: monospace; }
-        .unit { font-size: 0.75rem; color: #55657d; margin-left: 2px; }
         /* 分頁與實驗模式 */
         .tabs { display: flex; gap: 8px; }
         .tab-btn { flex: 1; background: var(--bg-card); color: #ddd; border: 2px solid #2c3749; border-radius: 10px; padding: 10px; font-size: .95rem; cursor: pointer; font-weight: normal; }
@@ -121,8 +70,8 @@
     <div class="nav"><a href="../index.html">← 返回首頁</a></div>
 
     <header>
-        <h1>🧪 李捷物理實驗室</h1>
-        <p class="subtitle">完全彈性碰撞：形變與 v-t 圖動態解析</p>
+        <h1>💥 一維完全彈性碰撞</h1>
+        <p class="subtitle">動量守恆與動能守恆　｜　碰撞過程的形變與 v–t 圖</p>
     </header>
 
     <div class="container">

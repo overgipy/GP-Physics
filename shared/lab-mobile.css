@@ -1,6 +1,6 @@
 /* 李捷物理實驗室 — shared/lab-mobile.css
    手機版（寬度 760px 以下）：.sticky-sim 讓模擬畫面固定在上方，並縮小邊距。
-   較新的單元才有這組規則；舊單元沒有引用本檔，版面維持原樣。 */
+   有 .sticky-sim 的單元才需要引用本檔。 */
 
 @media (max-width: 760px) {
   .sticky-sim { position: sticky; top: 0; z-index: 20; padding: 8px; box-shadow: 0 6px 16px rgba(0,0,0,.6); }

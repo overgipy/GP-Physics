@@ -4,46 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>類氫原子模型 - 李捷物理實驗室</title>
+    <link rel="stylesheet" href="../shared/lab.css">
     <link rel="stylesheet" href="../shared/touch.css">
     <style>
         :root {
-            --bg-color: #1a1a2e;
+            --bg-color: #0a0c10;
             --text-color: #e9ecef;
-            --accent-color: #4cc9f0;
+            --accent-color: #00d4ff;
             --electron-color: #f72585;
             --orbit-color: rgba(255, 255, 255, 0.15);
-            --panel-bg: rgba(255, 255, 255, 0.08);
+            --panel-bg: #141923;
         }
-        body {
-            font-family: "Microsoft JhengHei", "Segoe UI", monospace;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-        header {
-            box-sizing: border-box;
-            padding: 15px;
-            text-align: center;
-            background: rgba(0,0,0,0.3);
-            width: 100%;
-            margin-bottom: 20px;
-        }
-        h1 { margin: 0; font-weight: 300; letter-spacing: 1px; font-size: 1.8rem; }
-        .back-link {
-            color: var(--accent-color);
-            text-decoration: none;
-            position: absolute;
-            left: 20px;
-            top: 20px;
-            font-size: 0.9rem;
-            border: 1px solid var(--accent-color);
-            padding: 5px 10px;
-            border-radius: 5px;
-        }
+        body { padding: 0 0 20px; min-height: 100vh; }
+        .nav, header { max-width: 1200px; width: 95%; }
+        .nav { margin-top: 12px; }
         .main-container {
             display: flex;
             flex-wrap: wrap;
@@ -55,16 +29,14 @@
         /* 左側畫布區 */
         #canvas-container {
             position: relative;
-            background: black;
+            background: #080a0f;
+            border: 1px solid #1a202c;
             border-radius: 12px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
         canvas { border-radius: 12px; }
-        #canvas-container { max-width: 100%; }
-        #atomCanvas { max-width: 100%; height: auto; display: block; }
+        #canvas-container { max-width: 100%; align-self: flex-start; }
+        #atomCanvas { width: auto; max-width: 100%; height: auto; display: block; }
         @media (max-width: 700px) {
-            .back-link { position: static; display: inline-block; margin-bottom: 6px; }
-            header { padding: 10px; margin-bottom: 12px; }
             h1 { font-size: 1.4rem; }
             .controls { min-width: 0; width: 100%; padding: 16px; }
             .main-container { gap: 16px; }
@@ -80,14 +52,15 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid #252e3d;
+            box-shadow: 0 4px 20px rgba(0,0,0,.4);
         }
         /* 區塊標題 */
         .control-section h3 {
             margin: 0 0 10px 0;
             font-size: 1.1rem;
-            color: var(--accent-color);
-            border-bottom: 1px solid rgba(255,255,255,0.2);
+            color: var(--yellow);
+            border-bottom: 1px solid #2a3344;
             padding-bottom: 5px;
         }
         /* 原子序輸入區 */
@@ -95,7 +68,8 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            background: rgba(0,0,0,0.2);
+            background: #111622;
+            border: 1px solid #1f2736;
             padding: 15px;
             border-radius: 8px;
         }
@@ -105,8 +79,8 @@
             padding: 5px;
             font-size: 1.2rem;
             text-align: center;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid #555;
+            background: var(--bg-control);
+            border: 1px solid #3a4558;
             color: white;
             border-radius: 4px;
         }
@@ -123,16 +97,16 @@
         }
         button {
             padding: 12px 0;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #aaa;
+            background: var(--bg-control);
+            border: 1px solid #3a4558;
+            color: var(--text-main);
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
             font-family: monospace;
             font-size: 1rem;
         }
-        button:hover { background: rgba(76, 201, 240, 0.3); color: white; }
+        button:hover { border-color: var(--cyan); }
         button.active {
             background: var(--electron-color);
             border-color: var(--electron-color);
@@ -148,32 +122,34 @@
             margin-top: 10px;
         }
         .data-card {
-            background: rgba(0,0,0,0.3);
+            background: #111622;
+            border: 1px solid #1f2736;
             padding: 10px;
             border-radius: 8px;
             text-align: center;
         }
-        .data-label { font-size: 0.8rem; color: #888; margin-bottom: 5px; }
+        .data-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
         .data-value { font-size: 1.1rem; font-weight: bold; font-family: monospace; color: #fff; }
-        .data-unit { font-size: 0.8rem; color: #aaa; }
+        .data-unit { font-size: 0.8rem; color: #6a7a92; }
         .photon-display {
             grid-column: span 2;
             padding: 15px;
             border-radius: 8px;
             text-align: center;
             font-weight: bold;
-            background: #222;
-            color: #666;
+            background: #111622;
+            color: #6a7a92;
             transition: background 0.3s, color 0.3s;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid #1f2736;
         }
     </style>
 </head>
 <body>
 
+<div class="nav"><a href="../index.html">← 返回首頁</a></div>
 <header>
-    <a href="../index.html" class="back-link">← 回首頁</a>
-    <h1>⚛️ 類氫原子模型 (Hydrogen-like Atoms)</h1>
+    <h1>⚛️ 類氫原子模型</h1>
+    <p class="subtitle">波耳模型　｜　E<sub>n</sub> = −13.6 Z²／n² eV　｜　躍遷放出光子 ΔE = hf</p>
 </header>
 
 <div class="main-container">
@@ -190,7 +166,7 @@
                 <input type="number" id="zInput" min="1" max="10" value="1" onchange="changeZ(this.value)">
                 <span id="atomName">氫原子 (H)</span>
             </div>
-            <div style="font-size: 0.8rem; color:#888; margin-top:5px;">
+            <div style="font-size: 0.8rem; color:#9aa8bd; margin-top:5px;">
                 * 改變原子序 Z，能階能量將變為 Z² 倍
             </div>
         </div>
@@ -305,7 +281,7 @@
             
             // 樣式
             if (i === currentN && !isTransitioning) {
-                ctx.strokeStyle = 'rgba(76, 201, 240, 0.6)'; // 高亮
+                ctx.strokeStyle = 'rgba(0, 212, 255, 0.6)'; // 高亮
                 ctx.lineWidth = 2;
             } else {
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'; // 暗淡
@@ -321,7 +297,7 @@
             // 標示能階值 (改為下方顯示)
             // En = -13.6 * Z^2 / n^2
             let en = -13.6 * (atomicZ * atomicZ) / (i*i);
-            ctx.fillStyle = (i === currentN) ? '#4cc9f0' : 'rgba(255,255,255,0.3)';
+            ctx.fillStyle = (i === currentN) ? '#00d4ff' : 'rgba(255,255,255,0.3)';
             ctx.font = '11px monospace';
             // 位置：圓心下方 r + 15px 處
             ctx.fillText(`${en.toFixed(2)} eV`, centerX, centerY + r + 15);

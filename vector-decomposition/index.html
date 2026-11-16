@@ -1305,7 +1305,7 @@ initial-value: 1;
   <style>
     body {
       font-family: 'Noto Sans TC', 'Microsoft JhengHei', 'PingFang TC', 'Heiti TC', sans-serif;
-      background-color: #f8fafc;
+      background-color: #0a0c10;
       user-select: none;
       -webkit-user-select: none;
     }
@@ -1330,6 +1330,65 @@ initial-value: 1;
       background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
       background-size: 20px 20px;
     }
+  
+    /* ===== 深色外觀（與全站一致）=====
+       這一頁的版面沿用原本的工具類別（bg-white、text-slate-800 …），
+       這裡把它們對應到 shared/lab.css 的深色配色；圖形（SVG）的顏色在程式裡另外對應。 */
+    body { background-color: #0a0c10; color: #f0f3f8; }
+    .bg-white { background-color: #141923; }
+    .bg-slate-50 { background-color: #111622; }
+    .bg-slate-100 { background-color: #1d2432; }
+    .bg-slate-200 { background-color: #252e3d; }
+    .bg-slate-700 { background-color: #3a465b; }
+    .bg-slate-800 { background-color: #1d2432; }
+    .bg-slate-900 { background-color: #141923; }
+    .hover\:bg-slate-50:hover { background-color: #1d2432; }
+    .hover\:bg-slate-200:hover { background-color: #3a4558; }
+    .hover\:bg-slate-800:hover { background-color: #4a5870; }
+    .border-slate-100 { border-color: #1f2736; }
+    .border-slate-200, .border-slate-200\/80 { border-color: #252e3d; }
+    .border-slate-300 { border-color: #3a4558; }
+    .border-slate-700 { border-color: #2c3749; }
+    :where(.divide-slate-100 > :not(:last-child)) { border-color: #1f2736; }
+    .text-slate-950 { color: #00131a; }
+    .text-slate-800 { color: #f0f3f8; }
+    .text-slate-700 { color: #dbe3ef; }
+    .text-slate-600 { color: #c3d0e4; }
+    .text-slate-500 { color: #9aa8bd; }
+    .text-slate-400 { color: #8a99ad; }
+    .text-slate-300 { color: #c3d0e4; }
+    /* 主色：靛藍 → 青色 */
+    .bg-indigo-500, .bg-indigo-600 { background-color: #00d4ff; color: #00131a; }
+    .bg-indigo-100 { background-color: #12303a; }
+    .bg-indigo-50\/40 { background-color: rgba(0, 212, 255, .06); }
+    .hover\:bg-indigo-50:hover, .hover\:bg-indigo-50\/60:hover { background-color: #12303a; }
+    .border-indigo-100\/60 { border-color: #1d4855; }
+    .hover\:border-indigo-500:hover { border-color: #00d4ff; }
+    .text-indigo-300, .text-indigo-600, .text-indigo-700 { color: #00d4ff; }
+    .group-hover\:text-indigo-500:is(:where(.group):hover *), .group-hover\:text-indigo-700:is(:where(.group):hover *) { color: #7fe9ff; }
+    .accent-indigo-600 { accent-color: #00d4ff; }
+    .focus\:ring-indigo-500:focus { --tw-ring-color: #00d4ff; }
+    .from-indigo-900 { --tw-gradient-from: #12303a; }
+    .via-slate-900 { --tw-gradient-via: #141923; }
+    .to-indigo-950 { --tw-gradient-to: #0f1a2b; }
+    /* 提示色塊：淺底深字 → 深底亮字 */
+    .bg-amber-50, .from-amber-50 { background-color: #2b2410; --tw-gradient-from: #2b2410; }
+    .to-orange-50 { --tw-gradient-to: #2e1f10; }
+    .hover\:bg-amber-100:hover { background-color: #3a3014; }
+    .border-amber-200, .border-amber-300 { border-color: #6b5518; }
+    .text-amber-600, .text-amber-800, .text-amber-900 { color: #ffcc00; }
+    .bg-amber-500, .bg-amber-600 { color: #1a1200; }
+    .bg-emerald-50, .bg-emerald-50\/70 { background-color: #0f2a1c; }
+    .hover\:bg-emerald-100:hover { background-color: #153a27; }
+    .border-emerald-200, .border-emerald-300 { border-color: #1f6b45; }
+    .text-emerald-600, .text-emerald-700 { color: #00e676; }
+    .bg-rose-50, .bg-rose-50\/70 { background-color: #2e1219; }
+    .bg-rose-100, .hover\:bg-rose-100:hover, .hover\:bg-rose-50:hover { background-color: #3d1722; }
+    .border-rose-200, .border-rose-300 { border-color: #7a2a3c; }
+    .text-rose-700, .hover\:text-rose-600:hover { color: #ff8aa0; }
+    .canvas-container { background-image: radial-gradient(#252e3d 1px, transparent 1px); }
+    input, select, textarea { color: #f0f3f8; }
+    .lab-back { color: #00d4ff; font-size: 15px; text-decoration: none; white-space: nowrap; }
   </style>
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col">
@@ -1337,6 +1396,7 @@ initial-value: 1;
   <!-- 頂部導覽列 -->
   <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30">
     <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <a href="../index.html" class="lab-back w-full">← 返回首頁</a>
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center font-black text-xl shadow-inner">
           <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19L19 5M10 5h9v9"/></svg>
@@ -1611,10 +1671,10 @@ function ensureDefs(svg) {
   if (svg.querySelector('defs')) return;
   const defs = createSvgEl('defs');
   [
-    { id: 'arrow-main', color: '#0f172a' },
-    { id: 'arrow-target', color: '#e11d48' },
-    { id: 'arrow-other', color: '#64748b' },
-    { id: 'arrow-gray', color: '#64748b' }
+    { id: 'arrow-main', color: '#f0f3f8' },
+    { id: 'arrow-target', color: '#ff4d6d' },
+    { id: 'arrow-other', color: '#9aa8bd' },
+    { id: 'arrow-gray', color: '#9aa8bd' }
   ].forEach(({ id, color }) => {
     const marker = createSvgEl('marker', {
       id, viewBox: '0 0 10 10', refX: '8', refY: '5',
@@ -1626,13 +1686,13 @@ function ensureDefs(svg) {
   svg.appendChild(defs);
 }
 
-function drawLine(svg, x1, y1, x2, y2, stroke = '#334155', width = 2, dash = '') {
+function drawLine(svg, x1, y1, x2, y2, stroke = '#c3d0e4', width = 2, dash = '') {
   const attrs = { x1: tx(x1), y1, x2: tx(x2), y2, stroke, 'stroke-width': width, 'stroke-linecap': 'round' };
   if (dash) attrs['stroke-dasharray'] = dash;
   svg.appendChild(createSvgEl('line', attrs));
 }
 
-function drawArrow(svg, x1, y1, x2, y2, stroke = '#0f172a', width = 3.5, markerId = 'arrow-main', dash = '') {
+function drawArrow(svg, x1, y1, x2, y2, stroke = '#f0f3f8', width = 3.5, markerId = 'arrow-main', dash = '') {
   ensureDefs(svg);
   const attrs = {
     x1: tx(x1), y1, x2: tx(x2), y2, stroke, 'stroke-width': width,
@@ -1642,17 +1702,17 @@ function drawArrow(svg, x1, y1, x2, y2, stroke = '#0f172a', width = 3.5, markerI
   svg.appendChild(createSvgEl('line', attrs));
 }
 
-function drawCircle(svg, cx, cy, r, fill = '#dbeafe', stroke = '#1e40af') {
+function drawCircle(svg, cx, cy, r, fill = '#16324a', stroke = '#93c5fd') {
   svg.appendChild(createSvgEl('circle', { cx: tx(cx), cy, r, fill, stroke, 'stroke-width': 2.5 }));
 }
 
-function drawEllipse(svg, cx, cy, rx, ry, stroke = '#cbd5e1', dash = '5,4') {
+function drawEllipse(svg, cx, cy, rx, ry, stroke = '#3a4558', dash = '5,4') {
   svg.appendChild(createSvgEl('ellipse', {
     cx: tx(cx), cy, rx, ry, fill: 'none', stroke, 'stroke-width': 2, 'stroke-dasharray': dash
   }));
 }
 
-function drawPolygon(svg, pts, fill = '#e2e8f0', stroke = '#334155', width = 2.5) {
+function drawPolygon(svg, pts, fill = '#252e3d', stroke = '#c3d0e4', width = 2.5) {
   svg.appendChild(createSvgEl('polygon', {
     points: pts.map(([x, y]) => `${tx(x)},${y}`).join(' '),
     fill, stroke, 'stroke-width': width, 'stroke-linejoin': 'round'
@@ -1662,13 +1722,13 @@ function drawPolygon(svg, pts, fill = '#e2e8f0', stroke = '#334155', width = 2.5
 function drawBox(svg, x, y, w, h, label = '') {
   const realX = currentState.flip === 1 ? (600 - x - w) : x;
   svg.appendChild(createSvgEl('rect', {
-    x: realX, y, width: w, height: h, rx: 5, fill: '#e2e8f0', stroke: '#334155', 'stroke-width': 2.5
+    x: realX, y, width: w, height: h, rx: 5, fill: '#252e3d', stroke: '#c3d0e4', 'stroke-width': 2.5
   }));
-  if (label) drawText(svg, x + w / 2, y + h / 2 + 6, label, '#1e293b', 17, true);
+  if (label) drawText(svg, x + w / 2, y + h / 2 + 6, label, '#e2e8f0', 17, true);
 }
 
 // 以中心點 (cx, cy) 旋轉 deg 度（螢幕上順時針為正）的矩形，鏡像時角度自動反向
-function drawRotRect(svg, cx, cy, w, h, deg, fill = '#dbeafe', stroke = '#1d4ed8') {
+function drawRotRect(svg, cx, cy, w, h, deg, fill = '#16324a', stroke = '#60a5fa') {
   const g = createSvgEl('g', {
     transform: `translate(${tx(cx)}, ${cy}) rotate(${currentState.flip === 1 ? -deg : deg})`
   });
@@ -1678,7 +1738,7 @@ function drawRotRect(svg, cx, cy, w, h, deg, fill = '#dbeafe', stroke = '#1d4ed8
   svg.appendChild(g);
 }
 
-function drawRectBar(svg, x1, y1, x2, y2, thickness = 8, fill = '#cbd5e1', stroke = '#334155') {
+function drawRectBar(svg, x1, y1, x2, y2, thickness = 8, fill = '#3a4558', stroke = '#c3d0e4') {
   const sx1 = tx(x1), sy1 = y1, sx2 = tx(x2), sy2 = y2;
   const dx = sx2 - sx1, dy = sy2 - sy1;
   const len = Math.hypot(dx, dy);
@@ -1691,7 +1751,7 @@ function drawRectBar(svg, x1, y1, x2, y2, thickness = 8, fill = '#cbd5e1', strok
 }
 
 // 鋸齒彈簧：兩端各留一小段直線
-function drawSpring(svg, x1, y1, x2, y2, coils = 8, amp = 9, color = '#64748b', width = 3) {
+function drawSpring(svg, x1, y1, x2, y2, coils = 8, amp = 9, color = '#9aa8bd', width = 3) {
   const dx = x2 - x1, dy = y2 - y1;
   const len = Math.hypot(dx, dy);
   const ux = dx / len, uy = dy / len;
@@ -1714,7 +1774,7 @@ function drawSpring(svg, x1, y1, x2, y2, coils = 8, amp = 9, color = '#64748b', 
 }
 
 function drawWall(svg, x1, y1, x2, y2, side = 'top') {
-  drawLine(svg, x1, y1, x2, y2, '#334155', 3);
+  drawLine(svg, x1, y1, x2, y2, '#c3d0e4', 3);
   const steps = 10;
   for (let i = 0; i <= steps; i++) {
     const t = i / steps;
@@ -1727,7 +1787,7 @@ function drawWall(svg, x1, y1, x2, y2, side = 'top') {
   }
 }
 
-function drawPath(svg, d, stroke = '#334155', width = 2.5, fill = 'none') {
+function drawPath(svg, d, stroke = '#c3d0e4', width = 2.5, fill = 'none') {
   const g = createSvgEl('g');
   if (currentState.flip === 1) g.setAttribute('transform', 'translate(600, 0) scale(-1, 1)');
   g.appendChild(createSvgEl('path', {
@@ -1737,7 +1797,7 @@ function drawPath(svg, d, stroke = '#334155', width = 2.5, fill = 'none') {
 }
 
 // 文字：'F_s?' 會畫成 F、下標 s、再接 ?；最小字級 MIN_FONT
-function drawText(svg, x, y, str, color = '#0f172a', size = 16, bold = false, bgPill = false) {
+function drawText(svg, x, y, str, color = '#f0f3f8', size = 16, bold = false, bgPill = false) {
   size = Math.max(size, minFont());
   const sx = tx(x);
   const m = String(str).match(/^([^_]*)_([A-Za-z0-9]+)(.*)$/);
@@ -1749,7 +1809,7 @@ function drawText(svg, x, y, str, color = '#0f172a', size = 16, bold = false, bg
     const h = size + 10;
     svg.appendChild(createSvgEl('rect', {
       x: sx - w / 2, y: y - h + 6, width: w, height: h, rx: 6,
-      fill: '#ffffff', stroke: color, 'stroke-width': 1.5, opacity: '0.95'
+      fill: '#141923', stroke: color, 'stroke-width': 1.5, opacity: '0.95'
     }));
   }
   const text = createSvgEl('text', {
@@ -1757,7 +1817,7 @@ function drawText(svg, x, y, str, color = '#0f172a', size = 16, bold = false, bg
     'font-weight': bold ? '800' : '600', 'text-anchor': 'middle', class: 'math-font'
   });
   if (!bgPill) {
-    text.setAttribute('stroke', '#f8fafc');
+    text.setAttribute('stroke', '#141923');
     text.setAttribute('stroke-width', '4');
     text.setAttribute('stroke-linejoin', 'round');
     text.setAttribute('paint-order', 'stroke');
@@ -1810,7 +1870,7 @@ function drawRightAngleMark(svg, px, py, aX, aY, bX, bY) {
   const uBx = dBx / lenB * size, uBy = dBy / lenB * size;
   svg.appendChild(createSvgEl('polyline', {
     points: `${tx(px + uAx)},${py + uAy} ${tx(px + uAx + uBx)},${py + uAy + uBy} ${tx(px + uBx)},${py + uBy}`,
-    fill: 'none', stroke: '#64748b', 'stroke-width': 1.5
+    fill: 'none', stroke: '#9aa8bd', 'stroke-width': 1.5
   }));
 }
 
@@ -1839,19 +1899,19 @@ function drawDecompTriangle(svg, cfg) {
 
   // 兩個分力：被詢問的軸用桃紅色粗箭頭
   const ask1 = (askAxis === 0);
-  drawArrow(svg, ox, oy, p1x, p1y, ask1 ? '#e11d48' : '#64748b', ask1 ? 4.5 : 2.5, ask1 ? 'arrow-target' : 'arrow-other');
-  drawArrow(svg, ox, oy, p2x, p2y, !ask1 ? '#e11d48' : '#64748b', !ask1 ? 4.5 : 2.5, !ask1 ? 'arrow-target' : 'arrow-other');
+  drawArrow(svg, ox, oy, p1x, p1y, ask1 ? '#ff4d6d' : '#9aa8bd', ask1 ? 4.5 : 2.5, ask1 ? 'arrow-target' : 'arrow-other');
+  drawArrow(svg, ox, oy, p2x, p2y, !ask1 ? '#ff4d6d' : '#9aa8bd', !ask1 ? 4.5 : 2.5, !ask1 ? 'arrow-target' : 'arrow-other');
 
   // 主向量
-  drawArrow(svg, ox, oy, tipX, tipY, '#0f172a', 4, 'arrow-main');
+  drawArrow(svg, ox, oy, tipX, tipY, '#f0f3f8', 4, 'arrow-main');
   const vLen = Math.hypot(vx, vy);
   const lp = cfg.labelPos || [tipX + vx / vLen * 28, tipY + vy / vLen * 28];
-  drawText(svg, lp[0], lp[1] + 11, symbol, '#0f172a', 20, true, true);
+  drawText(svg, lp[0], lp[1] + 11, symbol, '#f0f3f8', 20, true, true);
 
   // 待求分力的「?」標籤
   const tMidX = ask1 ? (ox + (p1x - ox) * 0.55 - ax2x * 26) : (ox + (p2x - ox) * 0.55 - ax1x * 26);
   const tMidY = ask1 ? (oy + (p1y - oy) * 0.55 - ax2y * 26) : (oy + (p2y - oy) * 0.55 - ax1y * 26);
-  drawText(svg, tMidX, tMidY + 9, `${symbol}?`, '#e11d48', 19, true, true);
+  drawText(svg, tMidX, tMidY + 9, `${symbol}?`, '#ff4d6d', 19, true, true);
 
   // 夾角 θ
   const vAng = Math.atan2(vy, vx) / D2R;
@@ -1925,9 +1985,9 @@ const QUESTION_MODELS = [
       const cx = 300, cy = 200, a = st.angleDeg * D2R;
       const ropeLen = (cy - 65) / Math.sin(a);
       drawWall(svg, 110, 65, 520, 65, 'top');
-      drawLine(svg, cx, cy, cx - 95, 65, '#64748b', 2.5);
+      drawLine(svg, cx, cy, cx - 95, 65, '#9aa8bd', 2.5);
       drawLine(svg, cx, cy, cx + Math.cos(a) * ropeLen, 65, '#94a3b8', 2.5); // 繩一路接到天花板
-      drawLine(svg, cx, cy, cx, cy + 55, '#334155', 2.5);
+      drawLine(svg, cx, cy, cx, cy + 55, '#c3d0e4', 2.5);
       drawBox(svg, cx - 24, cy + 55, 48, 36, 'W');
       decomp(svg, st, { ox: cx, oy: cy, v: [Math.cos(a) * 150, -Math.sin(a) * 150], ax1: [1, 0], ax2: [0, -1] });
     }
@@ -1943,12 +2003,12 @@ const QUESTION_MODELS = [
       const P0 = [120, 190], P1 = [255, 350], P2 = [440, 130];
       drawWall(svg, 120, 60, 120, 340, 'left');
       drawWall(svg, 440, 60, 440, 340, 'right');
-      drawPath(svg, `M ${P0[0]} ${P0[1]} Q ${P1[0]} ${P1[1]} ${P2[0]} ${P2[1]}`, '#475569', 4, 'none');
+      drawPath(svg, `M ${P0[0]} ${P0[1]} Q ${P1[0]} ${P1[1]} ${P2[0]} ${P2[1]}`, '#b0bdd0', 4, 'none');
       const t = (P0[1] - P1[1]) / (P0[1] - 2 * P1[1] + P2[1]); // 切線水平處＝最低點
       const bx = (1 - t) ** 2 * P0[0] + 2 * t * (1 - t) * P1[0] + t * t * P2[0];
       const by = (1 - t) ** 2 * P0[1] + 2 * t * (1 - t) * P1[1] + t * t * P2[1];
-      drawCircle(svg, bx, by, 5, '#334155', '#334155');
-      drawText(svg, bx, by + 28, 'C（最低點）', '#475569', 16, true);
+      drawCircle(svg, bx, by, 5, '#c3d0e4', '#c3d0e4');
+      drawText(svg, bx, by + 28, 'C（最低點）', '#b0bdd0', 16, true);
       const dx = P2[0] - P1[0], dy = P2[1] - P1[1], L = Math.hypot(dx, dy);
       decomp(svg, st, { ox: P2[0], oy: P2[1], v: [dx / L * 115, dy / L * 115], ax1: [1, 0], ax2: [0, -1] });
     }
@@ -1965,11 +2025,11 @@ const QUESTION_MODELS = [
       const axx = ox - 145 * Math.tan(phi);
       drawWall(svg, axx - 90, 55, axx + 90, 55, 'top');
       drawWall(svg, axx - 90, 345, axx + 90, 345, 'bottom');
-      drawLine(svg, axx, 55, axx, 345, '#cbd5e1', 1.5, '5,5');
+      drawLine(svg, axx, 55, axx, 345, '#3a4558', 1.5, '5,5');
       drawSpring(svg, ox, oy, axx, 55, 8, 9, '#94a3b8', 2.5);
       drawSpring(svg, ox, oy, axx, 345, 8, 9, '#94a3b8', 2.5);
-      drawArrow(svg, ox, oy, ox + 90, oy, '#64748b', 3, 'arrow-gray');
-      drawText(svg, ox + 108, oy + 6, 'F', '#475569', 19, true);
+      drawArrow(svg, ox, oy, ox + 90, oy, '#9aa8bd', 3, 'arrow-gray');
+      drawText(svg, ox + 108, oy + 6, 'F', '#b0bdd0', 19, true);
       decomp(svg, st, { ox, oy, v: [-Math.sin(phi) * 125, -Math.cos(phi) * 125], ax1: [-1, 0], ax2: [0, -1] });
     }
   },
@@ -1985,10 +2045,10 @@ const QUESTION_MODELS = [
       const lx = sx - off, rx = sx + off;
       drawWall(svg, sx - 90, sy, sx + 90, sy, 'top');
       drawLine(svg, sx, sy, rx, by, '#94a3b8', 2.5);
-      drawLine(svg, sx, sy, lx, by, '#64748b', 2.5);
+      drawLine(svg, sx, sy, lx, by, '#9aa8bd', 2.5);
       drawSpring(svg, lx + 20, by, rx - 20, by, 7, 8, '#94a3b8', 2.5);
-      drawCircle(svg, rx, by, 20, '#e2e8f0', '#475569');
-      drawCircle(svg, lx, by, 20, '#dbeafe', '#1e40af');
+      drawCircle(svg, rx, by, 20, '#252e3d', '#b0bdd0');
+      drawCircle(svg, lx, by, 20, '#16324a', '#93c5fd');
       decomp(svg, st, { ox: lx, oy: by, v: [Math.sin(phi) * 125, -Math.cos(phi) * 125], ax1: [1, 0], ax2: [0, -1] });
     }
   },
@@ -2004,8 +2064,8 @@ const QUESTION_MODELS = [
       drawWall(svg, ux - r, 90, ux - r, ly + r, 'left');
       drawWall(svg, lx + r, 90, lx + r, ly + r, 'right');
       drawWall(svg, ux - r, ly + r, lx + r, ly + r, 'bottom');
-      drawCircle(svg, lx, ly, r, '#f1f5f9', '#64748b');
-      drawCircle(svg, ux, uy, r, '#eff6ff', '#3b82f6');
+      drawCircle(svg, lx, ly, r, '#1d2432', '#9aa8bd');
+      drawCircle(svg, ux, uy, r, '#12263a', '#3b82f6');
       drawLine(svg, ux, uy, lx, ly, '#94a3b8', 1.5, '4,4');
       // 箭頭長度控制在容器內，不穿牆
       decomp(svg, st, { ox: ux, oy: uy, v: [-Math.cos(a) * 84, -Math.sin(a) * 84], ax1: [-1, 0], ax2: [0, -1] });
@@ -2022,13 +2082,13 @@ const QUESTION_MODELS = [
       const O = [330, 115], R = 165, r = 60;
       const h = Math.sqrt((R - r) ** 2 - r ** 2);
       const A = [O[0] - r, O[1] + h], B = [O[0] + r, O[1] + h];
-      drawPath(svg, `M ${O[0] - R} ${O[1]} A ${R} ${R} 0 0 0 ${O[0] + R} ${O[1]}`, '#475569', 4, 'none');
+      drawPath(svg, `M ${O[0] - R} ${O[1]} A ${R} ${R} 0 0 0 ${O[0] + R} ${O[1]}`, '#b0bdd0', 4, 'none');
       drawLine(svg, O[0] - R - 14, O[1], O[0] + R + 14, O[1], '#94a3b8', 2);
-      drawCircle(svg, B[0], B[1], r, '#f1f5f9', '#64748b');
-      drawCircle(svg, A[0], A[1], r, '#dbeafe', '#2563eb');
+      drawCircle(svg, B[0], B[1], r, '#1d2432', '#9aa8bd');
+      drawCircle(svg, A[0], A[1], r, '#16324a', '#60a5fa');
       drawLine(svg, A[0], A[1], O[0], O[1], '#94a3b8', 1.5, '4,4');
-      drawCircle(svg, O[0], O[1], 4, '#334155', '#334155');
-      drawText(svg, O[0] + 66, O[1] - 12, '碗心 O', '#475569', 16, true);
+      drawCircle(svg, O[0], O[1], 4, '#c3d0e4', '#c3d0e4');
+      drawText(svg, O[0] + 66, O[1] - 12, '碗心 O', '#b0bdd0', 16, true);
       const dx = O[0] - A[0], dy = O[1] - A[1], L = Math.hypot(dx, dy);
       decomp(svg, st, { ox: A[0], oy: A[1], v: [dx / L * 98, dy / L * 98], ax1: [1, 0], ax2: [0, -1] });
     }
@@ -2052,10 +2112,10 @@ const QUESTION_MODELS = [
       const s = (C[0] - K[0]) / Math.cos(phi);
       const V = [C[0], K[1] + s * Math.sin(phi)];      // 槽底頂點（在對稱軸上）
       const top = [175 * Math.cos(phi), 175 * Math.sin(phi)];
-      drawPolygon(svg, [[V[0] - top[0], V[1] - top[1]], V, [V[0] + top[0], V[1] - top[1]], [V[0] + top[0], 345], [V[0] - top[0], 345]], '#e2e8f0', '#334155', 3);
-      drawCircle(svg, C[0], C[1], r, '#fef3c7', '#d97706');
-      drawArrow(svg, C[0], C[1], C[0] + nR[0] * 85, C[1] + nR[1] * 85, '#64748b', 2.5, 'arrow-gray');
-      drawText(svg, C[0] + nR[0] * 85 - 16, C[1] + nR[1] * 85 - 8, "N'", '#475569', 16, true);
+      drawPolygon(svg, [[V[0] - top[0], V[1] - top[1]], V, [V[0] + top[0], V[1] - top[1]], [V[0] + top[0], 345], [V[0] - top[0], 345]], '#252e3d', '#c3d0e4', 3);
+      drawCircle(svg, C[0], C[1], r, '#3a2e10', '#fbbf24');
+      drawArrow(svg, C[0], C[1], C[0] + nR[0] * 85, C[1] + nR[1] * 85, '#9aa8bd', 2.5, 'arrow-gray');
+      drawText(svg, C[0] + nR[0] * 85 - 16, C[1] + nR[1] * 85 - 8, "N'", '#b0bdd0', 16, true);
       decomp(svg, st, { ox: C[0], oy: C[1], v: [nL[0] * 115, nL[1] * 115], ax1: [1, 0], ax2: [0, -1] });
     }
   },
@@ -2069,9 +2129,9 @@ const QUESTION_MODELS = [
     stem: (ref, ask) => `長 r 的水平細桿左端為支點 O，右端受斜向外力 F 作用。已知 F 與「${ref}」的夾角為 θ，請問 F 的「${ask}」量值為何？`,
     draw(svg, st) {
       const ox = 330, oy = 230, a = st.angleDeg * D2R;
-      drawRectBar(svg, 150, oy, ox, oy, 10, '#cbd5e1', '#334155');
-      drawCircle(svg, 150, oy, 7, '#f59e0b', '#1e293b');
-      drawText(svg, 126, oy + 6, 'O', '#1e293b', 19, true);
+      drawRectBar(svg, 150, oy, ox, oy, 10, '#3a4558', '#c3d0e4');
+      drawCircle(svg, 150, oy, 7, '#f59e0b', '#e2e8f0');
+      drawText(svg, 126, oy + 6, 'O', '#e2e8f0', 19, true);
       decomp(svg, st, { ox, oy, v: [Math.cos(a) * 135, -Math.sin(a) * 135], ax1: [1, 0], ax2: [0, -1] });
     }
   },
@@ -2090,11 +2150,11 @@ const QUESTION_MODELS = [
       const ax1 = [Math.cos(a), -Math.sin(a)], ax2 = [Math.sin(a), Math.cos(a)];
       const ex = ox + len, ey = oy;
       drawLine(svg, ex - ax1[0] * 130, ey - ax1[1] * 130, ex + ax1[0] * 90, ey + ax1[1] * 90, '#94a3b8', 2, '6,4');
-      if (st.thetaAxis === 1) drawLine(svg, ex, ey - 75, ex, ey + 75, '#cbd5e1', 1.5, '5,5'); // 題幹提到鉛直線時才畫出
-      drawArrow(svg, ex, ey, ex + ax1[0] * 75, ey + ax1[1] * 75, '#0f172a', 3.5);
-      drawText(svg, ex + ax1[0] * 105, ey + ax1[1] * 105 + 4, 'F 作用線', '#0f172a', 16, true);
-      drawCircle(svg, ox, oy, 6, '#f59e0b', '#1e293b');
-      drawText(svg, ox - 20, oy + 6, 'O', '#1e293b', 19, true);
+      if (st.thetaAxis === 1) drawLine(svg, ex, ey - 75, ex, ey + 75, '#3a4558', 1.5, '5,5'); // 題幹提到鉛直線時才畫出
+      drawArrow(svg, ex, ey, ex + ax1[0] * 75, ey + ax1[1] * 75, '#f0f3f8', 3.5);
+      drawText(svg, ex + ax1[0] * 105, ey + ax1[1] * 105 + 4, 'F 作用線', '#f0f3f8', 16, true);
+      drawCircle(svg, ox, oy, 6, '#f59e0b', '#e2e8f0');
+      drawText(svg, ox - 20, oy + 6, 'O', '#e2e8f0', 19, true);
       decomp(svg, st, { ox, oy, v: [len, 0], ax1, ax2, labelPos: [ox + len / 2, oy + 30] });
     }
   },
@@ -2112,13 +2172,13 @@ const QUESTION_MODELS = [
       const cx = 270, cy = 145, a = 38 * D2R, half = 85;
       const rx = Math.sin(a), ry = Math.cos(a);   // 沿桿向下
       const nx = -Math.cos(a), ny = Math.sin(a);  // 垂直桿
-      drawLine(svg, cx, cy - 80, cx, cy + 120, '#cbd5e1', 1.5, '4,4');
-      drawLine(svg, cx - rx * half, cy - ry * half, cx + rx * half, cy + ry * half, '#334155', 4);
-      drawCircle(svg, cx, cy, 5, '#f59e0b', '#0f172a');
-      drawText(svg, cx - 20, cy + 6, 'O', '#0f172a', 18, true);
-      drawCircle(svg, cx - rx * half, cy - ry * half, 11, '#e2e8f0', '#334155');
+      drawLine(svg, cx, cy - 80, cx, cy + 120, '#3a4558', 1.5, '4,4');
+      drawLine(svg, cx - rx * half, cy - ry * half, cx + rx * half, cy + ry * half, '#c3d0e4', 4);
+      drawCircle(svg, cx, cy, 5, '#f59e0b', '#f0f3f8');
+      drawText(svg, cx - 20, cy + 6, 'O', '#f0f3f8', 18, true);
+      drawCircle(svg, cx - rx * half, cy - ry * half, 11, '#252e3d', '#c3d0e4');
       const ox = cx + rx * half, oy = cy + ry * half;
-      drawCircle(svg, ox, oy, 12, '#dbeafe', '#1d4ed8');
+      drawCircle(svg, ox, oy, 12, '#16324a', '#60a5fa');
       decomp(svg, st, { ox, oy, v: [0, 110], ax1: [rx, ry], ax2: [nx, ny] });
     }
   },
@@ -2138,10 +2198,10 @@ const QUESTION_MODELS = [
       const nx = Math.cos(a), ny = -Math.sin(a);  // 垂直棒向右上
       const ox = topX + rx * rodLen, oy = topY + ry * rodLen;
       drawWall(svg, 140, topY, 280, topY, 'top');
-      drawLine(svg, topX, topY, topX, topY + 150, '#cbd5e1', 1.5, '5,5');
-      drawRectBar(svg, topX, topY, ox, oy, 8, '#e2e8f0', '#334155');
-      drawCircle(svg, topX, topY, 6, '#f59e0b', '#0f172a');
-      drawText(svg, topX - 20, topY + 22, 'O', '#0f172a', 18, true);
+      drawLine(svg, topX, topY, topX, topY + 150, '#3a4558', 1.5, '5,5');
+      drawRectBar(svg, topX, topY, ox, oy, 8, '#252e3d', '#c3d0e4');
+      drawCircle(svg, topX, topY, 6, '#f59e0b', '#f0f3f8');
+      drawText(svg, topX - 20, topY + 22, 'O', '#f0f3f8', 18, true);
       decomp(svg, st, { ox, oy, v: [130, 0], ax1: [nx, ny], ax2: [rx, ry] });
     }
   },
@@ -2156,10 +2216,10 @@ const QUESTION_MODELS = [
       drawWall(svg, wallX, 30, wallX, 320, 'left');
       const hitY = oy - (ox - wallX) * Math.tan(a);
       drawLine(svg, ox, oy, wallX, hitY, '#94a3b8', 2);
-      drawRectBar(svg, wallX, oy, ox, oy, 10, '#cbd5e1', '#334155');
-      drawCircle(svg, wallX, oy, 6, '#f59e0b', '#0f172a');
-      drawText(svg, wallX - 24, oy + 6, 'O', '#0f172a', 18, true);
-      drawLine(svg, 275, oy + 5, 275, oy + 45, '#334155', 2);
+      drawRectBar(svg, wallX, oy, ox, oy, 10, '#3a4558', '#c3d0e4');
+      drawCircle(svg, wallX, oy, 6, '#f59e0b', '#f0f3f8');
+      drawText(svg, wallX - 24, oy + 6, 'O', '#f0f3f8', 18, true);
+      drawLine(svg, 275, oy + 5, 275, oy + 45, '#c3d0e4', 2);
       drawBox(svg, 255, oy + 45, 40, 30, 'W');
       decomp(svg, st, { ox, oy, v: [-Math.cos(a) * 140, -Math.sin(a) * 140], ax1: [-1, 0], ax2: [0, -1] });
     }
@@ -2179,10 +2239,10 @@ const QUESTION_MODELS = [
       const rx = Math.sin(a), ry = -Math.cos(a); // 沿支架向右上
       const ox = baseX + rx * boomLen, oy = baseY + ry * boomLen;
       drawBox(svg, 130, 260, 150, 36, '車體');
-      drawCircle(svg, 165, 302, 14, '#475569', '#1e293b');
-      drawCircle(svg, 245, 302, 14, '#475569', '#1e293b');
-      drawLine(svg, baseX, baseY, baseX, baseY - 140, '#cbd5e1', 1.5, '5,5');
-      drawRectBar(svg, baseX, baseY, ox, oy, 9, '#94a3b8', '#334155');
+      drawCircle(svg, 165, 302, 14, '#b0bdd0', '#e2e8f0');
+      drawCircle(svg, 245, 302, 14, '#b0bdd0', '#e2e8f0');
+      drawLine(svg, baseX, baseY, baseX, baseY - 140, '#3a4558', 1.5, '5,5');
+      drawRectBar(svg, baseX, baseY, ox, oy, 9, '#94a3b8', '#c3d0e4');
       drawBox(svg, ox - 34, oy - 30, 68, 30, '工作台');
       decomp(svg, st, { ox, oy, v: [0, 125], ax1: [-rx, -ry], ax2: [-ry, rx] });
     }
@@ -2204,7 +2264,7 @@ const QUESTION_MODELS = [
       const footX = wallX + Math.cos(a) * L, topY = floorY - Math.sin(a) * L;
       drawWall(svg, wallX, 60, wallX, floorY, 'left');
       drawWall(svg, wallX, floorY, 460, floorY, 'bottom');
-      drawRectBar(svg, wallX, topY, footX, floorY, 8, '#fde68a', '#92400e');
+      drawRectBar(svg, wallX, topY, footX, floorY, 8, '#5a4514', '#fcd34d');
       decomp(svg, st, { ox: wallX, oy: topY, v: [130, 0], ax1: [Math.cos(a), Math.sin(a)], ax2: [Math.sin(a), -Math.cos(a)] });
     }
   },
@@ -2223,7 +2283,7 @@ const QUESTION_MODELS = [
       const footX = wallX + Math.cos(a) * L, topY = floorY - Math.sin(a) * L;
       drawWall(svg, wallX, 60, wallX, floorY, 'left');
       drawWall(svg, wallX, floorY, 460, floorY, 'bottom');
-      drawRectBar(svg, wallX, topY, footX, floorY, 8, '#fde68a', '#92400e');
+      drawRectBar(svg, wallX, topY, footX, floorY, 8, '#5a4514', '#fcd34d');
       const ox = (wallX + footX) / 2, oy = (topY + floorY) / 2;
       // 向量長度 90：箭頭與分力都留在地板上方
       decomp(svg, st, { ox, oy, v: [0, 90], ax1: [-Math.sin(a), Math.cos(a)], ax2: [Math.cos(a), Math.sin(a)], labelPos: [ox + 24, oy + 70] });
@@ -2238,13 +2298,13 @@ const QUESTION_MODELS = [
     draw(svg, st) {
       const ox = 390, oy = 105, pivotX = 290, floorY = 290, a = 36 * D2R;
       drawWall(svg, 110, floorY, 470, floorY, 'bottom');
-      drawRectBar(svg, pivotX, floorY, ox, oy, 8, '#cbd5e1', '#334155');
-      drawCircle(svg, pivotX, floorY, 6, '#f59e0b', '#0f172a');
-      drawText(svg, pivotX, floorY + 28, 'O', '#0f172a', 18, true);
+      drawRectBar(svg, pivotX, floorY, ox, oy, 8, '#3a4558', '#c3d0e4');
+      drawCircle(svg, pivotX, floorY, 6, '#f59e0b', '#f0f3f8');
+      drawText(svg, pivotX, floorY + 28, 'O', '#f0f3f8', 18, true);
       const sX = ox - (floorY - oy) / Math.tan(a);
       drawLine(svg, ox, oy, sX, floorY, '#94a3b8', 2);
-      drawText(svg, sX - 4, floorY + 28, 'S', '#475569', 17, true);
-      drawLine(svg, ox, oy, ox, oy + 80, '#334155', 2);
+      drawText(svg, sX - 4, floorY + 28, 'S', '#b0bdd0', 17, true);
+      drawLine(svg, ox, oy, ox, oy + 80, '#c3d0e4', 2);
       drawBox(svg, ox - 22, oy + 80, 44, 32, 'W');
       decomp(svg, st, { ox, oy, v: [-Math.cos(a) * 135, Math.sin(a) * 135], ax1: [-1, 0], ax2: [0, 1] });
     }
@@ -2263,8 +2323,8 @@ const QUESTION_MODELS = [
       const ox = left + size, oy = floorY - size / 2;
       drawWall(svg, 110, floorY, 480, floorY, 'bottom');
       drawBox(svg, left, floorY - size, size, size, 'L');
-      drawCircle(svg, ox, floorY, 5, '#e11d48', '#881337');
-      drawText(svg, ox + 50, floorY + 28, '轉軸 A', '#be123c', 16, true);
+      drawCircle(svg, ox, floorY, 5, '#ff4d6d', '#fda4af');
+      drawText(svg, ox + 50, floorY + 28, '轉軸 A', '#fb7185', 16, true);
       decomp(svg, st, { ox, oy, v: [Math.cos(a) * 135, -Math.sin(a) * 135], ax1: [1, 0], ax2: [0, -1] });
     }
   },
@@ -2286,18 +2346,18 @@ const QUESTION_MODELS = [
       const tx_ = -Math.cos(a), ty_ = Math.sin(a); // 切線
       const ox = topX + rx * stringLen, oy = topY + ry * stringLen;
       drawWall(svg, topX - 60, topY, topX + 60, topY, 'top');
-      drawLine(svg, topX, topY, topX, topY + 145, '#cbd5e1', 1.5, '5,5');
-      drawLine(svg, topX, topY, ox, oy, '#334155', 2.5);
-      drawCircle(svg, ox, oy, 16, '#dbeafe', '#1d4ed8');
+      drawLine(svg, topX, topY, topX, topY + 145, '#3a4558', 1.5, '5,5');
+      drawLine(svg, topX, topY, ox, oy, '#c3d0e4', 2.5);
+      drawCircle(svg, ox, oy, 16, '#16324a', '#60a5fa');
       // 擺錘上標的是「mg 與某軸」的夾角；這裡在懸點另外標出題幹所說的 θ
       const stringAng = 90 - 36; // 擺線與水平線的夾角（螢幕座標）
       if (st.thetaAxis === 0) {
         drawArc(svg, topX, topY, 50, stringAng, 90, '#f59e0b');
-        drawText(svg, topX + 70 * Math.cos(72 * D2R) + 6, topY + 70 * Math.sin(72 * D2R) + 6, 'θ', '#d97706', 18, true);
+        drawText(svg, topX + 70 * Math.cos(72 * D2R) + 6, topY + 70 * Math.sin(72 * D2R) + 6, 'θ', '#fbbf24', 18, true);
       } else {
-        drawLine(svg, topX, topY, topX + 150, topY, '#cbd5e1', 1.5, '5,5');
+        drawLine(svg, topX, topY, topX + 150, topY, '#3a4558', 1.5, '5,5');
         drawArc(svg, topX, topY, 50, 0, stringAng, '#f59e0b');
-        drawText(svg, topX + 72 * Math.cos(27 * D2R), topY + 72 * Math.sin(27 * D2R) + 6, 'θ', '#d97706', 18, true);
+        drawText(svg, topX + 72 * Math.cos(27 * D2R), topY + 72 * Math.sin(27 * D2R) + 6, 'θ', '#fbbf24', 18, true);
       }
       decomp(svg, st, { ox, oy, v: [0, 125], ax1: [rx, ry], ax2: [tx_, ty_] });
     }
@@ -2315,11 +2375,11 @@ const QUESTION_MODELS = [
     draw(svg, st) {
       const a = 35 * D2R;
       const x1 = 140, y1 = 280, x2 = 430, y3 = y1 - (x2 - x1) * Math.tan(a);
-      drawPolygon(svg, [[x1, y1], [x2, y1], [x1, y3]], '#f1f5f9', '#475569', 2.5);
+      drawPolygon(svg, [[x1, y1], [x2, y1], [x1, y3]], '#1d2432', '#b0bdd0', 2.5);
       // 木塊底邊貼在斜面上：斜面上一點 + 往外法線方向抬高半個木塊高度
       const sx = 270, sy = y3 + (sx - x1) * Math.tan(a);
       const cx = sx + 18 * Math.sin(a), cy = sy - 18 * Math.cos(a);
-      drawRotRect(svg, cx, cy, 52, 36, 35, '#dbeafe', '#1d4ed8');
+      drawRotRect(svg, cx, cy, 52, 36, 35, '#16324a', '#60a5fa');
       decomp(svg, st, { ox: cx, oy: cy, v: [0, 125], ax1: [-Math.sin(a), Math.cos(a)], ax2: [Math.cos(a), Math.sin(a)] });
     }
   },
@@ -2336,10 +2396,10 @@ const QUESTION_MODELS = [
     draw(svg, st) {
       const a = 35 * D2R;
       const x1 = 150, y1 = 290, x2 = 440, y3 = y1 - (x2 - x1) * Math.tan(a);
-      drawPolygon(svg, [[x1, y1], [x2, y1], [x2, y3]], '#f1f5f9', '#475569', 2.5);
+      drawPolygon(svg, [[x1, y1], [x2, y1], [x2, y3]], '#1d2432', '#b0bdd0', 2.5);
       const sx = 290, sy = y1 - (sx - x1) * Math.tan(a);
       const cx = sx - 18 * Math.sin(a), cy = sy - 18 * Math.cos(a);
-      drawRotRect(svg, cx, cy, 52, 36, -35, '#fef3c7', '#d97706');
+      drawRotRect(svg, cx, cy, 52, 36, -35, '#3a2e10', '#fbbf24');
       decomp(svg, st, { ox: cx, oy: cy, v: [130, 0], ax1: [Math.cos(a), -Math.sin(a)], ax2: [Math.sin(a), Math.cos(a)] });
     }
   },
@@ -2355,8 +2415,8 @@ const QUESTION_MODELS = [
       drawWall(svg, topX - 70, topY, topX + 70, topY, 'top');
       drawLine(svg, topX, topY, topX, 275, '#94a3b8', 1.5, '6,4');
       drawEllipse(svg, topX, oy, topX - ox, 24);
-      drawLine(svg, ox, oy, topX, topY, '#cbd5e1', 2);
-      drawCircle(svg, ox, oy, 14, '#fce7f3', '#db2777');
+      drawLine(svg, ox, oy, topX, topY, '#3a4558', 2);
+      drawCircle(svg, ox, oy, 14, '#3a1028', '#db2777');
       decomp(svg, st, { ox, oy, v: [vx / L * 135, vy / L * 135], ax1: [1, 0], ax2: [0, -1] });
     }
   }

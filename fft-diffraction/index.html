@@ -4,54 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2D 孔徑繞射 (FFT)</title>
+    <link rel="stylesheet" href="../shared/lab.css">
     <link rel="stylesheet" href="../shared/touch.css">
     <style>
+        /* 顏色、字體、導覽與標題來自 shared/lab.css；這裡只放本單元特有的版面 */
+        .nav, header { max-width: 800px; }
+        .container { flex-direction: row; }
         /* 繼承一貫的實驗室風格 */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #000; color: #eee; margin: 0; padding: 20px;
-            display: flex; flex-direction: column; align-items: center;
-        }
-        .nav { width: 100%; margin-bottom: 20px; text-align: left; }
-        .nav a { color: #00d4ff; text-decoration: none; font-size: 14px; }
-        h2 { color: #00d4ff; margin-bottom: 5px; }
-        p { color: #888; font-size: 12px; margin-bottom: 20px; }
+        p { color: #9aa8bd; font-size: 13px; margin: 0 0 16px; max-width: 800px; }
         .container {
             display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;
             width: 100%; max-width: 800px;
         }
         /* 控制區 */
         .controls {
-            background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333;
+            background: #141923; padding: 20px; border-radius: 12px; border: 1px solid #252e3d;
             flex: 1; min-width: 250px;
         }
         .slider-group { margin-bottom: 20px; }
-        .label { display: flex; justify-content: space-between; margin-bottom: 8px; color: #ccc; font-size: 14px; }
+        .label { display: flex; justify-content: space-between; margin-bottom: 8px; color: #c3d0e4; font-size: 14px; }
         .val { color: #00d4ff; font-family: monospace; }
         input[type=range] { width: 100%; accent-color: #00d4ff; cursor: pointer; }
         /* 畫布區 */
         .visuals {
             display: flex; gap: 10px; align-items: center; justify-content: center;
-            background: #111; padding: 20px; border-radius: 12px; border: 1px solid #333;
+            background: #111622; padding: 20px; border-radius: 12px; border: 1px solid #252e3d;
         }
         .canvas-box { text-align: center; }
-        .canvas-title { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; display: block; }
+        .canvas-title { font-size: 10px; color: #6a7a92; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; display: block; }
         canvas {
-            border: 1px solid #444; background: #000;
+            border: 1px solid #3a4558; background: #000;
             width: min(150px, 36vw); height: min(150px, 36vw); /* 顯示大小 */
             image-rendering: pixelated; /* 保持像素感 */
             border-radius: 4px;
         }
-        .arrow { font-size: 24px; color: #444; }
+        .arrow { font-size: 24px; color: #3a4558; }
         @media (max-width: 480px) { body { padding: 12px; } .visuals { padding: 12px; gap: 6px; } .controls { min-width: 0; } }
         .loading { color: #ffcc00; font-size: 12px; margin-top: 5px; min-height: 18px; text-align: center;}
     </style>
 </head>
 <body>
 
-    <div class="nav"><a href="../index.html">← 返回實驗室入口</a></div>
-    <h2>🔷 幾何孔徑繞射模擬</h2>
-    <p>使用 2D FFT 演算法計算夫朗和斐繞射圖樣</p>
+    <div class="nav"><a href="../index.html">← 返回首頁</a></div>
+    <header>
+        <h1>🔷 幾何孔徑繞射模擬</h1>
+        <p class="subtitle">使用 2D FFT 演算法計算夫朗和斐繞射圖樣</p>
+    </header>
     <p style="font-size:0.85em; opacity:0.75;">亮度採 log(1+|F|) 顯示，讓亮紋與暗紋細節都看得到；實際光強與 |F|² 成正比，主亮區會比畫面看起來更集中。</p>
 
     <div class="container">
